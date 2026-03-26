@@ -1,4 +1,4 @@
-# Course Project
+ # Course Project
 
 Hi, I am **Syed Ahmer Shah** (Ahmer for short) and this is my course projects repo where I share all the projects I complete from online courses like freeCodeCamp, Coursera, and Datacamp. Each project is organized by course and topic, with clean, readable code, so anyone can follow along. This also helps me track my learning and show my work to others.
 
