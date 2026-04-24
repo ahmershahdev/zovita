@@ -40,32 +40,49 @@ $products = zvGetProductsByCategory('a');
                         <span class="zv-label">Search product</span>
                         <input type="search" class="zv-input" data-filter-query placeholder="Search by product name">
                     </label>
-                    <label>
+                    <div class="zv-filter-dropdown" data-filter-dropdown>
                         <span class="zv-label">Type</span>
-                        <select class="zv-input" data-filter-type>
-                            <option value="all">All types</option>
-                            <option value="product">Product</option>
-                            <option value="medicine">Medicine</option>
-                        </select>
-                    </label>
-                    <label>
+                        <button type="button" class="zv-input zv-dropdown-trigger" data-filter-trigger aria-expanded="false">
+                            <span data-filter-label>All types</span>
+                            <span class="zv-dropdown-arrow">v</span>
+                        </button>
+                        <ul class="zv-dropdown-list zv-filter-dropdown-list" data-filter-list>
+                            <li><button type="button" data-filter-option data-value="all">All types</button></li>
+                            <li><button type="button" data-filter-option data-value="product">Product</button></li>
+                            <li><button type="button" data-filter-option data-value="medicine">Medicine</button></li>
+                        </ul>
+                        <input type="hidden" data-filter-type value="all">
+                    </div>
+
+                    <div class="zv-filter-dropdown" data-filter-dropdown>
                         <span class="zv-label">Section</span>
-                        <select class="zv-input" data-filter-section>
-                            <option value="all">All sections</option>
+                        <button type="button" class="zv-input zv-dropdown-trigger" data-filter-trigger aria-expanded="false">
+                            <span data-filter-label>All sections</span>
+                            <span class="zv-dropdown-arrow">v</span>
+                        </button>
+                        <ul class="zv-dropdown-list zv-filter-dropdown-list" data-filter-list>
+                            <li><button type="button" data-filter-option data-value="all">All sections</button></li>
                             <?php foreach ($category['sections'] as $section): ?>
-                                <option value="<?php echo htmlspecialchars($section['id'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($section['label'], ENT_QUOTES, 'UTF-8'); ?></option>
+                                <li><button type="button" data-filter-option data-value="<?php echo htmlspecialchars($section['id'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($section['label'], ENT_QUOTES, 'UTF-8'); ?></button></li>
                             <?php endforeach; ?>
-                        </select>
-                    </label>
-                    <label>
+                        </ul>
+                        <input type="hidden" data-filter-section value="all">
+                    </div>
+
+                    <div class="zv-filter-dropdown" data-filter-dropdown>
                         <span class="zv-label">Sort by</span>
-                        <select class="zv-input" data-filter-sort>
-                            <option value="featured">Featured</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="name">Name</option>
-                        </select>
-                    </label>
+                        <button type="button" class="zv-input zv-dropdown-trigger" data-filter-trigger aria-expanded="false">
+                            <span data-filter-label>Featured</span>
+                            <span class="zv-dropdown-arrow">v</span>
+                        </button>
+                        <ul class="zv-dropdown-list zv-filter-dropdown-list" data-filter-list>
+                            <li><button type="button" data-filter-option data-value="featured">Featured</button></li>
+                            <li><button type="button" data-filter-option data-value="price-low">Price: Low to High</button></li>
+                            <li><button type="button" data-filter-option data-value="price-high">Price: High to Low</button></li>
+                            <li><button type="button" data-filter-option data-value="name">Name</button></li>
+                        </ul>
+                        <input type="hidden" data-filter-sort value="featured">
+                    </div>
                 </div>
 
                 <div class="zv-product-grid mt-5" data-product-grid>

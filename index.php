@@ -20,7 +20,6 @@ $featuredProducts = array_slice(zvGetAllProducts(), 0, 15);
     <div class="zv-orb zv-float h-64 w-64 top-44 -right-20" style="animation-delay: 1.1s;"></div>
 
     <?php require __DIR__ . '/includes/navbar.php'; ?>
-    <?php require __DIR__ . '/includes/breadcrumbs.php'; ?>
 
     <main class="relative z-10 pb-12">
         <section class="zv-section-lg">

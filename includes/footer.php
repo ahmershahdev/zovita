@@ -1,8 +1,3 @@
-<?php
-require_once __DIR__ . '/products-data.php';
-$latestProducts = array_slice(zvGetAllProducts(), 0, 8);
-?>
-
 <footer class="zv-footer">
     <div class="zv-container px-2 py-10 sm:px-3">
         <div class="zv-footer-grid border-b border-slate-200 pb-8">
@@ -69,21 +64,8 @@ $latestProducts = array_slice(zvGetAllProducts(), 0, 8);
             </div>
         </div>
 
-        <div class="zv-footer-latest">
-            <p class="zv-footer-title zv-footer-title-center">Latest products</p>
-            <div class="zv-footer-latest-grid">
-                <?php foreach ($latestProducts as $product): ?>
-                    <a class="zv-footer-product-pill" href="<?php echo htmlspecialchars($product['url'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <span><?php echo htmlspecialchars($product['name'], ENT_QUOTES, 'UTF-8'); ?></span>
-                        <strong><?php echo htmlspecialchars($product['priceLabel'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-
-        <div class="mt-6 flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-            <p>Copyright <?php echo date('Y'); ?> Zovita. All rights reserved.</p>
-            <p>Serving customers through trusted products, transparent policies, and responsive care support.</p>
+        <div class="zv-footer-copy">
+            <p>&copy; <?php echo date('Y'); ?> Zovita. All rights reserved.</p>
         </div>
     </div>
 </footer>

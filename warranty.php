@@ -23,29 +23,51 @@ require __DIR__ . '/includes/bootstrap.php';
                 <h1 class="zv-page-title">Warranty policy</h1>
                 <p class="zv-page-lead">Some product categories include manufacturer-backed coverage. This page explains eligibility, required proof, and review expectations.</p>
                 <p class="mt-3 text-sm font-semibold text-navy-900">Last updated: <?php echo date('F j, Y'); ?></p>
+                <div class="zv-policy-actions">
+                    <a href="returns.php" class="zv-btn-secondary">Returns policy</a>
+                    <a href="terms-of-service.php" class="zv-btn-secondary">Terms of service</a>
+                    <a href="privacy-policy.php" class="zv-btn-secondary">Privacy policy</a>
+                </div>
             </section>
 
-            <section class="zv-section-lg space-y-4">
-                <article class="zv-card p-6">
-                    <h2 class="text-2xl font-bold">1. Eligible products</h2>
-                    <p class="mt-2 text-sm text-slate-600">Warranty applies to products explicitly marked as covered under supplier or manufacturer terms.</p>
-                </article>
-                <article class="zv-card p-6">
-                    <h2 class="text-2xl font-bold">2. Required claim details</h2>
-                    <p class="mt-2 text-sm text-slate-600">Order proof, invoice details, product photos, and issue description are needed for proper claim review.</p>
-                </article>
-                <article class="zv-card p-6">
-                    <h2 class="text-2xl font-bold">3. Exclusions</h2>
-                    <p class="mt-2 text-sm text-slate-600">Damage from misuse, unauthorized modifications, accidental breakage, or expiry-related issues is generally excluded.</p>
-                </article>
-                <article class="zv-card p-6">
-                    <h2 class="text-2xl font-bold">4. Review timeline</h2>
-                    <p class="mt-2 text-sm text-slate-600">Claims are usually reviewed within 2-4 business days after complete documentation is submitted.</p>
-                </article>
-                <article class="zv-card p-6">
-                    <h2 class="text-2xl font-bold">5. Resolution options</h2>
-                    <p class="mt-2 text-sm text-slate-600">Approved cases may be resolved through replacement, service coordination, or alternate policy-backed outcomes.</p>
-                </article>
+            <section class="zv-section-lg zv-policy-layout">
+                <aside class="zv-policy-nav">
+                    <h2 class="text-xl font-bold">On this page</h2>
+                    <ul>
+                        <li><a href="#eligible">Eligible products</a></li>
+                        <li><a href="#claim-details">Required claim details</a></li>
+                        <li><a href="#exclusions">Exclusions</a></li>
+                        <li><a href="#review">Review timeline</a></li>
+                        <li><a href="#resolution">Resolution options</a></li>
+                    </ul>
+                </aside>
+
+                <div class="zv-policy-content">
+                    <article id="eligible" class="zv-policy-card">
+                        <h2 class="text-2xl font-bold">1. Eligible products</h2>
+                        <p class="mt-2 text-sm text-slate-600">Warranty applies only to items clearly marked as warranty-covered by manufacturer or supplier terms.</p>
+                    </article>
+
+                    <article id="claim-details" class="zv-policy-card">
+                        <h2 class="text-2xl font-bold">2. Required claim details</h2>
+                        <p class="mt-2 text-sm text-slate-600">Order proof, invoice details, issue description, and product images are required for efficient review.</p>
+                    </article>
+
+                    <article id="exclusions" class="zv-policy-card">
+                        <h2 class="text-2xl font-bold">3. Exclusions</h2>
+                        <p class="mt-2 text-sm text-slate-600">Misuse, unauthorized modifications, accidental damage, and expiry-related conditions are generally excluded.</p>
+                    </article>
+
+                    <article id="review" class="zv-policy-card">
+                        <h2 class="text-2xl font-bold">4. Review timeline</h2>
+                        <p class="mt-2 text-sm text-slate-600">Claims are typically reviewed within 2 to 4 business days after complete documentation is submitted.</p>
+                    </article>
+
+                    <article id="resolution" class="zv-policy-card">
+                        <h2 class="text-2xl font-bold">5. Resolution options</h2>
+                        <p class="mt-2 text-sm text-slate-600">Approved cases may be resolved through replacement, service support, or other policy-backed outcomes.</p>
+                    </article>
+                </div>
             </section>
         </div>
     </main>

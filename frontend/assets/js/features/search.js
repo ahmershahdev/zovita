@@ -264,19 +264,23 @@ window.Zovita.search = (function () {
       category: "Supplements",
       keywords: "biotin 5000mcg tablets",
     },
-  ].map(function (item) {
-    var searchText = normalize(
-      [item.title, item.category, item.keywords].join(" "),
-    );
+  ]
+    .filter(function (item) {
+      return normalize(item.type) === "product";
+    })
+    .map(function (item) {
+      var searchText = normalize(
+        [item.title, item.category, item.keywords].join(" "),
+      );
 
-    return {
-      title: item.title,
-      url: item.url,
-      type: item.type,
-      category: item.category,
-      searchText: searchText,
-    };
-  });
+      return {
+        title: item.title,
+        url: item.url,
+        type: item.type,
+        category: item.category,
+        searchText: searchText,
+      };
+    });
 
   function normalize(value) {
     return String(value || "")

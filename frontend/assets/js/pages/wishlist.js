@@ -30,6 +30,18 @@ window.Zovita.wishlist = (function () {
       if (emptyState) {
         emptyState.classList.toggle("is-visible", count === 0);
       }
+
+      try {
+        window.localStorage.setItem("zv-wishlist-count", String(count));
+      } catch (error) {
+        // Ignore storage failures in private/incognito contexts.
+      }
+
+      document.dispatchEvent(
+        new CustomEvent("zv:wishlist-count", {
+          detail: { count: count },
+        }),
+      );
     }
 
     root.addEventListener("click", function (event) {

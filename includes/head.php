@@ -79,29 +79,10 @@ if (!isset($breadcrumbListJsonLd)) {
     <link rel="icon" type="image/png" href="frontend/assets/images/favicon/favicon.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                        display: ['Outfit', 'sans-serif']
-                    },
-                    colors: {
-                        navy: {
-                            900: '#0b1f49',
-                            800: '#12326d',
-                            700: '#1c4796',
-                            600: '#2c64ba'
-                        }
-                    }
-                }
-            }
-        };
-    </script>
 
     <link rel="stylesheet" href="frontend/assets/css/root/variables.css">
     <link rel="stylesheet" href="frontend/assets/css/root/base.css">
+    <link rel="stylesheet" href="frontend/assets/css/root/utilities.css">
     <link rel="stylesheet" href="frontend/assets/css/light-mode/layout.css">
     <link rel="stylesheet" href="frontend/assets/css/light-mode/navbar.css">
     <link rel="stylesheet" href="frontend/assets/css/light-mode/suggestions.css">

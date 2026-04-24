@@ -1,6 +1,96 @@
 window.Zovita = window.Zovita || {};
 
 window.Zovita.shop = (function () {
+  function normalize(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function initDropdownControl(control, onChange) {
+    var wrapper = control ? control.closest("[data-filter-dropdown]") : null;
+    if (!wrapper) {
+      return {
+        setValue: function () {},
+      };
+    }
+
+    var trigger = wrapper.querySelector("[data-filter-trigger]");
+    var label = wrapper.querySelector("[data-filter-label]");
+    var list = wrapper.querySelector("[data-filter-list]");
+    var options = Array.prototype.slice.call(
+      wrapper.querySelectorAll("[data-filter-option]"),
+    );
+
+    if (!trigger || !label || !list || options.length === 0) {
+      return {
+        setValue: function () {},
+      };
+    }
+
+    function closeList() {
+      wrapper.classList.remove("is-open");
+      trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function openList() {
+      wrapper.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    function setValue(value) {
+      var nextValue = normalize(value);
+      var match = options.find(function (option) {
+        return normalize(option.getAttribute("data-value")) === nextValue;
+      });
+
+      if (!match) {
+        return false;
+      }
+
+      control.value = match.getAttribute("data-value") || "";
+      label.textContent = match.textContent || "";
+      return true;
+    }
+
+    trigger.addEventListener("click", function () {
+      if (wrapper.classList.contains("is-open")) {
+        closeList();
+      } else {
+        openList();
+      }
+    });
+
+    options.forEach(function (option) {
+      option.addEventListener("click", function () {
+        setValue(option.getAttribute("data-value"));
+        closeList();
+        if (typeof onChange === "function") {
+          onChange();
+        }
+      });
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!wrapper.contains(event.target)) {
+        closeList();
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeList();
+      }
+    });
+
+    setValue(control.value);
+
+    return {
+      setValue: setValue,
+    };
+  }
+
   function initCatalog(catalog) {
     var queryInput = catalog.querySelector("[data-filter-query]");
     var typeInput = catalog.querySelector("[data-filter-type]");
@@ -17,16 +107,13 @@ window.Zovita.shop = (function () {
       return;
     }
 
+    var typeDropdown = initDropdownControl(typeInput, applyFilters);
+    var sectionDropdown = initDropdownControl(sectionInput, applyFilters);
+    var sortDropdown = initDropdownControl(sortInput, applyFilters);
+
     cards.forEach(function (card, index) {
       card.setAttribute("data-original-index", String(index));
     });
-
-    function normalize(value) {
-      return String(value || "")
-        .toLowerCase()
-        .replace(/\s+/g, " ")
-        .trim();
-    }
 
     function updateCount(visibleCount) {
       if (countText) {
@@ -64,15 +151,8 @@ window.Zovita.shop = (function () {
         return;
       }
 
-      var hasMatchingOption = Array.prototype.some.call(
-        sectionInput.options || [],
-        function (option) {
-          return normalize(option.value) === hashSection;
-        },
-      );
-
-      if (hasMatchingOption) {
-        sectionInput.value = hashSection;
+      if (typeof sectionDropdown.setValue === "function") {
+        sectionDropdown.setValue(hashSection);
       }
     }
 
@@ -124,21 +204,36 @@ window.Zovita.shop = (function () {
       updateCount(visibleCards.length);
     }
 
-    [queryInput, typeInput, sectionInput, sortInput].forEach(
-      function (control) {
-        if (!control) {
-          return;
-        }
+    if (queryInput) {
+      queryInput.addEventListener("input", applyFilters);
+    }
 
-        var eventName = control.tagName === "INPUT" ? "input" : "change";
-        control.addEventListener(eventName, applyFilters);
-      },
-    );
+    [typeInput, sectionInput, sortInput].forEach(function (control) {
+      if (!control) {
+        return;
+      }
+
+      if (control.tagName === "SELECT") {
+        control.addEventListener("change", applyFilters);
+      }
+    });
 
     window.addEventListener("hashchange", function () {
       applyHashSectionFilter();
       applyFilters();
     });
+
+    if (typeInput && normalize(typeInput.value) === "") {
+      typeDropdown.setValue("all");
+    }
+
+    if (sectionInput && normalize(sectionInput.value) === "") {
+      sectionDropdown.setValue("all");
+    }
+
+    if (sortInput && normalize(sortInput.value) === "") {
+      sortDropdown.setValue("featured");
+    }
 
     applyHashSectionFilter();
     applyFilters();

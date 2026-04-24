@@ -100,6 +100,25 @@ img {
   opacity: 0.8;
 }
 
+.zv-shell::after {
+  content: "";
+  position: absolute;
+  inset: -24% -12%;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 18% 28%,
+      rgba(84, 149, 248, 0.2),
+      rgba(84, 149, 248, 0) 42%
+    ),
+    radial-gradient(
+      circle at 82% 14%,
+      rgba(17, 51, 112, 0.2),
+      rgba(17, 51, 112, 0) 44%
+    );
+  animation: zvShellToneShift 22s ease-in-out infinite;
+}
+
 .zv-container {
   width: min(100% - var(--zv-inline-gap), var(--zv-site-max));
   margin-inline: auto;
@@ -277,11 +296,28 @@ img {
   }
 }
 
+@keyframes zvShellToneShift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.32;
+  }
+  50% {
+    transform: translate3d(1.6%, -1.4%, 0) scale(1.04);
+    opacity: 0.48;
+  }
+}
+
 @media (max-width: 1024px) {
   .zv-shell::before {
     background-size: 84px 84px;
     mask-image: none;
     opacity: 0.52;
+  }
+
+  .zv-shell::after {
+    opacity: 0.28;
+    animation: none;
   }
 
   .zv-float,

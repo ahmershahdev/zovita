@@ -101,6 +101,18 @@ window.Zovita.cart = (function () {
       if (cartList) {
         cartList.classList.toggle("is-empty", items.length === 0);
       }
+
+      try {
+        window.localStorage.setItem("zv-cart-count", String(items.length));
+      } catch (error) {
+        // Ignore storage failures in private/incognito contexts.
+      }
+
+      document.dispatchEvent(
+        new CustomEvent("zv:cart-count", {
+          detail: { count: items.length },
+        }),
+      );
     }
 
     function setCouponMessage(text, isError) {
