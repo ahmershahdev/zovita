@@ -481,6 +481,8 @@
 }
 
 .zv-remove-btn {
+  position: relative;
+  z-index: 2;
   border: 1px solid #d4def1;
   background: #fff;
   border-radius: 0.7rem;
@@ -494,6 +496,27 @@
 .zv-remove-btn:hover {
   border-color: #dba8b2;
   background: #fff4f6;
+}
+
+[data-wishlist-item] .zv-btn-primary,
+[data-wishlist-item] .zv-remove-btn {
+  position: relative;
+  z-index: 2;
+}
+
+[data-wishlist-item] {
+  contain: none;
+  content-visibility: visible;
+}
+
+[data-wishlist-item] .zv-product-link {
+  position: relative;
+  z-index: 0;
+}
+
+[data-wishlist-item] > div:last-child {
+  position: relative;
+  z-index: 3;
 }
 
 .zv-coupon-wrap {
@@ -753,12 +776,16 @@
   right: 0.9rem;
   bottom: 0.9rem;
   z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 999px;
   border: 1px solid #a9c3e8;
   background: linear-gradient(132deg, #0b1f49, #2b66bc, #63a0ef);
   color: #fff;
+  cursor: pointer;
   box-shadow:
     0 14px 30px rgba(14, 42, 95, 0.24),
     0 0 22px rgba(46, 103, 188, 0.22);

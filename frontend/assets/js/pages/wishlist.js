@@ -47,17 +47,27 @@ window.Zovita.wishlist = (function () {
     root.addEventListener("click", function (event) {
       var removeButton = event.target.closest("[data-remove-item]");
 
-      if (!removeButton) {
+      if (removeButton) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var item = removeButton.closest("[data-wishlist-item]");
+        if (item) {
+          item.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+          item.style.opacity = "0";
+          item.style.transform = "scale(0.96)";
+          setTimeout(function () {
+            item.remove();
+            updateState();
+          }, 260);
+        }
         return;
       }
 
-      var item = removeButton.closest("[data-wishlist-item]");
-      if (!item) {
-        return;
+      var addToCartLink = event.target.closest("[data-wishlist-item] .zv-btn-primary");
+      if (addToCartLink) {
+        event.stopPropagation();
       }
-
-      item.remove();
-      updateState();
     });
 
     if (removeSelectedButton) {

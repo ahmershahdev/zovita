@@ -78,7 +78,7 @@ if (!isset($breadcrumbListJsonLd)) {
     <link rel="canonical" href="<?php echo htmlspecialchars($canonical, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="icon" type="image/png" href="frontend/assets/images/favicon/favicon.png">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="frontend/assets/css/dist/tailwind.css">
 
     <link rel="stylesheet" href="frontend/assets/css/root/variables.css">
     <link rel="stylesheet" href="frontend/assets/css/root/base.css">
