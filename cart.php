@@ -8,9 +8,43 @@ $breadcrumbs = [
 ];
 require __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/products-data.php';
+require_once __DIR__ . '/includes/store-state.php';
 
-$cartItems = array_slice(zvGetAllProducts(), 0, 4);
-$qtyDefaults = [1, 2, 1, 1];
+$defaultQtyPattern = [1, 2, 1, 1];
+$defaultCartItems = [];
+
+foreach (array_slice(zvGetAllProducts(), 0, 4) as $index => $item) {
+    $defaultCartItems[$item['slug']] = $defaultQtyPattern[$index] ?? 1;
+}
+
+zvEnsureSessionCartItems($defaultCartItems);
+
+$addSlug = zvSlugify($_GET['add'] ?? '');
+if ($addSlug !== '' && zvFindProductBySlug($addSlug) !== null) {
+    zvAddSessionCartItem($addSlug, 1);
+    header('Location: cart.php');
+    exit;
+}
+
+$cartSessionItems = zvGetSessionCartItems();
+$cartItems = [];
+$qtyDefaults = [];
+$normalizedCartItems = [];
+
+foreach ($cartSessionItems as $slug => $quantity) {
+    $product = zvFindProductBySlug($slug);
+    if ($product === null) {
+        continue;
+    }
+
+    $cartItems[] = $product;
+    $qtyDefaults[] = (int)$quantity;
+    $normalizedCartItems[$slug] = (int)$quantity;
+}
+
+if ($normalizedCartItems !== $cartSessionItems) {
+    zvSetSessionCartItems($normalizedCartItems);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +67,11 @@ $qtyDefaults = [1, 2, 1, 1];
                     <h2 class="text-2xl font-bold">Cart items</h2>
                     <div class="mt-4 space-y-3">
                         <?php foreach ($cartItems as $index => $item): ?>
-                            <div class="zv-cart-item" data-cart-item data-price="<?php echo (int)$item['price']; ?>">
+                            <div
+                                class="zv-cart-item"
+                                data-cart-item
+                                data-product-slug="<?php echo htmlspecialchars($item['slug'], ENT_QUOTES, 'UTF-8'); ?>"
+                                data-price="<?php echo (int)$item['price']; ?>">
                                 <a href="<?php echo htmlspecialchars($item['url'], ENT_QUOTES, 'UTF-8'); ?>" class="zv-cart-item-image">
                                     <img src="<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>">
                                 </a>

@@ -8,8 +8,45 @@ $breadcrumbs = [
 ];
 require __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/products-data.php';
+require_once __DIR__ . '/includes/store-state.php';
 
-$wishlistItems = array_slice(zvGetAllProducts(), 8, 9);
+$defaultWishlistSlugs = array_map(
+    static function ($product) {
+        return $product['slug'];
+    },
+    array_slice(zvGetAllProducts(), 8, 9)
+);
+
+zvEnsureSessionWishlistSlugs($defaultWishlistSlugs);
+
+$addSlug = zvSlugify($_GET['add'] ?? '');
+if ($addSlug !== '' && zvFindProductBySlug($addSlug) !== null) {
+    $wishlistSlugs = zvGetSessionWishlistSlugs();
+    $wishlistSlugs[] = $addSlug;
+    zvSetSessionWishlistSlugs($wishlistSlugs);
+
+    header('Location: wishlist.php');
+    exit;
+}
+
+$removeParam = trim((string)($_GET['remove'] ?? ''));
+if ($removeParam !== '') {
+    $removeSlugs = zvNormalizeSlugList(explode(',', $removeParam));
+    if ($removeSlugs !== []) {
+        zvRemoveSessionWishlistSlugs($removeSlugs);
+    }
+
+    header('Location: wishlist.php');
+    exit;
+}
+
+$wishlistItems = [];
+foreach (zvGetSessionWishlistSlugs() as $slug) {
+    $item = zvFindProductBySlug($slug);
+    if ($item !== null) {
+        $wishlistItems[] = $item;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,7 +72,10 @@ $wishlistItems = array_slice(zvGetAllProducts(), 8, 9);
 
                 <div class="zv-product-grid mt-4">
                     <?php foreach ($wishlistItems as $item): ?>
-                        <article class="zv-product-card zv-product-card-premium" data-wishlist-item>
+                        <article
+                            class="zv-product-card zv-product-card-premium"
+                            data-wishlist-item
+                            data-product-slug="<?php echo htmlspecialchars($item['slug'], ENT_QUOTES, 'UTF-8'); ?>">
                             <label class="zv-select-item-label">
                                 <input type="checkbox" data-select-item>
                                 <span>Select</span>
@@ -52,7 +92,7 @@ $wishlistItems = array_slice(zvGetAllProducts(), 8, 9);
                             </a>
                             <div class="mt-3 grid gap-2 sm:grid-cols-2">
                                 <a href="cart.php?add=<?php echo rawurlencode($item['slug']); ?>" class="zv-btn-primary">Add to cart</a>
-                                <button type="button" class="zv-remove-btn" data-remove-item>Remove</button>
+                                <a href="wishlist.php?remove=<?php echo rawurlencode($item['slug']); ?>" class="zv-remove-btn" data-remove-item>Remove</a>
                             </div>
                         </article>
                     <?php endforeach; ?>

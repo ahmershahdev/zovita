@@ -44,44 +44,46 @@ window.Zovita.wishlist = (function () {
       );
     }
 
-    root.addEventListener("click", function (event) {
-      var removeButton = event.target.closest("[data-remove-item]");
-
-      if (removeButton) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        var item = removeButton.closest("[data-wishlist-item]");
-        if (item) {
-          item.style.transition = "opacity 0.25s ease, transform 0.25s ease";
-          item.style.opacity = "0";
-          item.style.transform = "scale(0.96)";
-          setTimeout(function () {
-            item.remove();
-            updateState();
-          }, 260);
-        }
-        return;
-      }
-
-      var addToCartLink = event.target.closest("[data-wishlist-item] .zv-btn-primary");
-      if (addToCartLink) {
-        event.stopPropagation();
-      }
-    });
-
     if (removeSelectedButton) {
       removeSelectedButton.addEventListener("click", function () {
-        getItems().forEach(function (item) {
-          var checkbox = item.querySelector("[data-select-item]");
-          if (checkbox && checkbox.checked) {
-            item.remove();
-          }
-        });
+        var selectedSlugs = getItems()
+          .map(function (item) {
+            var checkbox = item.querySelector("[data-select-item]");
 
-        updateState();
+            if (!checkbox || !checkbox.checked) {
+              return "";
+            }
+
+            return String(item.getAttribute("data-product-slug") || "");
+          })
+          .filter(function (slug) {
+            return slug !== "";
+          });
+
+        if (selectedSlugs.length === 0) {
+          return;
+        }
+
+        window.location.href =
+          "wishlist.php?remove=" +
+          encodeURIComponent(selectedSlugs.join(","));
       });
     }
+
+    root.addEventListener("click", function (event) {
+      var addToCartLink = event.target.closest(
+        "[data-wishlist-item] .zv-btn-primary",
+      );
+      if (addToCartLink) {
+        var item = addToCartLink.closest("[data-wishlist-item]");
+        if (item) {
+          var checkbox = item.querySelector("[data-select-item]");
+          if (checkbox) {
+            checkbox.checked = false;
+          }
+        }
+      });
+    });
 
     updateState();
   }

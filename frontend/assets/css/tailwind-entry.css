@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-@source "../../..";
+@source "../../../*.php";
+@source "../../../includes/*.php";
+@source "../js/**/*.js";
 
 @theme {
   --color-navy-600: #2c64ba;

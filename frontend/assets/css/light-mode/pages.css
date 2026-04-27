@@ -789,6 +789,7 @@
   box-shadow:
     0 14px 30px rgba(14, 42, 95, 0.24),
     0 0 22px rgba(46, 103, 188, 0.22);
+  line-height: 0;
   opacity: 0;
   pointer-events: none;
   transform: translateY(8px);
@@ -805,6 +806,13 @@
 
 .zv-scroll-top:hover {
   transform: translateY(-2px);
+}
+
+.zv-scroll-top svg {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
+  transform: translateY(-0.5px);
 }
 
 .zv-policy-layout {
