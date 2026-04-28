@@ -119,7 +119,7 @@ window.Zovita.shop = (function () {
       if (countText) {
         countText.textContent =
           String(visibleCount) +
-          (visibleCount === 1 ? " premium product" : " premium products");
+          (visibleCount === 1 ? " product" : " products");
       }
 
       if (emptyState) {

@@ -106,7 +106,7 @@ require __DIR__ . '/includes/bootstrap.php';
                     <a class="zv-card p-5" href="shop-category-a.php">
                         <span class="zv-chip">Category A</span>
                         <h3 class="mt-3 text-xl font-bold">Daily Wellness</h3>
-                        <p class="mt-2 text-sm text-slate-600">45 premium products with prices below PKR 1,500.</p>
+                        <p class="mt-2 text-sm text-slate-600">15 products with prices below PKR 1,500.</p>
                     </a>
                     <a class="zv-card p-5" href="shop-category-b.php">
                         <span class="zv-chip">Category B</span>

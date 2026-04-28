@@ -1,6 +1,6 @@
 <footer class="zv-footer">
-    <div class="zv-container px-2 py-10 sm:px-3">
-        <div class="zv-footer-grid border-b border-slate-200 pb-8">
+    <div class="zv-container px-2 py-6 sm:px-3">
+        <div class="zv-footer-grid border-b border-slate-200 pb-6">
             <div>
                 <a href="index.php" class="zv-brand">
                     <img src="frontend/assets/images/logo/logo.png" alt="Zovita logo" class="zv-brand-logo">

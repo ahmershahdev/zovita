@@ -12,6 +12,14 @@ require_once __DIR__ . '/includes/products-data.php';
 $catalog = zvGetCategoryCatalog();
 $category = $catalog['a'];
 $products = zvGetProductsByCategory('a');
+$sectionCounts = [];
+foreach ($products as $product) {
+    $sectionId = $product['section'];
+    if (!isset($sectionCounts[$sectionId])) {
+        $sectionCounts[$sectionId] = 0;
+    }
+    $sectionCounts[$sectionId] += 1;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -29,9 +37,26 @@ $products = zvGetProductsByCategory('a');
                 <p class="zv-page-lead"><?php echo htmlspecialchars($category['description'], ENT_QUOTES, 'UTF-8'); ?></p>
             </section>
 
-            <section class="zv-section-lg zv-panel p-5 sm:p-6" data-shop-catalog>
+            <section class="zv-section mt-5">
+                <div class="zv-grid-cards cols-3">
+                    <?php foreach ($category['sections'] as $section): ?>
+                        <?php $sectionId = $section['id']; ?>
+                        <a
+                            href="#<?php echo htmlspecialchars($sectionId, ENT_QUOTES, 'UTF-8'); ?>"
+                            class="zv-card p-5 flex flex-col gap-2">
+                            <span class="zv-chip"><?php echo htmlspecialchars($section['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <p class="text-sm text-slate-600">Explore <?php echo htmlspecialchars($section['label'], ENT_QUOTES, 'UTF-8'); ?> essentials.</p>
+                            <span class="text-sm font-semibold text-navy-800">
+                                <?php echo (int)($sectionCounts[$sectionId] ?? 0); ?> products
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+
+            <section class="zv-section-lg zv-panel p-5 sm:p-6 mt-5" data-shop-catalog>
                 <div class="zv-shop-head">
-                    <h2 class="text-2xl font-bold">Premium Catalog</h2>
+                    <h2 class="text-2xl font-bold">Category Catalog</h2>
                     <p class="text-sm font-semibold text-navy-800" data-product-count></p>
                 </div>
 

@@ -90,9 +90,9 @@ foreach (zvGetSessionWishlistSlugs() as $slug) {
                                     <p class="zv-product-price"><?php echo htmlspecialchars($item['priceLabel'], ENT_QUOTES, 'UTF-8'); ?></p>
                                 </div>
                             </a>
-                            <div class="mt-3 grid gap-2 sm:grid-cols-2">
-                                <a href="cart.php?add=<?php echo rawurlencode($item['slug']); ?>" class="zv-btn-primary">Add to cart</a>
-                                <a href="wishlist.php?remove=<?php echo rawurlencode($item['slug']); ?>" class="zv-remove-btn" data-remove-item>Remove</a>
+                            <div class="zv-wishlist-actions mt-3">
+                                <a href="cart.php?add=<?php echo rawurlencode($item['slug']); ?>" class="zv-btn-primary w-full">Add to cart</a>
+                                <a href="wishlist.php?remove=<?php echo rawurlencode($item['slug']); ?>" class="zv-remove-btn w-full" data-remove-item>Remove</a>
                             </div>
                         </article>
                     <?php endforeach; ?>

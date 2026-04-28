@@ -137,7 +137,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Daily Vitamins',
                     'Product',
                     ['Centrum Daily', 'Surbex Core', 'Nutri Daily', 'Bio Vital', 'Wellness Prime'],
-                    ['15 Tablets', '30 Tablets', '60 Tablets'],
+                    ['30 Tablets'],
                     420,
                     63,
                     $images
@@ -148,7 +148,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Immunity Support',
                     'Product',
                     ['Imuno C Plus', 'Zinc Protect', 'Vita Defend', 'C Shield', 'Resist Forte'],
-                    ['10 Tablets', '20 Tablets', '30 Tablets'],
+                    ['20 Tablets'],
                     450,
                     61,
                     $images
@@ -159,7 +159,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Pain Relief',
                     'Medicine',
                     ['Relief Fast', 'Joint Ease', 'Pain Calm', 'Muscle Care', 'Flex Comfort'],
-                    ['10 Tablets', '20 Tablets', '40 Tablets'],
+                    ['20 Tablets'],
                     390,
                     67,
                     $images
@@ -183,7 +183,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Acne Control',
                     'Medicine',
                     ['Acnes Balance', 'Derma Clear', 'Acno Stop', 'Pore Logic', 'Sebum Care'],
-                    ['Gel 15g', 'Cream 30g', 'Wash 100ml'],
+                    ['Gel 15g'],
                     460,
                     64,
                     $images
@@ -194,7 +194,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Derma Repair',
                     'Product',
                     ['Skin Repair', 'Tone Correct', 'Barrier Boost', 'Hydra Derma', 'Event Glow'],
-                    ['Cream 20g', 'Serum 30ml', 'Lotion 100ml'],
+                    ['Serum 30ml'],
                     520,
                     62,
                     $images
@@ -205,7 +205,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Sun Shield',
                     'Product',
                     ['Sun Guard', 'UV Block', 'SPF Protect', 'Daily Shield', 'Sun Calm'],
-                    ['SPF 30', 'SPF 50', 'SPF 60'],
+                    ['SPF 50'],
                     490,
                     57,
                     $images
@@ -229,7 +229,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Oral Care',
                     'Product',
                     ['Bannet Fresh', 'Sensodyne Rapid', 'Clinica Fresh', 'Enziclor Plus', 'Somo Oral'],
-                    ['Paste 70g', 'Paste 100g', 'Mouthwash 250ml'],
+                    ['Paste 100g'],
                     380,
                     58,
                     $images
@@ -240,7 +240,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Nutrition Support',
                     'Product',
                     ['Ensure Active', 'Livity Balance', 'Nutri Meal', 'Pro Energy', 'Vita Fuel'],
-                    ['175g Pack', '400g Pack', '250ml Drink'],
+                    ['250ml Drink'],
                     540,
                     66,
                     $images
@@ -251,7 +251,7 @@ if (!function_exists('zvGetProductsByCategory')) {
                     'Eye and Ear Care',
                     'Medicine',
                     ['Hylo Comfort', 'Softeal Care', 'Lidos Ear', 'Polyfax Eye', 'Clear Vision'],
-                    ['Drops 5ml', 'Drops 10ml', 'Ointment 6g'],
+                    ['Drops 5ml'],
                     410,
                     59,
                     $images

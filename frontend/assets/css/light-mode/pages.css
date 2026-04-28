@@ -498,6 +498,21 @@
   background: #fff4f6;
 }
 
+.zv-wishlist-actions {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+[data-wishlist-item] .zv-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  font-size: 0.8rem;
+  padding: 0.6rem 0.85rem;
+}
+
 [data-wishlist-item] .zv-btn-primary,
 [data-wishlist-item] .zv-remove-btn {
   position: relative;
