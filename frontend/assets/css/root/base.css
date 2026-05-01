@@ -157,6 +157,13 @@ img {
   background: #ebf2ff;
 }
 
+.zv-chip-luxe {
+  border-color: rgba(201, 163, 91, 0.5);
+  color: var(--zv-navy-900);
+  background: linear-gradient(120deg, #fff7e6, #e7f1ff);
+  box-shadow: 0 10px 20px rgba(11, 31, 73, 0.12);
+}
+
 .zv-card {
   border: 1px solid var(--zv-border);
   border-radius: var(--zv-radius-xl);
@@ -213,6 +220,12 @@ img {
   transform: translateY(-1px);
   color: var(--zv-navy-900);
   border-color: var(--zv-navy-700);
+}
+
+.zv-btn-sm {
+  min-height: 38px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
 }
 
 .zv-input {

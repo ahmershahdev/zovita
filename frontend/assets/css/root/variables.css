@@ -13,6 +13,8 @@
   --zv-navy-700: #1c4796;
   --zv-navy-600: #2c64ba;
   --zv-sky-200: #d8e7ff;
+  --zv-gold-500: #c9a35b;
+  --zv-gold-600: #b7892e;
 
   --zv-text: #162643;
   --zv-muted: #5a6888;
@@ -25,6 +27,12 @@
     #0b1f49 0%,
     #1d4d9d 50%,
     #3c7bd2 100%
+  );
+  --zv-gradient-luxe: linear-gradient(
+    120deg,
+    #0b1f49 0%,
+    #1c4a92 55%,
+    #c9a35b 100%
   );
   --zv-gradient-soft: linear-gradient(180deg, #fcfdff 0%, #edf3ff 100%);
   --zv-gradient-card: linear-gradient(
