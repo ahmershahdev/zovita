@@ -90,6 +90,10 @@ if (!isset($breadcrumbListJsonLd)) {
     <link rel="stylesheet" href="frontend/assets/css/light-mode/footer.css">
     <link rel="stylesheet" href="frontend/assets/css/dark-mode/dark-mode.css">
 
+    <?php if (!empty($pageStyles)) {
+        echo $pageStyles;
+    } ?>
+
     <script type="application/ld+json">
         <?php echo json_encode($organizationJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
     </script>

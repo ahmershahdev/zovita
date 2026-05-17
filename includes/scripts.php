@@ -29,7 +29,18 @@ $isShopCategoryPage = in_array($pageKey, ['shop-category-a', 'shop-category-b', 
     <script src="frontend/assets/js/pages/contact.js"></script>
 <?php endif; ?>
 
+<?php if ($pageKey === 'account'): ?>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script src="frontend/assets/js/pages/account.js"></script>
+<?php endif; ?>
+
+<?php if ($pageKey === 'about'): ?>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="frontend/assets/js/pages/about.js"></script>
+<?php endif; ?>
+
 <?php if ($pageKey === 'products'): ?>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="frontend/assets/js/pages/product.js"></script>
 <?php endif; ?>
 

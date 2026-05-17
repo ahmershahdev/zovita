@@ -1,1 +1,42 @@
-node_modules/
+## Laravel
+/vendor/
+/storage/*.key
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/logs/
+/storage/app/public/
+/bootstrap/cache/
+/public/storage/
+/public/hot/
+/public/build/
+.env
+.env.*
+/.phpunit.result.cache
+/.phpunit.cache
+
+## Node/Vite
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## Composer
+composer.phar
+
+## Database dumps / local DB
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+## Server configs / local files
+.htaccess
+
+## OS / Editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
