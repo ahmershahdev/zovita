@@ -1,0 +1,290 @@
+@import 'tailwindcss';
+
+@source '../views';
+@source '../js';
+
+/* ───────────────────────── Design tokens ───────────────────────── */
+/*
+ * Type system
+ *  Display  Clash Grotesk — neo-grotesk with tight apertures, set big and tightly tracked
+ *  Text     General Sans  — neutral grotesk for UI and reading
+ *  Accent   Zodiak Italic — editorial serif, used only for emphasis inside headlines
+ *  Labels   JetBrains Mono — uppercase eyebrows, numbers, metadata
+ */
+@theme {
+    --font-sans: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Clash Grotesk', 'General Sans', ui-sans-serif, sans-serif;
+    --font-serif: 'Zodiak', ui-serif, Georgia, serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+    --color-ink: #0b1b33;
+    --color-ink-soft: #1c2f4f;
+    --color-ink-mute: #56627a;
+    --color-paper: #f3f0e8;
+    --color-paper-deep: #e9e4d7;
+    --color-card: #fbfaf6;
+    --color-mint: #9ef0c2;
+    --color-mint-soft: #d7f8e5;
+    --color-teal: #0f766e;
+    --color-coral: #f0603f;
+    --color-line: rgb(11 27 51 / 0.12);
+    --color-line-strong: rgb(11 27 51 / 0.24);
+
+    --text-display: clamp(3.25rem, 9vw, 10.25rem);
+    --text-display--line-height: 0.86;
+    --text-display--letter-spacing: -0.048em;
+    --text-title: clamp(2.3rem, 5vw, 5.25rem);
+    --text-title--line-height: 0.92;
+    --text-title--letter-spacing: -0.045em;
+
+    --radius-4xl: 2rem;
+    --radius-5xl: 2.75rem;
+
+    --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+    --animate-marquee: marquee var(--marquee-duration, 32s) linear infinite;
+
+    @keyframes marquee {
+        from { transform: translate3d(0, 0, 0); }
+        to { transform: translate3d(-50%, 0, 0); }
+    }
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+    html {
+        color-scheme: light;
+        -webkit-text-size-adjust: 100%;
+        text-rendering: optimizeLegibility;
+    }
+
+    body {
+        background: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.6;
+        letter-spacing: -0.005em;
+        overflow-x: clip;
+    }
+
+    h1, h2, h3, h4 {
+        text-wrap: balance;
+    }
+
+    p {
+        text-wrap: pretty;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-ink);
+        outline-offset: 3px;
+        border-radius: 6px;
+    }
+
+    [data-theme='dark'] :focus-visible {
+        outline-color: var(--color-mint);
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+
+    img {
+        user-select: none;
+    }
+}
+
+/* Custom text selection */
+::selection {
+    background: var(--color-mint);
+    color: var(--color-ink);
+}
+
+/* Custom scrollbar */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink) var(--color-paper-deep);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-paper-deep);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+    border: 3px solid var(--color-paper-deep);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-teal);
+}
+
+.scrollbar-none {
+    scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: clip;
+}
+
+/* ───────────────────────── Components ───────────────────────── */
+@layer components {
+    .container-x {
+        width: 100%;
+        max-width: 1600px;
+        margin-inline: auto;
+        padding-inline: clamp(1rem, 3.2vw, 3rem);
+    }
+
+    .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 450;
+        letter-spacing: 0.12em;
+        line-height: 1.4;
+        text-transform: uppercase;
+    }
+
+    /* Display headings: medium weight, tight tracking, optical kerning. */
+    .font-display {
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        font-kerning: normal;
+        font-feature-settings: 'kern', 'liga';
+    }
+
+    /* Mask used by line-reveal animations */
+    .line-mask {
+        display: block;
+        overflow: clip;
+        padding-bottom: 0.08em;
+        margin-bottom: -0.08em;
+    }
+
+    .prose-care {
+        font-size: 1rem;
+        line-height: 1.75;
+        color: var(--color-ink-soft);
+    }
+
+    .prose-care h2 {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: var(--color-ink);
+        margin: 2.5rem 0 0.75rem;
+    }
+
+    .prose-care p + p {
+        margin-top: 1rem;
+    }
+
+    .prose-care ul {
+        list-style: disc;
+        padding-left: 1.25rem;
+        margin-top: 0.75rem;
+    }
+
+    .prose-care li + li {
+        margin-top: 0.4rem;
+    }
+}
+
+/*
+ * Emphasis inside a headline switches to the editorial serif italic.
+ * Unlayered on purpose so it wins over the `font-display` utility on the same element.
+ */
+.font-display :is(em, .italic),
+.font-display.italic,
+.group:hover .font-display[class*='group-hover:italic'] {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+}
+
+/* Film grain overlay for depth on large flat colour fields */
+.grain::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.08;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.bg-ink.grain::after {
+    mix-blend-mode: screen;
+    opacity: 0.05;
+}
+
+/* Elements that GSAP reveals start hidden only when JS & motion are available */
+.js-motion [data-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+/* Custom cursor */
+.cursor-dot,
+.cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 100;
+    border-radius: 999px;
+    translate: -50% -50%;
+}
+
+@media (pointer: coarse) {
+    .cursor-dot,
+    .cursor-ring {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .js-motion [data-reveal] {
+        opacity: 1;
+        transform: none;
+    }
+}

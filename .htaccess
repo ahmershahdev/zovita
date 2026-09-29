@@ -1,0 +1,7 @@
+# Lets XAMPP serve the app at http://localhost/zovita by routing every request into
+# public/ (the real web root). Nothing outside public/ is ever served directly.
+# In production, point the virtual host's DocumentRoot at public/ instead.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/ahmershahdev/zovita/security/advisories/new
+    about: Please report security issues privately, never in a public issue.
+  - name: Contact the maintainer
+    url: https://ahmershah.dev
+    about: Questions, collaboration or hiring.

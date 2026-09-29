@@ -1,19 +1,18 @@
 ## Laravel
 /vendor/
 /storage/*.key
-/storage/framework/cache/
-/storage/framework/sessions/
-/storage/framework/views/
-/storage/logs/
-/storage/app/public/
-/bootstrap/cache/
-/public/storage/
-/public/hot/
-/public/build/
+/storage/pail
+/storage/app/private/prescriptions/*
+/bootstrap/cache/*.php
+/public/storage
+/public/hot
+/public/build
 .env
-.env.*
+.env.backup
+.env.production
 /.phpunit.result.cache
 /.phpunit.cache
+/auth.json
 
 ## Node/Vite
 /node_modules/
@@ -25,14 +24,10 @@ pnpm-debug.log*
 ## Composer
 composer.phar
 
-## Database dumps / local DB
-*.sqlite
+## Local databases / dumps
+/database/*.sqlite
 *.sqlite3
-*.db
 *.sql
-
-## Server configs / local files
-.htaccess
 
 ## OS / Editor
 .DS_Store
@@ -40,3 +35,6 @@ Thumbs.db
 Desktop.ini
 .idea/
 .vscode/
+/.fleet
+/.nova
+/.zed
