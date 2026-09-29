@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@fontsource-variable/jetbrains-mono": "^5.3.0",
-        "@inertiajs/react": "^2.3.28",
+        "@inertiajs/react": "^3.7.1",
         "@react-three/fiber": "^9.8.1",
         "clsx": "^2.1.1",
         "gsap": "^3.15.0",
