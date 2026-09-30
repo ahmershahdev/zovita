@@ -2,10 +2,12 @@
 /**
  * Builds database/data/catalog.json from public DVAGO category + product pages.
  *
- * Usage: node tools/catalog/scrape-dvago.mjs [--limit=480] [--no-details]
+ * Usage: node tools/catalog/scrape-dvago.mjs [--limit=1200] [--no-details] [--refresh]
  *
  * The script is polite on purpose: sequential category fetches, low concurrency for
  * product detail pages, and a delay between requests. Re-run it to refresh prices.
+ * Detail fields already present in the existing catalog.json are reused; pass --refresh
+ * to fetch every product page again.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -13,52 +15,69 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = path.join(ROOT, 'database/data/catalog.json');
+// Detail pages fetched so far; lets an interrupted run resume without refetching.
+const CHECKPOINT = path.join(ROOT, 'storage/app/catalog-details.json');
 const BASE = 'https://www.dvago.pk';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');
     return [k, v ?? true];
 }));
-const LIMIT = Number(args.limit ?? 480);
+const LIMIT = Number(args.limit ?? 1200);
 const WITH_DETAILS = !args['no-details'];
 
-/** Zovita departments → DVAGO category slugs they are built from. */
+/** Zovita departments → DVAGO category slugs they are built from; `target` caps each aisle. */
 const DEPARTMENTS = [
     {
-        slug: 'medicines', name: 'Medicines', blurb: 'Pharmacist-verified OTC and prescription medicines.',
+        slug: 'medicines', name: 'Medicines', blurb: 'Pharmacist-verified OTC and prescription medicines.', target: 460,
         sources: ['pain-fever-relief', 'cough-cold', 'allergy', 'acidity-indigestion', 'diabetes', 'hypertension',
-            'cholesterol-control', 'bacterial-infection', 'diarrhea', 'migraine', 'insomnia', 'asthma', 'sore-throat-relief'],
+            'cholesterol-control', 'bacterial-infection', 'diarrhea-relief', 'migraine', 'insomnia', 'asthma', 'sore-throat-relief',
+            'anxiety', 'depression', 'epilepsy', 'arthritis', 'osteoarthritis', 'muscle-relaxant', 'anti-spasmodic', 'constipation',
+            'piles', 'fungal-infection', 'viral-infection', 'parasitic-infection', 'urinary-tract-infection', 'hypothyroidism',
+            'heart-failure', 'angina', 'arrhythmia', 'blood-clot', 'anemia', 'nausea-vomiting', 'vertigo', 'eye-infection',
+            'ear-infection', 'nasal-congestion', 'mouth-ulcers', 'scabies', 'psoriasis', 'liver-care', 'kidney-disease',
+            'neuropathic-pain', 'gastroesophageal-reflux-disease', 'malaria', 'tuberculosis', 'hepatitis', 'homeopathic', 'herbal',
+            'muscle-spasms', 'osteoporosis', 'dementia', 'benign-prostatic-hyperplasia', 'polycystic-ovary-syndrome'],
     },
     {
-        slug: 'vitamins-supplements', name: 'Vitamins & Supplements', blurb: 'Daily nutrition, minerals, and targeted support.',
+        slug: 'vitamins-supplements', name: 'Vitamins & Supplements', blurb: 'Daily nutrition, minerals, and targeted support.', target: 190,
         sources: ['multivitamins', 'vitamin-c-supplements', 'vitamin-d-supplements', 'calcium-minerals', 'fish-oil-omega-3',
-            'biotin-supplements', 'iron-supplements', 'probiotics', 'protein-supplement', 'kids-supplements', 'women-supplement'],
+            'biotin-supplements', 'iron-supplements', 'probiotics', 'protein-supplement', 'kids-supplements', 'women-supplement',
+            'mens-supplements', 'zinc-supplements', 'folic-acid-supplements', 'brain-memory', 'boost-your-immunity',
+            'weight-management', 'digestive-enzymes', 'anti-aging-supplements', 'diabetes-supplements'],
     },
     {
-        slug: 'skin-care', name: 'Skin & Derma', blurb: 'Dermatologist-backed care for every skin concern.',
-        sources: ['acne', 'sunscreen', 'moisturizer', 'facewash', 'serum', 'hyperpigmentation'],
+        slug: 'skin-care', name: 'Skin & Derma', blurb: 'Dermatologist-backed care for every skin concern.', target: 150,
+        sources: ['acne', 'sunscreen', 'moisturizer', 'facewash', 'serum', 'hyperpigmentation', 'melasma', 'dry-skin', 'scars',
+            'lip-care', 'body-lotion', 'anti-aging-products', 'rashes', 'skin-whitening', 'scrubs-exfoliators', 'toner-mist'],
     },
     {
-        slug: 'hair-care', name: 'Hair Care', blurb: 'Treatments for hair fall, dandruff, and scalp health.',
-        sources: ['hair-growth', 'anti-dandruff', 'medicated-shampoo'],
+        slug: 'hair-care', name: 'Hair Care', blurb: 'Treatments for hair fall, dandruff, and scalp health.', target: 80,
+        sources: ['hair-growth', 'anti-dandruff', 'medicated-shampoo', 'hair-oils', 'conditioner', 'baldness', 'hair-scalp-treatment', 'shampoo'],
     },
     {
-        slug: 'mother-baby', name: 'Mother & Baby', blurb: 'Gentle essentials for little ones and new mothers.',
-        sources: ['baby-creams-lotions', 'infant-indigestion', 'stage-1-milk-powder', 'baby-wipes'],
+        slug: 'mother-baby', name: 'Mother & Baby', blurb: 'Gentle essentials for little ones and new mothers.', target: 100,
+        sources: ['baby-creams-lotions', 'infant-indigestion', 'stage-1-milk-powder', 'stage-2-milk-powder', 'baby-wipes',
+            'baby-bath-body', 'baby-powders-oils', 'pregnancy-care', 'mother-supplements', 'soothers-teethers', 'baby-cereal', 'baby-soaps-shampoo'],
     },
     {
-        slug: 'personal-care', name: 'Personal & Oral Care', blurb: 'Everyday hygiene, oral care, and feminine care.',
-        sources: ['tooth-paste', 'mouthwash', 'feminine-care'],
+        slug: 'personal-care', name: 'Personal & Oral Care', blurb: 'Everyday hygiene, oral care, and feminine care.', target: 90,
+        sources: ['tooth-paste', 'mouthwash', 'feminine-care', 'toothbrushes', 'deodorants-anti-perspirants', 'handwash-sanitizers',
+            'sanitary-pads', 'denture-care', 'gum-care', 'bodywash-soaps', 'feminine-wash'],
     },
     {
-        slug: 'health-devices', name: 'Health Devices', blurb: 'Monitors and devices for care at home.',
-        sources: ['bp-monitors', 'digital-thermometer', 'blood-glucose-monitor-strips', 'pulse-oximeter', 'nebulizer'],
+        slug: 'health-devices', name: 'Health Devices', blurb: 'Monitors and devices for care at home.', target: 80,
+        sources: ['bp-monitors', 'digital-thermometer', 'blood-glucose-monitor-strips', 'pulse-oximeter', 'nebulizer',
+            'weighing-scales', 'heating-pads', 'body-massager', 'steam-inhaler', 'supports-braces', 'knee-leg-support', 'back-abdomen-support'],
     },
     {
-        slug: 'first-aid', name: 'First Aid & Eye Care', blurb: 'Wound care, bandages, drops, and quick relief.',
-        sources: ['wound-care', 'dry-eyes', 'nutritional-drinks'],
+        slug: 'first-aid', name: 'First Aid & Eye Care', blurb: 'Wound care, bandages, drops, and quick relief.', target: 90,
+        sources: ['wound-care', 'dry-eyes', 'nutritional-drinks', 'first-aid', 'dressing-bandages', 'antiseptics-disinfectants',
+            'eye-allergy', 'artificial-tears', 'lens-care', 'fluids-electrolytes', 'ear-wax-remover', 'face-mask'],
     },
 ];
+
+const DETAIL_FIELDS = ['generics', 'indication', 'dosage', 'precautions', 'description', 'how_it_works', 'highlights', 'warnings'];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -73,6 +92,24 @@ async function fetchText(url, attempt = 1) {
         return fetchText(url, attempt + 1);
     }
 }
+
+/** Products from the previous run whose detail pages were fetched successfully, keyed by slug. */
+async function readPrevious() {
+    const found = new Map();
+    if (args.refresh) return found;
+    for (const file of [OUT, CHECKPOINT]) {
+        try {
+            const data = JSON.parse(await fs.readFile(file, 'utf8'));
+            const list = Array.isArray(data) ? data : data.products;
+            for (const p of list) if (!p.detail_error && DETAIL_FIELDS.every((k) => k in p)) found.set(p.slug, p);
+        } catch { /* no file yet */ }
+    }
+    return found;
+}
+
+const saveCheckpoint = (products) =>
+    fs.writeFile(CHECKPOINT, JSON.stringify(products.filter((p) => !p.detail_error && DETAIL_FIELDS.every((k) => k in p))
+        .map((p) => Object.fromEntries(['slug', ...DETAIL_FIELDS].map((k) => [k, p[k]])))));
 
 /** Next.js RSC payloads hold JSON inside JS strings, so records are escaped once. */
 function extractListingRecords(html) {
@@ -111,6 +148,16 @@ function readEscapedField(html, key) {
     return best;
 }
 
+/** WARNINGS is an object ({"Warning 1": "...", "Warning 2": "..."}), not a string. */
+function readWarnings(html) {
+    const items = [];
+    for (let n = 1; n <= 12; n++) {
+        const value = readEscapedField(html, `Warning ${n}`);
+        if (value && !items.includes(value)) items.push(value);
+    }
+    return items.length ? items.map((w) => `• ${w}`).join('\n') : null;
+}
+
 function detectForm(title) {
     const t = title.toLowerCase();
     const forms = [
@@ -126,20 +173,21 @@ const toMoney = (v) => Math.round(Number.parseFloat(v || '0') * 100) / 100;
 const titleCase = (s) => s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase()).replace(/\(Pvt\)/i, '(Pvt)');
 
 async function main() {
+    const previous = await readPrevious();
     const bySlug = new Map();
-    const perDeptTarget = Math.ceil(LIMIT / DEPARTMENTS.length) + 25;
 
     for (const dept of DEPARTMENTS) {
         let deptCount = 0;
         for (const source of dept.sources) {
-            if (deptCount >= perDeptTarget) break;
+            if (deptCount >= dept.target) break;
             process.stdout.write(`→ ${dept.slug}/${source} `);
             let html;
             try { html = await fetchText(`${BASE}/cat/${source}`); } catch (e) { console.log(`skip (${e.message})`); continue; }
             const records = extractListingRecords(html);
             let added = 0;
             for (const r of records) {
-                if (!r.Slug || !r.Title || bySlug.has(r.Slug) || !r.ProductImage) continue;
+                if (deptCount >= dept.target) break;
+                if (!r.Slug || !r.Title || bySlug.has(r.Slug) || !r.ProductImage || /\.svg($|\?)|dvago-logo/i.test(r.ProductImage)) continue;
                 const price = toMoney(r.SalePrice || r.Price);
                 if (!price) continue;
                 bySlug.set(r.Slug, {
@@ -167,7 +215,7 @@ async function main() {
         }
     }
 
-    // Balance departments so the capped catalog still covers every aisle.
+    // Balance departments so a capped catalog still covers every aisle.
     const grouped = DEPARTMENTS.map((d) => [...bySlug.values()].filter((p) => p.department === d.slug));
     const products = [];
     for (let i = 0; products.length < LIMIT && grouped.some((g) => g[i]); i++) {
@@ -175,8 +223,15 @@ async function main() {
     }
 
     if (WITH_DETAILS) {
+        const queue = products.filter((p) => {
+            const old = previous.get(p.slug);
+            if (!old) return true;
+            for (const k of DETAIL_FIELDS) p[k] = old[k] ?? null;
+            return false;
+        });
+        const total = queue.length;
+        console.log(`details: ${products.length - total} reused, ${total} to fetch`);
         let done = 0;
-        const queue = [...products];
         const worker = async () => {
             while (queue.length) {
                 const p = queue.shift();
@@ -188,11 +243,16 @@ async function main() {
                     p.precautions = readEscapedField(html, 'Precaution') || null;
                     p.description = readEscapedField(html, 'Description1') || null;
                     p.how_it_works = readEscapedField(html, 'HowItWorks') || null;
+                    p.highlights = readEscapedField(html, 'Highlights') || null;
+                    p.warnings = readWarnings(html);
                 } catch (e) {
                     p.detail_error = e.message;
                 }
                 done++;
-                if (done % 25 === 0) console.log(`details ${done}/${products.length}`);
+                if (done % 25 === 0) {
+                    console.log(`details ${done}/${total}`);
+                    await saveCheckpoint(products);
+                }
                 await sleep(350);
             }
         };
@@ -202,11 +262,12 @@ async function main() {
     const catalog = {
         source: BASE,
         generated_at: new Date().toISOString(),
-        departments: DEPARTMENTS.map(({ sources, ...d }) => d),
+        departments: DEPARTMENTS.map(({ sources, target, ...d }) => d),
         products,
     };
     await fs.mkdir(path.dirname(OUT), { recursive: true });
     await fs.writeFile(OUT, JSON.stringify(catalog, null, 2));
+    await fs.rm(CHECKPOINT, { force: true });
     console.log(`\n✓ ${products.length} products → ${path.relative(ROOT, OUT)}`);
 }
 

@@ -16,7 +16,12 @@ class CartController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Cart/Index', ['cart' => $this->cart->summary()]);
+        // Items that sold out after being added get up to three in-stock substitutes each.
+        $alternatives = $this->cart->lines()
+            ->filter(fn (array $line) => $line['product']->orderableLimit() < $line['quantity'])
+            ->mapWithKeys(fn (array $line) => [$line['product']->id => $line['product']->alternatives(3)->map->toCard()->values()]);
+
+        return Inertia::render('Cart/Index', ['cart' => $this->cart->summary(), 'alternatives' => $alternatives]);
     }
 
     public function store(Request $request): RedirectResponse

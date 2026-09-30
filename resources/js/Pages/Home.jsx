@@ -8,8 +8,10 @@ import Button from '@/Components/ui/Button';
 import Icon from '@/Components/ui/Icon';
 import SectionHeading from '@/Components/ui/SectionHeading';
 import useReveal from '@/hooks/useReveal';
+import { cn } from '@/lib/cn';
 import { pad } from '@/lib/format';
 import { gsap, prefersReducedMotion, ScrollTrigger } from '@/lib/gsap';
+import { shopUrl } from '@/lib/shopUrl';
 
 export default function Home({ departments, featured, deals, supplements, brands, conditions, stats }) {
     const scope = useRef(null);
@@ -17,18 +19,14 @@ export default function Home({ departments, featured, deals, supplements, brands
 
     return (
         <div ref={scope}>
-            <Head title="Online pharmacy in Pakistan">
-                <meta
-                    name="description"
-                    content="Order authentic medicines, syrups, vitamins and supplements online. Pharmacist-verified orders, cash on delivery and fast delivery across Pakistan."
-                />
-            </Head>
+            <Head title="Online pharmacy in Pakistan" />
 
             <Hero stats={stats} />
             <TrustMarquee />
             <Departments departments={departments} />
+            <BodyMapTeaser />
 
-            <section className="container-x py-24 md:py-32">
+            <section className="container-x py-14 md:py-20">
                 <SectionHeading
                     index="02"
                     eyebrow="Pharmacist picks"
@@ -45,7 +43,7 @@ export default function Home({ departments, featured, deals, supplements, brands
             <Conditions conditions={conditions} />
             <PrescriptionSteps />
 
-            <section className="container-x py-24 md:py-32">
+            <section className="container-x py-14 md:py-20">
                 <SectionHeading
                     index="05"
                     eyebrow="On offer now"
@@ -61,7 +59,7 @@ export default function Home({ departments, featured, deals, supplements, brands
 
             <Brands brands={brands} total={stats.brands} />
 
-            <section className="container-x py-24 md:py-32">
+            <section className="container-x py-14 md:py-20">
                 <SectionHeading
                     index="07"
                     eyebrow="Vitamins & supplements"
@@ -79,7 +77,7 @@ export default function Home({ departments, featured, deals, supplements, brands
                 <ProductRail products={supplements} className="mt-14" />
             </section>
 
-            <OurPromise stats={stats} />
+            <OurPromise stats={stats} departments={departments} />
         </div>
     );
 }
@@ -101,15 +99,15 @@ function Hero({ stats }) {
 
     const search = (e) => {
         e.preventDefault();
-        if (query.trim()) router.get(route('shop.index'), { q: query.trim() });
+        if (query.trim()) router.get(shopUrl({ q: query.trim() }));
     };
 
     return (
         <section ref={root} className="relative overflow-hidden">
-            <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,#d7f8e5_0%,transparent_55%)]" />
+            <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,var(--color-mint-soft)_0%,transparent_55%)]" />
             <div data-hero-canvas className="pointer-events-none absolute inset-0 md:left-[30%]">
                 <LazyHeroScene
-                    fallback={<img src={`${app.url}/images/hero/hero.png`} alt="" className="absolute right-0 top-1/2 w-[60%] -translate-y-1/2 object-contain opacity-90" />}
+                    fallback={<img src={`${app.url}/images/hero/hero.webp`} alt="" className="absolute right-0 top-1/2 w-[60%] -translate-y-1/2 object-contain opacity-90" />}
                 />
             </div>
 
@@ -170,12 +168,12 @@ function Hero({ stats }) {
 function TrustMarquee() {
     const items = ['100% authentic stock', 'Pharmacist verified', 'Cash on delivery', 'Delivery in 1–3 days', 'Easy returns', 'Licensed pharmacy partners'];
     return (
-        <div className="border-y border-ink bg-mint py-5">
+        <div className="border-y border-night bg-mint py-5 text-night">
             <Marquee duration={40}>
                 {items.map((item) => (
                     <span key={item} className="flex items-center gap-8 px-4 font-display text-3xl md:text-4xl">
                         {item}
-                        <Icon name="spark" size={22} className="text-ink" />
+                        <Icon name="spark" size={22} className="text-night" />
                     </span>
                 ))}
             </Marquee>
@@ -194,7 +192,7 @@ function Departments({ departments }) {
     };
 
     return (
-        <section className="container-x py-24 md:py-32" onPointerMove={onMove}>
+        <section className="container-x py-14 md:py-20" onPointerMove={onMove}>
             <SectionHeading
                 index="01"
                 eyebrow="Departments"
@@ -248,7 +246,7 @@ function Departments({ departments }) {
 
 function Conditions({ conditions }) {
     return (
-        <section className="bg-paper-deep py-24 md:py-32">
+        <section className="bg-paper-deep py-14 md:py-20">
             <div className="container-x">
                 <SectionHeading
                     index="03"
@@ -313,8 +311,8 @@ function PrescriptionSteps() {
     }, []);
 
     return (
-        <section ref={section} className="grain relative overflow-hidden bg-ink text-paper">
-            <div className="container-x flex min-h-svh flex-col justify-center gap-14 py-24">
+        <section ref={section} className="grain relative overflow-hidden bg-night text-snow">
+            <div className="container-x flex min-h-svh flex-col justify-center gap-14 py-16">
                 <SectionHeading
                     dark
                     index="04"
@@ -332,16 +330,16 @@ function PrescriptionSteps() {
                 />
                 <div ref={track} className="flex flex-col gap-5 lg:w-max lg:flex-row">
                     {steps.map((s, i) => (
-                        <article key={s.title} className="flex min-h-72 flex-col justify-between rounded-4xl border border-paper/15 bg-ink-soft/60 p-8 lg:w-[34vw]">
+                        <article key={s.title} className="flex min-h-72 flex-col justify-between rounded-4xl border border-snow/15 bg-night-soft/70 p-8 lg:w-[34vw]">
                             <div className="flex items-center justify-between">
                                 <span className="font-mono text-sm text-mint">Step {pad(i + 1)}</span>
-                                <span className="grid size-14 place-items-center rounded-full bg-mint text-ink">
+                                <span className="grid size-14 place-items-center rounded-full bg-mint text-night">
                                     <Icon name={s.icon} size={24} />
                                 </span>
                             </div>
                             <div>
                                 <h3 className="mt-10 font-display text-5xl md:text-6xl">{s.title}</h3>
-                                <p className="mt-4 max-w-md text-paper/70">{s.body}</p>
+                                <p className="mt-4 max-w-md text-snow/70">{s.body}</p>
                             </div>
                         </article>
                     ))}
@@ -360,7 +358,7 @@ function Brands({ brands, total }) {
                 {brands.map((b) => (
                     <Link
                         key={b.slug}
-                        href={route('shop.index', { brand: b.slug })}
+                        href={shopUrl({ brand: b.slug })}
                         className="grid h-24 w-44 place-items-center rounded-3xl bg-card px-6 grayscale transition duration-500 hover:grayscale-0"
                         title={b.name}
                     >
@@ -372,7 +370,7 @@ function Brands({ brands, total }) {
     );
 }
 
-function OurPromise({ stats }) {
+function OurPromise({ stats, departments }) {
     const items = [
         { value: `${stats.products}+`, label: 'Products in stock', body: 'Medicines, syrups, supplements and devices across eight departments.' },
         { value: `${stats.brands}`, label: 'Brands & manufacturers', body: 'Sourced through recognised distribution channels only.' },
@@ -381,7 +379,7 @@ function OurPromise({ stats }) {
     ];
 
     return (
-        <section className="container-x py-24 md:py-32">
+        <section className="container-x py-14 md:py-20">
             <SectionHeading
                 index="08"
                 eyebrow="Our promise"
@@ -400,6 +398,119 @@ function OurPromise({ stats }) {
                     </div>
                 ))}
             </div>
+            <CatalogChart departments={departments} />
         </section>
+    );
+}
+
+/** Teaser for the 3D body map: an outlined figure with pulsing hotspots. */
+function BodyMapTeaser() {
+    const spots = [
+        ['Head & mind', 50, 9],
+        ['Throat', 50, 19],
+        ['Chest', 44, 30],
+        ['Stomach', 55, 42],
+        ['Back', 47, 38],
+        ['Joints', 30, 50],
+        ['Knees', 42, 72],
+    ];
+
+    return (
+        <section className="container-x py-12">
+            <Link
+                href={route('body-map')}
+                data-cursor="Explore"
+                className="group grain relative grid overflow-hidden rounded-5xl bg-night text-snow md:grid-cols-12"
+                data-reveal
+            >
+                <div className="relative z-10 flex flex-col justify-between gap-10 p-8 md:col-span-7 md:p-14">
+                    <p className="eyebrow flex items-center gap-3 text-mint">
+                        <span className="rounded-full bg-mint px-2 py-0.5 text-night">New</span> Interactive body map
+                    </p>
+                    <div>
+                        <h2 className="font-display text-title">
+                            Point to where it <span className="italic text-mint">hurts.</span>
+                        </h2>
+                        <p className="mt-6 max-w-md text-snow/70">
+                            Rotate a 3D body, tap the area that's bothering you and get self-care tips, warning signs and pharmacist picks in seconds.
+                        </p>
+                    </div>
+                    <span className="inline-flex w-fit items-center gap-3 rounded-full bg-mint px-6 py-4 font-medium text-night transition-transform duration-500 group-hover:translate-x-2">
+                        Open the body map <Icon name="arrow" size={18} />
+                    </span>
+                </div>
+                <div className="relative min-h-80 md:col-span-5">
+                    <svg viewBox="0 0 100 100" className="absolute inset-0 m-auto h-[90%] text-snow/25 transition-transform duration-[1.2s] ease-[var(--ease-expo)] group-hover:scale-105" fill="none" stroke="currentColor" strokeWidth="0.6" aria-hidden="true">
+                        <circle cx="50" cy="9" r="6" />
+                        <path d="M46 15h8v5h-8zM36 22h28l3 26h-6l-1 12H40l-1-12h-6zM36 22l-8 26 4 2 6-18M64 22l8 26-4 2-6-18M40 60l-2 36h6l4-30 4 30h6l-2-36" />
+                    </svg>
+                    {spots.map(([label, x, y], i) => (
+                        <span key={label} className="absolute" style={{ left: `${x}%`, top: `${y + 4}%` }}>
+                            <span className="relative flex size-3 -translate-x-1/2 -translate-y-1/2">
+                                <span className="absolute inset-0 rounded-full bg-mint [animation:pulse-ring_2.2s_ease-out_infinite]" style={{ animationDelay: `${i * 0.3}s` }} />
+                                <span className="relative size-3 rounded-full bg-mint" />
+                            </span>
+                        </span>
+                    ))}
+                </div>
+            </Link>
+        </section>
+    );
+}
+
+/**
+ * Real catalog breakdown: products per department as a single-series horizontal bar chart
+ * (direct-labelled, no legend needed), with hover/focus highlight and link-through.
+ */
+function CatalogChart({ departments }) {
+    const [active, setActive] = useState(null);
+    const max = Math.max(...departments.map((d) => d.count), 1);
+    const total = departments.reduce((sum, d) => sum + d.count, 0);
+
+    return (
+        <figure className="mt-14 rounded-4xl border border-line bg-card p-6 md:p-10" data-reveal>
+            <figcaption className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <p className="eyebrow text-ink-mute">Catalog at a glance</p>
+                    <p className="mt-2 font-display text-3xl">
+                        {total.toLocaleString()} products across {departments.length} aisles
+                    </p>
+                </div>
+                <p className="text-sm text-ink-mute">Live from our shelves · updated with every catalog import</p>
+            </figcaption>
+            <ul className="mt-8 space-y-2">
+                {departments.map((d) => {
+                    const share = Math.round((d.count / total) * 100);
+                    return (
+                        <li key={d.slug}>
+                            <Link
+                                href={route('shop.department', d.slug)}
+                                onPointerEnter={() => setActive(d.slug)}
+                                onPointerLeave={() => setActive(null)}
+                                onFocus={() => setActive(d.slug)}
+                                onBlur={() => setActive(null)}
+                                className="group grid grid-cols-12 items-center gap-3 rounded-xl py-1.5 text-sm"
+                            >
+                                <span className="col-span-4 truncate md:col-span-3">{d.name}</span>
+                                <span className="col-span-6 h-7 md:col-span-8" aria-hidden="true">
+                                    <span
+                                        className="block h-full origin-left rounded-r-[4px] transition-[opacity,transform] duration-700 ease-[var(--ease-expo)]"
+                                        style={{
+                                            width: `${(d.count / max) * 100}%`,
+                                            background: 'var(--color-viz)',
+                                            opacity: active && active !== d.slug ? 0.35 : 1,
+                                        }}
+                                    />
+                                </span>
+                                <span className="col-span-2 text-right font-mono md:col-span-1">
+                                    {d.count}
+                                    <span className={cn('block text-[0.65rem] text-ink-mute transition-opacity', active === d.slug ? 'opacity-100' : 'opacity-0')}>{share}%</span>
+                                </span>
+                            </Link>
+                        </li>
+                    );
+                })}
+            </ul>
+        </figure>
     );
 }

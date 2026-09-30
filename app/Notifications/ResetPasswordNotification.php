@@ -9,7 +9,8 @@ class ResetPasswordNotification extends ResetPassword
 {
     public function toMail($notifiable): MailMessage
     {
-        $url = route('password.reset', ['token' => $this->token, 'email' => $notifiable->getEmailForPasswordReset()]);
+        // The email is not put in the link: it would end up in browser history and server logs.
+        $url = route('password.reset', ['token' => $this->token]);
         $minutes = config('auth.passwords.'.config('auth.defaults.passwords').'.expire');
 
         return (new MailMessage)

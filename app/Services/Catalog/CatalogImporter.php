@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Product;
+use App\Support\CatalogCache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -27,7 +28,7 @@ class CatalogImporter
 
         $catalog = json_decode(file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
 
-        return DB::transaction(function () use ($catalog) {
+        $count = DB::transaction(function () use ($catalog) {
             $departments = [];
             foreach ($catalog['departments'] as $index => $data) {
                 $departments[$data['slug']] = Department::updateOrCreate(
@@ -75,7 +76,10 @@ class CatalogImporter
                     'indication' => $item['indication'] ?? null,
                     'dosage' => $item['dosage'] ?? null,
                     'precautions' => $item['precautions'] ?? null,
-                    'image_url' => $item['image'],
+                    'how_it_works' => $item['how_it_works'] ?? null,
+                    'highlights' => $item['highlights'] ?? null,
+                    'warnings' => $item['warnings'] ?? null,
+                    'image_url' => $this->isPlaceholder($item['image']) ? null : $item['image'],
                     'source_url' => $item['source_url'] ?? null,
                 ]);
                 $count++;
@@ -83,6 +87,11 @@ class CatalogImporter
 
             return $count;
         });
+
+        // New prices/stock: drop every cached catalog view (home rails, nav, price stats).
+        CatalogCache::flush();
+
+        return $count;
     }
 
     /** Three in-stock products per department with the best discount are featured. */
@@ -124,6 +133,12 @@ class CatalogImporter
         }
 
         return $summary;
+    }
+
+    /** DVAGO serves its own logo SVG when a product has no photo; that is not a product image. */
+    private function isPlaceholder(?string $url): bool
+    {
+        return ! $url || str_ends_with(strtolower(strtok($url, '?')), '.svg') || str_contains($url, 'dvago-logo');
     }
 
     private function clip(?string $value, int $length): ?string

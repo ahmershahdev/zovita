@@ -7,7 +7,8 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Product;
-use Illuminate\Support\Facades\Cache;
+use App\Support\CatalogCache;
+use App\Support\ShopPath;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +29,7 @@ class HomeController extends Controller
 
     public function __invoke(): Response
     {
-        $data = Cache::remember('home.v1', now()->addMinutes(10), function () {
+        $data = CatalogCache::remember('home', now()->addMinutes(30), function () {
             $cards = fn ($query) => $query->with('brand', 'category')->get()->map->toCard()->all();
 
             return [
@@ -38,8 +39,8 @@ class HomeController extends Controller
                         'slug' => $d->slug,
                         'blurb' => $d->blurb,
                         'count' => $d->products_count,
-                        'image' => $d->products()->where('is_featured', true)->first()?->image
-                            ?? $d->products()->first()?->image,
+                        'image' => $d->products()->where('is_featured', true)->first()?->thumb
+                            ?? $d->products()->first()?->thumb,
                     ])->all(),
                 'featured' => $cards(Product::where('is_featured', true)->inStock()->limit(12)),
                 'deals' => $cards(Product::whereNotNull('sale_price')->inStock()
@@ -59,8 +60,8 @@ class HomeController extends Controller
         return Inertia::render('Home', $data + [
             'conditions' => collect(self::CONDITIONS)->map(fn ($c) => [
                 'label' => $c['label'],
-                'image' => asset("images/conditions/{$c['image']}.png"),
-                'href' => route('shop.index', $c['query']),
+                'image' => asset("images/conditions/{$c['image']}.webp"),
+                'href' => ShopPath::url(null, $c['query']),
             ])->all(),
         ]);
     }

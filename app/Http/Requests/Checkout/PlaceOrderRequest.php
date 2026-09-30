@@ -37,6 +37,7 @@ class PlaceOrderRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:500'],
             'prescription' => ['nullable', 'file', 'max:'.$rx['max_kb'], 'mimes:'.implode(',', $rx['mimes'])],
             'recaptcha_token' => [Recaptcha::v3('checkout')],
+            'checkout_token' => ['nullable', 'uuid'],
         ];
     }
 

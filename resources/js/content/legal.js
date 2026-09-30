@@ -36,7 +36,7 @@ export const legalPages = {
             { heading: 'How we use it', body: 'To process and deliver orders, have a pharmacist review prescriptions, send transactional emails (order confirmations, password resets) and, if you opt in, a monthly newsletter.' },
             { heading: 'Prescriptions', body: 'Prescription files are stored on private storage that is not accessible from the web and are only used by our pharmacists to fulfil your order.' },
             { heading: 'Service providers', body: 'We use Resend to deliver email and Google reCAPTCHA to protect forms from abuse. These providers process only the data needed for those services.' },
-            { heading: 'Your rights', body: 'You can request a copy of your data, ask us to correct it, or ask us to delete your account at any time by contacting help@zovita.pk.' },
+            { heading: 'Your rights', body: 'You can request a copy of your data, ask us to correct it, or ask us to delete your account at any time by contacting support@ahmershah.dev.' },
         ],
     },
     terms: {

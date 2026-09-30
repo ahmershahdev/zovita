@@ -5,7 +5,7 @@
 # Zovita+
 
 **Care, delivered with calm.**
-An online pharmacy for Pakistan: 475 real medicines, syrups and supplements, pharmacist-verified orders, prescription uploads and cash on delivery.
+An online pharmacy for Pakistan: 1,000+ real medicines, syrups and supplements, a 3D symptom body map, pharmacist-verified orders, prescription uploads and cash on delivery.
 
 [![CI](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml)
 ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-0b1b33?logo=php&logoColor=white)
@@ -25,9 +25,12 @@ An online pharmacy for Pakistan: 475 real medicines, syrups and supplements, pha
 ## Features
 
 **Storefront**
-- 475 products across 8 departments and 38 categories: real names, prices, discounts, stock and prescription flags, plus generics, uses, dosage and precautions.
+- 1,186 products across 8 departments, 118 categories and 212 brands: real names, prices, discounts, stock and prescription flags, plus generics, uses, dosage, precautions and warnings.
+- Every product image is stored locally as WebP in two sizes (640/320) and served with a responsive `srcset`.
 - Server-side filters (category, brand, form, Rx/OTC, stock, price), sorting and pagination, plus ⌘K instant search.
-- Product pages with hover zoom, related products and `Product` JSON-LD.
+- Detailed product pages: photo/3D pack viewer (drag to spin), at-a-glance facts, delivery estimate by city, sticky section nav, a price-insight histogram against the category, "same salt, other brands", recently viewed and `Product` JSON-LD.
+- **Sold out?** Product pages, cards and the bag suggest in-stock alternatives, matched by active ingredient first, then category and price — with one-tap swap in the bag.
+- **Body map**: rotate a 3D mannequin, click where it hurts, pick a symptom and get self-care tips, red flags and pharmacist picks. Emergency symptoms (e.g. chest pain) show urgent-care guidance instead of products.
 
 **Ordering**
 - Session bag with prices re-read from the database, a free-delivery threshold and a per-order cap.
@@ -49,8 +52,11 @@ An online pharmacy for Pakistan: 475 real medicines, syrups and supplements, pha
 - Rate limits, a honeypot, enumeration-safe responses and security headers.
 
 **Design**
-- Editorial type system: **Clash Grotesk** display, **Zodiak** italic accents, **General Sans** text, **JetBrains Mono** labels.
-- Three.js pill hero (lazy-loaded, WebGL-only), Lenis smooth scroll driven by the GSAP ticker, SplitText line reveals, a pinned horizontal process section, marquees, a magnetic cursor follower, and custom selection and scrollbar.
+- Self-hosted type system: **Bricolage Grotesque** (variable, optical-size + width axes) display, **Instrument Serif** italic accents, **Geist** text, **Geist Mono** labels.
+- Light and dark themes (system preference, saved choice, no flash) with a circular View Transition reveal.
+- Floating capsule navbar with a sliding hover indicator and an expanding mega menu; full-screen mobile menu.
+- Three.js scenes (lazy-loaded, WebGL-only): pill hero, capsule-helix auth panel, 3D pack viewer and body map.
+- Sticky/magnetic cursor, colour-flood buttons, scroll-progress back-to-top orb, Lenis smooth scroll on the GSAP ticker, SplitText reveals and marquees.
 - Honours `prefers-reduced-motion` and Save-Data.
 
 <img src=".github/assets/product.jpg" alt="Product page" width="100%">
@@ -76,9 +82,9 @@ composer install && npm install
 cp .env.example .env && php artisan key:generate
 
 # create an empty database called "zovita", then:
-php artisan migrate --seed          # 475 products + demo account (demo@zovita.pk / password)
+php artisan migrate --seed          # 1,000+ products + demo account (demo@zovita.pk / password)
 php artisan storage:link
-php artisan catalog:cache-images    # optional: store product images locally
+php artisan catalog:cache-images    # download images and store them locally as responsive WebP
 
 npm run build                       # or `npm run dev` for hot reload
 php artisan serve                   # → http://127.0.0.1:8000

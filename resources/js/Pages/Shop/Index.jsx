@@ -9,8 +9,9 @@ import Icon from '@/Components/ui/Icon';
 import Pagination from '@/Components/ui/Pagination';
 import useReveal from '@/hooks/useReveal';
 import { cn } from '@/lib/cn';
+import { shopUrl } from '@/lib/shopUrl';
 
-export default function ShopIndex({ department, departments, products, filters, facets }) {
+export default function ShopIndex({ department, departments, products, filters, facets, canonical }) {
     const scope = useRef(null);
     const [drawer, setDrawer] = useState(false);
     const [q, setQ] = useState(filters.q);
@@ -18,20 +19,13 @@ export default function ShopIndex({ department, departments, products, filters, 
 
     useEffect(() => setQ(filters.q), [filters.q]);
 
-    const baseUrl = department ? route('shop.department', department.slug) : route('shop.index');
-
-    /** Apply a filter change; resets pagination and keeps scroll + component state. */
+    /** Apply a filter change as a clean URL (no query string); resets pagination, keeps scroll + state. */
     const apply = useCallback(
         (changes) => {
-            const next = { ...filters, ...changes };
-            const query = Object.fromEntries(
-                Object.entries(next).filter(([, v]) => v !== '' && v !== null && v !== false && v !== undefined && !(Array.isArray(v) && !v.length)),
-            );
-            if (query.sort === 'featured') delete query.sort;
-            if (query.in_stock) query.in_stock = 1;
-            router.get(baseUrl, query, { preserveState: true, preserveScroll: true, replace: true, only: ['products', 'filters', 'facets'] });
+            const next = { ...filters, ...changes, department: department?.slug, page: 1 };
+            router.get(shopUrl(next), {}, { preserveState: true, preserveScroll: true, replace: true, only: ['products', 'filters', 'facets', 'canonical'] });
         },
-        [filters, baseUrl],
+        [filters, department],
     );
 
     const active = [
@@ -53,11 +47,19 @@ export default function ShopIndex({ department, departments, products, filters, 
     return (
         <div ref={scope}>
             <Head title={department?.name ?? 'Shop all products'}>
-                <meta name="description" content={department?.blurb ?? 'Shop authentic medicines, syrups, supplements and healthcare essentials online in Pakistan.'} />
+                <meta head-key="description" name="description" content={department?.blurb ?? 'Shop authentic medicines, syrups, supplements and healthcare essentials online in Pakistan.'} />
+                {canonical && <link head-key="canonical" rel="canonical" href={canonical} />}
             </Head>
 
             <section className="container-x pb-10 pt-10 md:pt-16">
-                <Breadcrumbs items={[{ label: 'Home', href: route('home') }, { label: 'Shop', href: department ? route('shop.index') : null }, department && { label: department.name }].filter(Boolean)} />
+                <Breadcrumbs
+                    schema={false}
+                    items={[
+                        { label: 'Shop', href: department || filters.category ? route('shop.index') : null },
+                        department && { label: department.name, href: filters.category ? shopUrl({ department: department.slug }) : null },
+                        filters.category && { label: facets.categories.find((c) => c.slug === filters.category)?.name ?? filters.category },
+                    ]}
+                />
                 <div className="mt-8 grid gap-8 md:grid-cols-12 md:items-end">
                     <h1 className="font-display text-title md:col-span-8" data-split="now" key={title}>
                         {title}
@@ -97,9 +99,9 @@ export default function ShopIndex({ department, departments, products, filters, 
                     </div>
                 </aside>
 
-                <div className="lg:col-span-9">
+                <div className="min-w-0 lg:col-span-9">
                     {/* Toolbar */}
-                    <div className="sticky top-0 z-30 -mx-2 mb-6 flex flex-wrap items-center gap-3 bg-paper/90 px-2 py-3 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
+                    <div className="sticky top-20 z-30 -mx-2 mb-6 rounded-3xl flex flex-wrap items-center gap-3 bg-paper/90 px-2 py-3 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -135,7 +137,7 @@ export default function ShopIndex({ department, departments, products, filters, 
                             </button>
                         ))}
                         {active.length > 1 && (
-                            <Link href={baseUrl} preserveScroll className="text-xs underline underline-offset-4">
+                            <Link href={shopUrl({ department: department?.slug })} preserveScroll className="text-xs underline underline-offset-4">
                                 Clear all
                             </Link>
                         )}
@@ -157,7 +159,7 @@ export default function ShopIndex({ department, departments, products, filters, 
                             icon="search"
                             title="Nothing matches — yet."
                             body="Try removing a filter or searching by the salt name (e.g. paracetamol) instead of the brand."
-                            action={<Button href={baseUrl}>Reset filters</Button>}
+                            action={<Button href={shopUrl({ department: department?.slug })}>Reset filters</Button>}
                         />
                     )}
                 </div>

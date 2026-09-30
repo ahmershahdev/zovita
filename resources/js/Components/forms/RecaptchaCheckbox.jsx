@@ -22,7 +22,7 @@ export default function RecaptchaCheckbox({ onChange, error, resetKey }) {
                 if (cancelled || widgetId.current !== null || !container.current) return;
                 widgetId.current = grecaptcha.render(container.current, {
                     sitekey: siteKey,
-                    theme: 'light',
+                    theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
                     callback: (token) => onChangeRef.current(token),
                     'expired-callback': () => onChangeRef.current(''),
                 });

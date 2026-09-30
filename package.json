@@ -16,17 +16,21 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=480"
+        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=1200"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.3",
         "@vitejs/plugin-react": "^5.0.0",
         "laravel-vite-plugin": "^2.0.0",
         "tailwindcss": "^4.0.0",
-        "vite": "^7.0.7"
+        "vite": "^7.0.7",
+        "vite-plugin-compression2": "^2.5.3"
     },
     "dependencies": {
-        "@fontsource-variable/jetbrains-mono": "^5.3.0",
+        "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+        "@fontsource-variable/geist": "^5.3.0",
+        "@fontsource-variable/geist-mono": "^5.3.0",
+        "@fontsource/instrument-serif": "^5.3.0",
         "@inertiajs/react": "^2.3.28",
         "@react-three/fiber": "^9.8.1",
         "clsx": "^2.1.1",

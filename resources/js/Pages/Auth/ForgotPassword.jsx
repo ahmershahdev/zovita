@@ -1,4 +1,4 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import AuthShell from '@/Components/layout/AuthShell';
 import Button from '@/Components/ui/Button';
 import Field from '@/Components/ui/Field';
@@ -8,6 +8,7 @@ import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 export default function ForgotPassword() {
     const getToken = useRecaptchaV3('password_reset');
     const form = useForm({ email: '', recaptcha_token: '' });
+    const sent = !!usePage().props.flash?.success && form.wasSuccessful;
 
     const submit = async (e) => {
         e.preventDefault();
@@ -19,6 +20,7 @@ export default function ForgotPassword() {
     return (
         <AuthShell
             title="Reset password"
+            step={['01', '02']}
             eyebrow="Account help"
             heading={
                 <>
@@ -32,8 +34,14 @@ export default function ForgotPassword() {
                 </Link>
             }
         >
+            {sent && (
+                <div className="mb-6 flex gap-3 rounded-2xl bg-mint-soft p-4 text-sm" role="status">
+                    <Icon name="check" size={18} className="mt-0.5 shrink-0 text-teal" />
+                    <p>If an account exists for <strong>{form.data.email}</strong>, a reset link is on its way. It expires in 60 minutes — check spam too.</p>
+                </div>
+            )}
             <form onSubmit={submit} className="space-y-5" noValidate>
-                <Field label="Email" type="email" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email || form.errors.recaptcha_token} required autoFocus />
+                <Field label="Email" type="email" icon="mail" placeholder="The email on your account" autoComplete="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} error={form.errors.email || form.errors.recaptcha_token} required autoFocus />
                 <Button type="submit" size="lg" loading={form.processing} className="w-full" icon={<Icon name="mail" size={18} />}>
                     Email me a reset link
                 </Button>

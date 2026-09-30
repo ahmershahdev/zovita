@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'support_email' => env('ZOVITA_SUPPORT_EMAIL', 'help@zovita.pk'),
+    'support_email' => env('ZOVITA_SUPPORT_EMAIL', 'support@ahmershah.dev'),
     'admin_email' => env('ZOVITA_ADMIN_EMAIL', 'admin@zovita.pk'),
     'support_phone' => env('ZOVITA_SUPPORT_PHONE', '+92 370 4831994'),
     'support_hours' => 'Mon – Sat, 10:00 AM – 8:00 PM PKT',

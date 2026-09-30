@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '@/Components/ui/Icon';
 import { money } from '@/lib/format';
+import { shopUrl } from '@/lib/shopUrl';
 import Overlay from './Overlay';
 
 const popular = ['Panadol', 'Vitamin C', 'Sunscreen', 'Cough syrup', 'Biotin', 'Omega 3', 'BP monitor', 'Ensure'];
@@ -54,7 +55,7 @@ function SearchPanel({ onClose }) {
     const submit = (e) => {
         e.preventDefault();
         if (!term.trim()) return;
-        router.get(route('shop.index'), { q: term.trim() });
+        router.get(shopUrl({ q: term.trim() }));
         onClose();
     };
 
@@ -66,7 +67,7 @@ function SearchPanel({ onClose }) {
                     ref={input}
                     value={term}
                     onChange={(e) => setTerm(e.target.value)}
-                    placeholder="Search 475+ medicines, syrups, supplements…"
+                    placeholder="Search 1,000+ medicines, syrups, supplements…"
                     className="min-w-0 flex-1 bg-transparent font-display text-3xl placeholder:text-ink-mute/50 focus:outline-none md:text-5xl"
                     aria-label="Search products"
                 />
@@ -120,7 +121,7 @@ function SearchPanel({ onClose }) {
                             <ul className="space-y-2">
                                 {results.categories.map((c) => (
                                     <li key={c.slug}>
-                                        <Link href={route('shop.index', { category: c.slug })} onClick={onClose} className="font-display text-2xl hover:italic">
+                                        <Link href={shopUrl({ category: c.slug })} onClick={onClose} className="font-display text-2xl hover:italic">
                                             {c.name}
                                         </Link>
                                     </li>

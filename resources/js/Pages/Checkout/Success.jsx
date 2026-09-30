@@ -30,7 +30,7 @@ export default function CheckoutSuccess({ order }) {
                     </p>
                 </div>
                 <div className="flex gap-3">
-                    <Button href={route('orders.track', { number: order.number, email: order.email })} variant="ghost">
+                    <Button href={route('orders.track.show', order.number)} variant="ghost">
                         Track order
                     </Button>
                     <Button href={route('shop.index')} icon={<Icon name="arrow" size={16} />}>

@@ -3,20 +3,25 @@
 @source '../views';
 @source '../js';
 
+/* Theme switching is driven by <html data-theme="light|dark"> (set before paint in app.blade.php). */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 /* ───────────────────────── Design tokens ───────────────────────── */
 /*
- * Type system
- *  Display  Clash Grotesk — neo-grotesk with tight apertures, set big and tightly tracked
- *  Text     General Sans  — neutral grotesk for UI and reading
- *  Accent   Zodiak Italic — editorial serif, used only for emphasis inside headlines
- *  Labels   JetBrains Mono — uppercase eyebrows, numbers, metadata
+ * Type system (all self-hosted via Fontsource, so there is no third-party font request)
+ *  Display  Bricolage Grotesque — expressive variable grotesk; optical-size + width axes let big
+ *           headlines tighten while small headings stay open and legible
+ *  Text     Geist — quiet neo-grotesk for UI and long reading, excellent at small sizes
+ *  Accent   Instrument Serif Italic — high-contrast editorial italic, used only for emphasis
+ *  Labels   Geist Mono — eyebrows, numbers, metadata (tabular figures)
  */
 @theme {
-    --font-sans: 'General Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'Clash Grotesk', 'General Sans', ui-sans-serif, sans-serif;
-    --font-serif: 'Zodiak', ui-serif, Georgia, serif;
-    --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+    --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', 'Geist Variable', ui-sans-serif, sans-serif;
+    --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+    --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
 
+    /* Theme-reactive palette (overridden for dark mode below). */
     --color-ink: #0b1b33;
     --color-ink-soft: #1c2f4f;
     --color-ink-mute: #56627a;
@@ -26,16 +31,24 @@
     --color-mint: #9ef0c2;
     --color-mint-soft: #d7f8e5;
     --color-teal: #0f766e;
-    --color-coral: #f0603f;
+    --color-coral: #e5532f;
     --color-line: rgb(11 27 51 / 0.12);
     --color-line-strong: rgb(11 27 51 / 0.24);
 
-    --text-display: clamp(3.25rem, 9vw, 10.25rem);
+    /* Fixed palette: always-dark feature surfaces and the light plate behind product shots. */
+    --color-night: #0b1b33;
+    --color-night-soft: #15294a;
+    --color-snow: #f3f0e8;
+    --color-plate: #fbfaf6;
+    /* Chart highlight (validated with the dataviz palette checks on both surfaces). */
+    --color-viz: #0d9488;
+
+    --text-display: clamp(3.25rem, 9.4vw, 10.75rem);
     --text-display--line-height: 0.86;
-    --text-display--letter-spacing: -0.048em;
-    --text-title: clamp(2.3rem, 5vw, 5.25rem);
+    --text-display--letter-spacing: -0.042em;
+    --text-title: clamp(2.3rem, 5.2vw, 5.5rem);
     --text-title--line-height: 0.92;
-    --text-title--letter-spacing: -0.045em;
+    --text-title--letter-spacing: -0.038em;
 
     --radius-4xl: 2rem;
     --radius-5xl: 2.75rem;
@@ -51,12 +64,54 @@
     }
 }
 
+[data-theme='dark'] {
+    --color-ink: #eef1ea;
+    --color-ink-soft: #cdd6cf;
+    --color-ink-mute: #8e9c95;
+    --color-paper: #0a0f0e;
+    --color-paper-deep: #111917;
+    --color-card: #141d1b;
+    --color-mint: #9ef0c2;
+    --color-mint-soft: #16332a;
+    --color-teal: #6ee7c8;
+    --color-coral: #ff7a57;
+    --color-line: rgb(238 241 234 / 0.1);
+    --color-line-strong: rgb(238 241 234 / 0.22);
+
+    --color-night: #050807;
+    --color-night-soft: #101815;
+    --color-plate: #ecebe5;
+    --color-viz: #1fa88e;
+}
+
+/*
+ * Mint surfaces are bright in both themes, so everything on them keeps the light-theme tokens
+ * (dark text, dark buttons with light labels, dark hairlines).
+ */
+[data-theme='dark'] .bg-mint {
+    --color-ink: #0b1b33;
+    --color-ink-soft: #1c2f4f;
+    --color-ink-mute: #3d4a5f;
+    --color-paper: #f3f0e8;
+    --color-paper-deep: #e9e4d7;
+    --color-card: #fbfaf6;
+    --color-teal: #0f766e;
+    --color-line: rgb(11 27 51 / 0.14);
+    --color-line-strong: rgb(11 27 51 / 0.28);
+    color: var(--color-ink);
+}
+
 /* ───────────────────────── Base ───────────────────────── */
 @layer base {
     html {
         color-scheme: light;
         -webkit-text-size-adjust: 100%;
         text-rendering: optimizeLegibility;
+        font-synthesis: none;
+    }
+
+    html[data-theme='dark'] {
+        color-scheme: dark;
     }
 
     body {
@@ -65,8 +120,9 @@
         font-family: var(--font-sans);
         font-size: 1rem;
         line-height: 1.6;
-        letter-spacing: -0.005em;
+        letter-spacing: -0.011em;
         overflow-x: clip;
+        transition: background-color 0.5s var(--ease-expo), color 0.5s var(--ease-expo);
     }
 
     h1, h2, h3, h4 {
@@ -83,7 +139,8 @@
         border-radius: 6px;
     }
 
-    [data-theme='dark'] :focus-visible {
+    [data-theme='dark'] :focus-visible,
+    .bg-night :focus-visible {
         outline-color: var(--color-mint);
     }
 
@@ -95,15 +152,19 @@
     img {
         user-select: none;
     }
+
+    /* Numbers line up in prices, counters and tables. */
+    .font-mono,
+    [data-num] {
+        font-variant-numeric: tabular-nums;
+    }
 }
 
-/* Custom text selection */
 ::selection {
     background: var(--color-mint);
-    color: var(--color-ink);
+    color: #0b1b33;
 }
 
-/* Custom scrollbar */
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--color-ink) var(--color-paper-deep);
@@ -154,6 +215,13 @@ html.lenis body {
     overflow: clip;
 }
 
+/* Theme switch: circular reveal from the toggle (View Transitions API, where supported). */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
 /* ───────────────────────── Components ───────────────────────── */
 @layer components {
     .container-x {
@@ -165,22 +233,26 @@ html.lenis body {
 
     .eyebrow {
         font-family: var(--font-mono);
-        font-size: 0.7rem;
+        font-size: 0.69rem;
         font-weight: 450;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.1em;
         line-height: 1.4;
         text-transform: uppercase;
     }
 
-    /* Display headings: medium weight, tight tracking, optical kerning. */
+    /*
+     * Display headings: optical size follows the rendered size, so huge headlines get the tight,
+     * high-contrast cut and small ones the open text cut. Width narrows slightly for drama.
+     */
     .font-display {
-        font-weight: 500;
-        letter-spacing: -0.035em;
+        font-weight: 520;
+        font-optical-sizing: auto;
+        font-variation-settings: 'wdth' 92;
+        letter-spacing: -0.04em;
         font-kerning: normal;
-        font-feature-settings: 'kern', 'liga';
+        font-feature-settings: 'kern', 'liga', 'ss01';
     }
 
-    /* Mask used by line-reveal animations */
     .line-mask {
         display: block;
         overflow: clip;
@@ -189,7 +261,7 @@ html.lenis body {
     }
 
     .prose-care {
-        font-size: 1rem;
+        font-size: 1.02rem;
         line-height: 1.75;
         color: var(--color-ink-soft);
     }
@@ -197,8 +269,8 @@ html.lenis body {
     .prose-care h2 {
         font-family: var(--font-display);
         font-size: 1.75rem;
-        font-weight: 500;
-        letter-spacing: -0.03em;
+        font-weight: 520;
+        letter-spacing: -0.035em;
         line-height: 1.1;
         color: var(--color-ink);
         margin: 2.5rem 0 0.75rem;
@@ -217,6 +289,19 @@ html.lenis body {
     .prose-care li + li {
         margin-top: 0.4rem;
     }
+
+    /* Glass surface used by the floating navbar and overlays. */
+    .glass {
+        background: color-mix(in oklab, var(--color-paper) 72%, transparent);
+        backdrop-filter: blur(18px) saturate(1.4);
+        -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    }
+
+    /* Outlined display type (footer wordmark, section numbers). */
+    .text-outline {
+        color: transparent;
+        -webkit-text-stroke: 1px currentColor;
+    }
 }
 
 /*
@@ -228,8 +313,28 @@ html.lenis body {
 .group:hover .font-display[class*='group-hover:italic'] {
     font-family: var(--font-serif);
     font-style: italic;
-    font-weight: 300;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    font-variation-settings: normal;
+    letter-spacing: -0.015em;
+}
+
+/*
+ * Product shots are photographed on white and blended with multiply. In dark mode their frame
+ * becomes a light "plate" so the pack stays true to colour instead of turning muddy.
+ */
+[data-theme='dark'] :has(> img.mix-blend-multiply) {
+    background-color: var(--color-plate);
+    color: #0b1b33;
+}
+
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.7; }
+    100% { transform: scale(2.4); opacity: 0; }
 }
 
 /* Film grain overlay for depth on large flat colour fields */
@@ -243,7 +348,8 @@ html.lenis body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.bg-ink.grain::after {
+.bg-night.grain::after,
+[data-theme='dark'] .grain::after {
     mix-blend-mode: screen;
     opacity: 0.05;
 }
@@ -254,21 +360,56 @@ html.lenis body {
     transform: translateY(28px);
 }
 
-/* Custom cursor */
+/* ───────────────────────── Buttons ───────────────────────── */
+/* A disc of the hover colour grows from wherever the pointer entered (see Button.jsx). */
+.btn-fill {
+    position: absolute;
+    left: var(--x, 50%);
+    top: var(--y, 50%);
+    width: 260%;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    translate: -50% -50%;
+    scale: 0;
+    transition: scale 0.75s var(--ease-expo);
+    pointer-events: none;
+}
+
+.group\/btn:hover > .btn-fill,
+.group\/btn:focus-visible > .btn-fill {
+    scale: 1;
+}
+
+/* ───────────────────────── Cursor ───────────────────────── */
 .cursor-dot,
-.cursor-ring {
+.cursor-ring,
+.cursor-label {
     position: fixed;
     top: 0;
     left: 0;
     pointer-events: none;
-    z-index: 100;
-    border-radius: 999px;
+    z-index: 110;
     translate: -50% -50%;
+}
+
+/* The native pointer is hidden only while the custom cursor is live; text fields keep the caret. */
+html.has-cursor,
+html.has-cursor * {
+    cursor: none !important;
+}
+
+html.has-cursor :is(input, textarea, select, [contenteditable='true']) {
+    cursor: text !important;
+}
+
+html.has-cursor select {
+    cursor: pointer !important;
 }
 
 @media (pointer: coarse) {
     .cursor-dot,
-    .cursor-ring {
+    .cursor-ring,
+    .cursor-label {
         display: none;
     }
 }

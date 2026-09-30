@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { legalPages } from '@/content/legal';
 import { cn } from '@/lib/cn';
 import { date } from '@/lib/format';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
 const nav = [
     ['shipping', 'Shipping'],
@@ -16,8 +17,9 @@ export default function Legal({ page }) {
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
             <Head title={content.title}>
-                <meta name="description" content={content.intro} />
+                <meta head-key="description" name="description" content={content.intro} />
             </Head>
+            <Breadcrumbs items={[{ label: 'Policies' }, { label: content.title }]} className="mb-6" />
             <p className="eyebrow text-ink-mute">Policies</p>
             <h1 className="mt-4 font-display text-title">{content.title}</h1>
             <p className="mt-6 max-w-2xl text-lg text-ink-soft">{content.intro}</p>

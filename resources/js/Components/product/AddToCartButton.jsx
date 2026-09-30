@@ -28,7 +28,7 @@ export default function AddToCartButton({ product, quantity = 1, className }) {
             disabled={busy}
             aria-label={`Add ${product.name} to bag`}
             className={cn(
-                'group/add grid size-11 place-items-center rounded-full bg-ink text-paper transition duration-300 hover:bg-mint hover:text-ink disabled:opacity-60',
+                'group/add grid size-11 place-items-center rounded-full bg-ink text-paper transition duration-300 hover:bg-mint hover:text-night disabled:opacity-60',
                 className,
             )}
         >

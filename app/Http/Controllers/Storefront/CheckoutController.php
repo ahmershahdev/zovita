@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Services\Cart\CartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +27,8 @@ class CheckoutController extends Controller
         return Inertia::render('Checkout/Create', [
             'cart' => $cart->summary(),
             'cities' => config('zovita.cities'),
+            // Idempotency key for this checkout attempt (see PlaceOrder).
+            'checkoutToken' => (string) Str::uuid(),
             'defaults' => [
                 'name' => $user?->name ?? '',
                 'email' => $user?->email ?? '',
@@ -37,7 +41,13 @@ class CheckoutController extends Controller
 
     public function store(PlaceOrderRequest $request, PlaceOrder $placeOrder): RedirectResponse
     {
-        $order = $placeOrder->handle($request->safe()->except(['prescription', 'recaptcha_token']), $request->user(), $request->file('prescription'));
+        // Serialise checkouts from the same session (double-clicks, two tabs) before touching stock.
+        $order = Cache::lock('checkout:'.$request->session()->getId(), 20)->block(10, fn () => $placeOrder->handle(
+            $request->safe()->except(['prescription', 'recaptcha_token', 'checkout_token']),
+            $request->user(),
+            $request->file('prescription'),
+            $request->validated('checkout_token'),
+        ));
 
         // Guests may view their confirmation once, from this session only.
         $request->session()->put('checkout.last_order', $order->number);

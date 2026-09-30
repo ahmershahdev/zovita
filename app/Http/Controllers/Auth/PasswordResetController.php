@@ -25,7 +25,7 @@ class PasswordResetController extends Controller
     public function email(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'max:120'],
             'recaptcha_token' => [Recaptcha::v3('password_reset')],
         ]);
 
@@ -47,8 +47,8 @@ class PasswordResetController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'token' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:120'],
             'password' => ['required', 'confirmed', PasswordRule::min(8)->letters()->numbers()],
         ]);
 

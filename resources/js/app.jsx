@@ -1,5 +1,9 @@
 import '../css/app.css';
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/bricolage-grotesque/standard.css';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
+import '@fontsource/instrument-serif/latin-400.css';
+import '@fontsource/instrument-serif/latin-400-italic.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -24,5 +28,5 @@ createInertiaApp({
     setup({ el, App, props }) {
         createRoot(el).render(<App {...props} />);
     },
-    progress: { color: '#9ef0c2', showSpinner: false, delay: 150 },
+    progress: { color: '#0f766e', showSpinner: false, delay: 150 },
 });

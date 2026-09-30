@@ -1,25 +1,115 @@
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+#  Zovita — public/.htaccess
+#  Front controller, clean URLs, pre-compressed assets, cache policy and hardening.
+#  Every block is wrapped in <IfModule> so the site still works on minimal Apache setups.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 
+Options -MultiViews -Indexes
+ServerSignature Off
+FileETag MTime Size
+
+<IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Handle Authorization Header
+    # ── Block dotfiles (.env, .git …) and source/backup files, just in case they land in public/ ──
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule \.(env|log|sql|sqlite|bak|swp|ini|lock|md|yml|yaml|dist)$ - [F,L,NC]
+
+    # ── Headers Laravel needs ──
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-    # Handle X-XSRF-Token Header
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # ── Canonical URLs: no trailing slashes (one URL per page) ──
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # ── Pre-compressed build assets (written by vite-plugin-compression2) ──
+    # Brotli first, then gzip; only when the browser accepts it and the file exists.
+    RewriteCond %{HTTP:Accept-Encoding} br
+    RewriteCond %{REQUEST_FILENAME}.br -f
+    RewriteRule ^(.+)\.(js|mjs|css|svg|json)$ $1.$2.br [L,E=zv_enc:br]
+    RewriteCond %{HTTP:Accept-Encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}.gz -f
+    RewriteRule ^(.+)\.(js|mjs|css|svg|json)$ $1.$2.gz [L,E=zv_enc:gzip]
+
+    # ── Front controller ──
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# Correct types + encoding for the pre-compressed variants (and no double compression).
+<FilesMatch "\.(js|mjs)\.(br|gz)$">
+    ForceType text/javascript
+</FilesMatch>
+<FilesMatch "\.css\.(br|gz)$">
+    ForceType text/css
+</FilesMatch>
+<FilesMatch "\.svg\.(br|gz)$">
+    ForceType image/svg+xml
+</FilesMatch>
+<FilesMatch "\.json\.(br|gz)$">
+    ForceType application/json
+</FilesMatch>
+<IfModule mod_headers.c>
+    <FilesMatch "\.br$">
+        Header set Content-Encoding br
+    </FilesMatch>
+    <FilesMatch "\.gz$">
+        Header set Content-Encoding gzip
+    </FilesMatch>
+    <FilesMatch "\.(br|gz)$">
+        Header append Vary Accept-Encoding
+    </FilesMatch>
+</IfModule>
+<IfModule mod_env.c>
+    SetEnvIfNoCase Request_URI "\.(br|gz)$" no-gzip no-brotli
+</IfModule>
+
+# ── On-the-fly compression for dynamic responses (HTML, Inertia JSON) ──
+# mod_brotli / mod_deflate when the server has them; otherwise PHP's zlib does gzip.
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>
+<IfModule !mod_deflate.c>
+    <IfModule php_module>
+        php_flag zlib.output_compression On
+        php_value zlib.output_compression_level 5
+    </IfModule>
+</IfModule>
+
+# ── Types ──
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/avif .avif
+    AddType font/woff2 .woff2
+    AddType application/manifest+json .webmanifest
+    AddCharset utf-8 .js .css .json .svg .txt .xml
+</IfModule>
+
+# ── Cache policy ──
+# /build/assets/* is content-hashed → cache forever. Images/fonts → 30 days + background revalidate.
+# HTML is never cached by the browser (Laravel decides per response).
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|mjs|css|br|gz)$">
+        Header set Cache-Control "public, max-age=31536000, immutable" "expr=%{REQUEST_URI} =~ m#/build/assets/#"
+    </FilesMatch>
+    <FilesMatch "\.(woff2?|ttf|otf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+    <FilesMatch "\.(webp|avif|png|jpe?g|gif|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+    </FilesMatch>
+
+    # Hardening for static files (Laravel's SecurityHeaders middleware covers dynamic pages).
+    Header always set X-Content-Type-Options "nosniff"
+    Header always unset X-Powered-By
+    Header unset Server
 </IfModule>

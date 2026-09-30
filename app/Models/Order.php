@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id', 'prescription_id', 'number', 'status', 'customer_name', 'email', 'phone', 'address', 'city',
+        'user_id', 'prescription_id', 'number', 'checkout_token', 'status', 'customer_name', 'email', 'phone', 'address', 'city',
         'postal_code', 'notes', 'payment_method', 'subtotal', 'savings', 'delivery_fee', 'total',
     ];
 

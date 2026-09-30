@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
@@ -10,6 +10,10 @@ const PALETTE = {
     coral: '#f0603f',
     teal: '#0f766e',
 };
+
+// Dark mode: ink pills would vanish on the night background, so light and dark tones swap.
+const DARK_PALETTE = { ...PALETTE, ink: '#e4ebe3', paper: '#1d2f2a' };
+const PaletteContext = createContext(PALETTE);
 
 // Deterministic layout so the composition is art-directed rather than random each load.
 const PILLS = [
@@ -27,11 +31,12 @@ const PILLS = [
 ];
 
 function useMaterial(color, options = {}) {
+    const palette = useContext(PaletteContext);
     const key = JSON.stringify(options);
     return useMemo(
         () =>
             new THREE.MeshPhysicalMaterial({
-                color: PALETTE[color],
+                color: palette[color],
                 roughness: 0.22,
                 metalness: 0,
                 clearcoat: 1,
@@ -40,7 +45,7 @@ function useMaterial(color, options = {}) {
                 ...options,
             }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [color, key],
+        [color, key, palette],
     );
 }
 
@@ -163,7 +168,7 @@ function Environment() {
     return null;
 }
 
-export default function HeroScene() {
+export default function HeroScene({ dark = false }) {
     const scrollProgress = useRef(0);
 
     useEffect(() => {
@@ -186,7 +191,9 @@ export default function HeroScene() {
             <ambientLight intensity={0.35} />
             <directionalLight position={[4, 6, 5]} intensity={1.6} />
             <directionalLight position={[-6, -2, 2]} intensity={0.5} color={PALETTE.mint} />
-            <Rig scrollProgress={scrollProgress} />
+            <PaletteContext.Provider value={dark ? DARK_PALETTE : PALETTE}>
+                <Rig scrollProgress={scrollProgress} />
+            </PaletteContext.Provider>
         </Canvas>
     );
 }

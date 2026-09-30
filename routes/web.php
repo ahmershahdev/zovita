@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\Pages\ContactController;
 use App\Http\Controllers\Pages\NewsletterController;
 use App\Http\Controllers\Pages\PageController;
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Storefront\BodyMapController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
@@ -27,10 +29,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
-Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
-Route::get('/shop/{department:slug}', [ShopController::class, 'index'])->name('shop.department');
+// Clean, query-free shop URLs: /shop/{department}/{category}/brand-x/sort-price-asc/page-2 (see App\Support\ShopPath).
+Route::get('/shop/{department}', [ShopController::class, 'department'])->where('department', '[a-z0-9-]+')->name('shop.department');
+Route::get('/shop/{path?}', [ShopController::class, 'index'])->where('path', '[A-Za-z0-9/_%-]+')->name('shop.index');
 Route::get('/product/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/body-map', [BodyMapController::class, 'show'])->name('body-map');
+Route::get('/body-map/recommend/{symptom}', [BodyMapController::class, 'recommend'])->where('symptom', '[a-z0-9-]+')->middleware('throttle:60,1')->name('body-map.recommend');
 Route::get('/search/suggest', SearchController::class)->middleware('throttle:60,1')->name('search.suggest');
 
 Route::prefix('bag')->name('cart.')->controller(CartController::class)->group(function () {
@@ -52,7 +59,9 @@ Route::prefix('checkout')->name('checkout.')->controller(CheckoutController::cla
 Route::get('/prescription', [PrescriptionController::class, 'create'])->name('prescriptions.create');
 Route::post('/prescription', [PrescriptionController::class, 'store'])->middleware('throttle:5,10')->name('prescriptions.store');
 
-Route::get('/track-order', OrderTrackingController::class)->middleware('throttle:20,1')->name('orders.track');
+Route::get('/track-order', [OrderTrackingController::class, 'create'])->name('orders.track');
+Route::post('/track-order', [OrderTrackingController::class, 'lookup'])->middleware('throttle:10,1')->name('orders.track.lookup');
+Route::get('/track-order/{order:number}', [OrderTrackingController::class, 'show'])->name('orders.track.show');
 
 /*
 |--------------------------------------------------------------------------

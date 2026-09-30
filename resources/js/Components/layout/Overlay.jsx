@@ -31,7 +31,7 @@ export default function Overlay({ open, onClose, side = 'top', label, className,
     return createPortal(
         <div className={cn('fixed inset-0 z-[70]', !open && 'pointer-events-none')} aria-hidden={!open}>
             <div
-                className={cn('absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity duration-500', open ? 'opacity-100' : 'opacity-0')}
+                className={cn('absolute inset-0 bg-night/55 backdrop-blur-sm transition-opacity duration-500', open ? 'opacity-100' : 'opacity-0')}
                 onClick={onClose}
             />
             <div

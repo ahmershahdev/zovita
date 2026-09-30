@@ -7,6 +7,7 @@ import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { cn } from '@/lib/cn';
 import { date, money } from '@/lib/format';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
 const tabs = [
     ['orders', 'Orders'],
@@ -21,8 +22,9 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
             <Head title="Your account">
-                <meta name="robots" content="noindex" />
+                <meta head-key="robots" name="robots" content="noindex" />
             </Head>
+            <Breadcrumbs items={[{ label: 'Account' }]} className="mb-6" />
 
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                 <div>
@@ -133,16 +135,16 @@ function Profile({ profile, cities }) {
             }}
             className="grid max-w-3xl gap-5 md:grid-cols-2"
         >
-            <Field label="Full name" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} />
-            <Field label="Email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} />
-            <Field label="Mobile number" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} optional />
+            <Field label="Full name" placeholder="e.g. Ayesha Khan" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} />
+            <Field label="Email" placeholder="you@example.com" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} />
+            <Field label="Mobile number" placeholder="03XX XXXXXXX" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} optional />
             <Field as="select" label="City" value={data.city} onChange={(e) => setData('city', e.target.value)} error={errors.city} optional>
                 <option value="">Select a city</option>
                 {cities.map((c) => (
                     <option key={c}>{c}</option>
                 ))}
             </Field>
-            <Field as="textarea" label="Default delivery address" rows={3} value={data.address} onChange={(e) => setData('address', e.target.value)} error={errors.address} className="md:col-span-2" optional />
+            <Field as="textarea" label="Default delivery address" placeholder="House, street, area and landmark" rows={3} value={data.address} onChange={(e) => setData('address', e.target.value)} error={errors.address} className="md:col-span-2" optional />
             <div className="md:col-span-2">
                 <Button type="submit" loading={processing}>
                     Save changes
@@ -164,9 +166,9 @@ function Security() {
             }}
             className="grid max-w-xl gap-5"
         >
-            <Field label="Current password" type="password" autoComplete="current-password" value={data.current_password} onChange={(e) => setData('current_password', e.target.value)} error={errors.current_password} />
-            <Field label="New password" type="password" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} hint="8+ characters with letters and numbers." />
-            <Field label="Confirm new password" type="password" autoComplete="new-password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
+            <Field label="Current password" placeholder="Your current password" type="password" autoComplete="current-password" value={data.current_password} onChange={(e) => setData('current_password', e.target.value)} error={errors.current_password} />
+            <Field label="New password" placeholder="At least 8 characters" type="password" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} hint="8+ characters with letters and numbers." />
+            <Field label="Confirm new password" placeholder="Re-enter the new password" type="password" autoComplete="new-password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
             <div>
                 <Button type="submit" loading={processing}>
                     Update password

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { compression } from 'vite-plugin-compression2';
 import path from 'node:path';
 
 export default defineConfig({
@@ -12,6 +13,9 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
+        // Pre-compressed .br and .gz next to every asset; public/.htaccess serves the best one the
+        // browser accepts, so no CPU is spent compressing on each request.
+        compression({ algorithms: ['brotliCompress', 'gzip'], include: /\.(js|mjs|css|svg|json|html|txt)$/, threshold: 1024 }),
     ],
     resolve: {
         alias: {

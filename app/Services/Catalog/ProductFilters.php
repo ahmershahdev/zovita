@@ -5,7 +5,6 @@ namespace App\Services\Catalog;
 use App\Models\Department;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 /**
  * Turns shop query-string filters into an Eloquent query and facet counts.
@@ -23,13 +22,14 @@ class ProductFilters
 
     public array $values;
 
-    public function __construct(Request $request, public readonly ?Department $department = null)
+    /** @param  array<string, mixed>  $input  raw values (from ShopPath::parse or a legacy query string) */
+    public function __construct(array $input, public readonly ?Department $department = null)
     {
-        // Query values can be arrays (?category[]=x); only accept scalar strings.
-        $string = fn (string $key, int $max = 80) => is_string($value = $request->query($key))
+        // Only accept scalar strings; anything else (arrays, objects) is ignored.
+        $string = fn (string $key, int $max = 80) => is_string($value = $input[$key] ?? null)
             ? mb_substr(trim($value), 0, $max)
             : '';
-        $number = fn (string $key) => is_numeric($value = $request->query($key)) ? max(0, (int) $value) : null;
+        $number = fn (string $key) => is_numeric($value = $input[$key] ?? null) ? max(0, (int) $value) : null;
         $sort = $string('sort');
 
         $this->values = [
@@ -38,7 +38,7 @@ class ProductFilters
             'brand' => $string('brand'),
             'form' => $string('form', 32),
             'rx' => in_array($string('rx'), ['otc', 'rx'], true) ? $string('rx') : '',
-            'in_stock' => $request->boolean('in_stock'),
+            'in_stock' => filter_var($input['in_stock'] ?? false, FILTER_VALIDATE_BOOL),
             'min' => $number('min'),
             'max' => $number('max'),
             'sort' => array_key_exists($sort, self::SORTS) ? $sort : 'featured',

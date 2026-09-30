@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import useTheme from '@/hooks/useTheme';
 import { prefersReducedMotion } from '@/lib/gsap';
 
 const HeroScene = lazy(() => import('./HeroScene'));
@@ -15,6 +16,7 @@ function supportsWebGL() {
 /** Loads three.js only on capable devices; otherwise shows the static fallback. */
 export default function LazyHeroScene({ fallback }) {
     const [enabled, setEnabled] = useState(false);
+    const { isDark } = useTheme();
 
     useEffect(() => {
         const saveData = navigator.connection?.saveData;
@@ -25,7 +27,7 @@ export default function LazyHeroScene({ fallback }) {
 
     return (
         <Suspense fallback={fallback}>
-            <HeroScene />
+            <HeroScene dark={isDark} />
         </Suspense>
     );
 }

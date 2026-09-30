@@ -46,7 +46,7 @@ export default function Preloader() {
     if (done) return null;
 
     return (
-        <div ref={root} className="fixed inset-0 z-[90] flex items-end justify-between bg-ink p-6 text-paper md:p-10" style={{ clipPath: 'inset(0 0 0 0)' }}>
+        <div ref={root} className="fixed inset-0 z-[90] flex items-end justify-between bg-night p-6 text-snow md:p-10" style={{ clipPath: 'inset(0 0 0 0)' }}>
             <div className="font-display text-[18vw] leading-[0.85] md:text-[12vw]">
                 {['Zovita', '+'].map((w) => (
                     <span key={w} className="line-mask inline-block pr-[0.06em]">

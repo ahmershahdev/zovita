@@ -6,10 +6,11 @@ import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 import { money } from '@/lib/format';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
-export default function CheckoutCreate({ cart, cities, defaults }) {
+export default function CheckoutCreate({ cart, cities, defaults, checkoutToken }) {
     const getToken = useRecaptchaV3('checkout');
-    const form = useForm({ ...defaults, postal_code: '', notes: '', prescription: null, recaptcha_token: '' });
+    const form = useForm({ ...defaults, postal_code: '', notes: '', prescription: null, recaptcha_token: '', checkout_token: checkoutToken });
     const { data, setData, errors, processing } = form;
 
     const submit = async (e) => {
@@ -22,6 +23,7 @@ export default function CheckoutCreate({ cart, cities, defaults }) {
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
             <Head title="Checkout" />
+            <Breadcrumbs items={[{ label: 'Bag', href: route('cart.index') }, { label: 'Checkout' }]} className="mb-6" />
             <Link href={route('cart.index')} className="eyebrow inline-flex items-center gap-2 text-ink-mute hover:text-ink">
                 <Icon name="arrowLeft" size={14} /> Back to bag
             </Link>
@@ -40,8 +42,8 @@ export default function CheckoutCreate({ cart, cities, defaults }) {
                             <span className="font-mono text-sm text-ink-mute">01</span> Contact
                         </legend>
                         <div className="mt-6 grid gap-5 md:grid-cols-2">
-                            <Field label="Full name" autoComplete="name" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} className="md:col-span-2" required />
-                            <Field label="Email" type="email" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} hint="Order confirmation is sent here." required />
+                            <Field label="Full name" placeholder="e.g. Ayesha Khan" autoComplete="name" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} className="md:col-span-2" required />
+                            <Field label="Email" placeholder="you@example.com" type="email" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} hint="Order confirmation is sent here." required />
                             <Field label="Mobile number" type="tel" autoComplete="tel" placeholder="0300 1234567" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} hint="Our pharmacist may call to confirm." required />
                         </div>
                     </fieldset>
@@ -58,7 +60,7 @@ export default function CheckoutCreate({ cart, cities, defaults }) {
                                     <option key={c}>{c}</option>
                                 ))}
                             </Field>
-                            <Field label="Postal code" optional inputMode="numeric" autoComplete="postal-code" value={data.postal_code} onChange={(e) => setData('postal_code', e.target.value)} error={errors.postal_code} />
+                            <Field label="Postal code" placeholder="e.g. 75600" optional inputMode="numeric" autoComplete="postal-code" value={data.postal_code} onChange={(e) => setData('postal_code', e.target.value)} error={errors.postal_code} />
                             <Field as="textarea" label="Delivery notes" optional placeholder="Landmark, preferred time…" value={data.notes} onChange={(e) => setData('notes', e.target.value)} error={errors.notes} className="md:col-span-2" rows={2} />
                         </div>
                     </fieldset>

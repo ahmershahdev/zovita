@@ -2,8 +2,10 @@ import { router } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import Footer from '@/Components/layout/Footer';
 import Header from '@/Components/layout/Header';
+import Seo from '@/Components/layout/Seo';
 import Toasts from '@/Components/layout/Toasts';
 import Cursor from '@/Components/motion/Cursor';
+import ScrollToTop from '@/Components/motion/ScrollToTop';
 import Preloader from '@/Components/motion/Preloader';
 import SmoothScroll from '@/Components/motion/SmoothScroll';
 import { gsap, prefersReducedMotion } from '@/lib/gsap';
@@ -26,15 +28,17 @@ export default function StoreLayout({ children }) {
 
     return (
         <SmoothScroll>
-            <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">
+            <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-night focus:px-4 focus:py-2 focus:text-snow">
                 Skip to content
             </a>
+            <Seo />
             <Preloader />
             <Header />
-            <main id="main" ref={main}>
+            <main id="main" ref={main} tabIndex={-1} className="outline-none">
                 {children}
             </main>
             <Footer />
+            <ScrollToTop />
             <Toasts />
             <Cursor />
         </SmoothScroll>

@@ -4,6 +4,7 @@ import Button from '@/Components/ui/Button';
 import Icon from '@/Components/ui/Icon';
 import { faqGroups } from '@/content/faq';
 import useReveal from '@/hooks/useReveal';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
 export default function Faq() {
     const scope = useRef(null);
@@ -18,9 +19,10 @@ export default function Faq() {
     return (
         <section ref={scope} className="container-x pb-10 pt-10 md:pt-16">
             <Head title="FAQ">
-                <meta name="description" content="Answers about ordering, delivery, prescriptions, returns and your Zovita account." />
+                <meta head-key="description" name="description" content="Answers about ordering, delivery, prescriptions, returns and your Zovita account." />
                 <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Head>
+            <Breadcrumbs items={[{ label: 'FAQ' }]} className="mb-6" />
             <p className="eyebrow text-ink-mute">Help centre</p>
             <h1 className="mt-4 font-display text-title" data-split="now">
                 Questions, <span className="italic">answered.</span>
@@ -47,7 +49,7 @@ export default function Faq() {
                 ))}
             </div>
 
-            <div className="mt-24 flex flex-col items-start justify-between gap-6 rounded-5xl bg-mint p-8 md:flex-row md:items-center md:p-12">
+            <div className="mt-16 flex flex-col items-start justify-between gap-6 rounded-5xl bg-mint p-8 md:flex-row md:items-center md:p-12">
                 <h2 className="font-display text-4xl md:text-5xl">Still wondering about something?</h2>
                 <Button href={route('contact')} icon={<Icon name="arrow" size={16} />}>
                     Talk to our care team

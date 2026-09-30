@@ -19,7 +19,7 @@ export default function WishlistButton({ product, className }) {
             aria-label={saved ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
             className={cn(
                 'grid size-10 place-items-center rounded-full backdrop-blur transition duration-300 hover:scale-110',
-                saved ? 'bg-coral text-white' : 'bg-white/80 text-ink hover:bg-white',
+                saved ? 'bg-coral text-white' : 'bg-paper/80 text-ink backdrop-blur hover:bg-paper',
                 className,
             )}
         >

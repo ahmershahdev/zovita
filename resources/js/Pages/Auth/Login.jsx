@@ -20,6 +20,7 @@ export default function Login() {
     return (
         <AuthShell
             title="Sign in"
+            step={['01', '01']}
             eyebrow="Welcome back"
             heading={
                 <>
@@ -37,11 +38,11 @@ export default function Login() {
             }
         >
             <form onSubmit={submit} className="space-y-5" noValidate>
-                <Field label="Email" type="email" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email || errors.recaptcha_token} required autoFocus />
-                <Field label="Password" type="password" autoComplete="current-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} required />
+                <Field label="Email" type="email" icon="mail" placeholder="you@example.com" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email || errors.recaptcha_token} required autoFocus />
+                <Field label="Password" type="password" icon="lock" placeholder="Enter your password" autoComplete="current-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} required />
                 <div className="flex items-center justify-between">
                     <Checkbox label="Keep me signed in" checked={data.remember} onChange={(e) => setData('remember', e.target.checked)} />
-                    <Link href={route('password.request')} className="text-sm underline underline-offset-4">
+                    <Link href={route('password.request')} className="text-sm text-ink-mute underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink">
                         Forgot password?
                     </Link>
                 </div>

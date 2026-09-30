@@ -1,13 +1,15 @@
 import { Head, Link, router } from '@inertiajs/react';
 import CartSummary from '@/Components/product/CartSummary';
+import ProductImage from '@/Components/product/ProductImage';
 import QuantityStepper from '@/Components/product/QuantityStepper';
 import Badge from '@/Components/ui/Badge';
 import Button from '@/Components/ui/Button';
 import EmptyState from '@/Components/ui/EmptyState';
 import Icon from '@/Components/ui/Icon';
 import { money } from '@/lib/format';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
-export default function CartIndex({ cart }) {
+export default function CartIndex({ cart, alternatives = {} }) {
     const update = (line, quantity) =>
         router.patch(route('cart.update', line.slug), { quantity }, { preserveScroll: true, preserveState: true });
 
@@ -16,6 +18,7 @@ export default function CartIndex({ cart }) {
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
             <Head title="Your bag" />
+            <Breadcrumbs items={[{ label: 'Bag' }]} className="mb-6" />
             <p className="eyebrow text-ink-mute">Your bag</p>
             <h1 className="mt-4 font-display text-title">
                 {cart.count ? (
@@ -31,7 +34,7 @@ export default function CartIndex({ cart }) {
                 <div className="mt-12">
                     <EmptyState
                         title="Nothing here yet"
-                        body="Browse 475+ authentic medicines and wellness essentials — your picks will wait here."
+                        body="Browse 1,000+ authentic medicines and wellness essentials — your picks will wait here."
                         action={<Button href={route('shop.index')} icon={<Icon name="arrow" size={16} />}>Start shopping</Button>}
                     />
                 </div>
@@ -39,9 +42,10 @@ export default function CartIndex({ cart }) {
                 <div className="mt-12 grid gap-10 lg:grid-cols-12">
                     <ul className="divide-y divide-line border-y border-line lg:col-span-8">
                         {cart.lines.map((line) => (
-                            <li key={line.id} className="flex gap-4 py-6 md:gap-6">
+                            <li key={line.id} className="py-6">
+                              <div className="flex gap-4 md:gap-6">
                                 <Link href={route('products.show', line.slug)} className="grid size-24 shrink-0 place-items-center rounded-3xl bg-card md:size-32">
-                                    <img src={line.image} alt="" className="size-[80%] object-contain mix-blend-multiply" loading="lazy" />
+                                    <ProductImage product={line} alt="" sizes="128px" dim={!line.in_stock} className="size-[80%] object-contain mix-blend-multiply" />
                                 </Link>
                                 <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 md:flex-row md:items-center">
                                     <div className="min-w-0">
@@ -63,6 +67,8 @@ export default function CartIndex({ cart }) {
                                         </button>
                                     </div>
                                 </div>
+                              </div>
+                              {alternatives[line.id]?.length > 0 && <Substitutes line={line} options={alternatives[line.id]} />}
                             </li>
                         ))}
                     </ul>
@@ -88,5 +94,38 @@ export default function CartIndex({ cart }) {
                 </div>
             )}
         </section>
+    );
+}
+
+/** Sold-out line: offer in-stock substitutes and swap in one tap. */
+function Substitutes({ line, options }) {
+    const swap = (alt) =>
+        router.post(route('cart.store'), { product_id: alt.id, quantity: 1 }, {
+            preserveScroll: true,
+            onSuccess: () => router.delete(route('cart.destroy', line.id), { preserveScroll: true }),
+        });
+
+    return (
+        <div className="mt-4 rounded-3xl border border-coral/25 bg-coral/5 p-4 md:ml-38">
+            <p className="flex items-center gap-2 text-sm font-medium">
+                <Icon name="swap" size={16} className="text-coral" /> {line.name} sold out — swap for:
+            </p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+                {options.map((alt) => (
+                    <li key={alt.id} className="flex items-center gap-3 rounded-2xl bg-card p-2 pr-3">
+                        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-plate">
+                            <ProductImage product={alt} alt="" sizes="48px" className="size-[80%] object-contain mix-blend-multiply" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="line-clamp-1 text-xs">{alt.name}</span>
+                            <span className="font-mono text-xs text-ink-mute">{money(alt.current_price)}</span>
+                        </span>
+                        <button type="button" onClick={() => swap(alt)} className="rounded-full bg-ink px-3 py-1.5 text-xs text-paper transition-colors hover:bg-teal">
+                            Swap
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }

@@ -6,8 +6,9 @@ use App\Models\Department;
 use App\Services\Cart\CartService;
 use App\Services\Security\RecaptchaService;
 use App\Services\Wishlist\WishlistService;
+use App\Support\CatalogCache;
+use App\Support\Seo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,18 +36,22 @@ class HandleInertiaRequests extends Middleware
                 'freeDeliveryOver' => (int) config('zovita.free_delivery_over'),
                 'author' => config('zovita.author'),
             ],
+            // Controllers override this with App\Support\Seo::set(); shared so every page has meta.
+            'seo' => Seo::defaults(),
             'auth' => [
                 'user' => fn () => $request->user()?->only('id', 'name', 'email'),
             ],
             'cart' => ['count' => fn () => app(CartService::class)->count()],
             'wishlist' => fn () => app(WishlistService::class)->ids(),
-            'nav' => fn () => Cache::remember('nav.departments', now()->addHour(), fn () => Department::orderBy('sort_order')
+            'nav' => fn () => CatalogCache::remember('nav', now()->addHour(), fn () => Department::orderBy('sort_order')
                 ->with(['categories' => fn ($q) => $q->withCount('products')->orderByDesc('products_count')])
                 ->get()
                 ->map(fn (Department $d) => [
                     'name' => $d->name,
                     'slug' => $d->slug,
                     'blurb' => $d->blurb,
+                    'count' => $d->categories->sum('products_count'),
+                    'image' => $d->products()->where('is_featured', true)->first()?->thumb ?? $d->products()->first()?->thumb,
                     'categories' => $d->categories->take(6)->map->only('name', 'slug')->values(),
                 ])->all()),
             'recaptcha' => fn () => app(RecaptchaService::class)->clientConfig(),

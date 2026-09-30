@@ -116,10 +116,17 @@ class CheckoutTest extends TestCase
         $this->post(route('checkout.store'), $this->details());
         $order = Order::sole();
 
-        $this->get(route('orders.track', ['number' => $order->number, 'email' => 'someone@else.com']))
-            ->assertInertia(fn ($page) => $page->where('order', null)->where('notFound', true));
+        // A fresh visitor (not the checkout session) cannot open the tracking page directly.
+        $this->flushSession();
+        $this->get(route('orders.track.show', $order))->assertRedirect(route('orders.track'));
 
-        $this->get(route('orders.track', ['number' => strtolower($order->number), 'email' => 'AYESHA@example.com']))
+        $this->post(route('orders.track.lookup'), ['number' => $order->number, 'email' => 'someone@else.com'])
+            ->assertSessionHasErrors('number');
+
+        $this->post(route('orders.track.lookup'), ['number' => strtolower($order->number), 'email' => 'AYESHA@example.com'])
+            ->assertRedirect(route('orders.track.show', $order));
+
+        $this->get(route('orders.track.show', $order))
             ->assertInertia(fn ($page) => $page->where('order.number', $order->number));
     }
 }

@@ -22,7 +22,11 @@ export default function Pagination({ meta }) {
                     <Icon name="arrowLeft" size={18} />
                 </span>
             )}
-            <div className="flex items-center gap-1">
+            {/* Phones: compact "3 / 42" counter instead of the full page list. */}
+            <p className="px-3 font-mono text-sm sm:hidden">
+                {meta.current_page} <span className="text-ink-mute">/ {meta.last_page}</span>
+            </p>
+            <div className="hidden items-center gap-1 sm:flex">
                 {links.map((link, i) =>
                     link.url ? (
                         <Link

@@ -5,6 +5,7 @@ import Button from '@/Components/ui/Button';
 import Icon from '@/Components/ui/Icon';
 import SectionHeading from '@/Components/ui/SectionHeading';
 import useReveal from '@/hooks/useReveal';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
 const values = [
     ['shield', 'Verified sourcing', 'We buy only through recognised distributors and manufacturers, so every pack is traceable to its source.'],
@@ -21,8 +22,11 @@ export default function About({ stats }) {
     return (
         <div ref={scope}>
             <Head title="About">
-                <meta name="description" content="Zovita is building Pakistan's calmest, most trustworthy online pharmacy." />
+                <meta head-key="description" name="description" content="Zovita is building Pakistan's calmest, most trustworthy online pharmacy." />
             </Head>
+            <div className="container-x pt-8 md:pt-10">
+                <Breadcrumbs items={[{ label: 'About' }]} />
+            </div>
 
             <section className="container-x pb-20 pt-10 md:pt-16">
                 <p className="eyebrow text-ink-mute">About Zovita</p>
@@ -46,7 +50,7 @@ export default function About({ stats }) {
                 </Marquee>
             </div>
 
-            <section className="container-x py-24 md:py-32">
+            <section className="container-x py-14 md:py-20">
                 <div className="grid gap-px overflow-hidden rounded-4xl border border-line bg-line sm:grid-cols-3" data-stagger>
                     {[
                         [`${stats.products}+`, 'Products listed'],
@@ -61,7 +65,7 @@ export default function About({ stats }) {
                 </div>
             </section>
 
-            <section className="container-x pb-24 md:pb-32">
+            <section className="container-x pb-16 md:pb-32">
                 <SectionHeading
                     index="01"
                     eyebrow="How we work"

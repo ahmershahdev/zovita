@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class Product extends Model
 {
@@ -15,7 +16,7 @@ class Product extends Model
     protected $fillable = [
         'department_id', 'category_id', 'brand_id', 'name', 'slug', 'form', 'pack', 'price', 'sale_price',
         'stock', 'max_per_order', 'requires_prescription', 'is_featured', 'generics', 'summary', 'description',
-        'indication', 'dosage', 'precautions', 'image_url', 'image_path', 'source_url',
+        'indication', 'dosage', 'precautions', 'how_it_works', 'highlights', 'warnings', 'image_url', 'image_path', 'source_url',
     ];
 
     protected function casts(): array
@@ -71,10 +72,48 @@ class Product extends Model
             : $this->image_url);
     }
 
+    /** 320px WebP variant written alongside the main image by catalog:cache-images. */
+    protected function thumb(): Attribute
+    {
+        return Attribute::get(fn () => $this->image_path && str_ends_with($this->image_path, '.webp')
+            ? asset('storage/'.substr($this->image_path, 0, -5).'-sm.webp')
+            : $this->image);
+    }
+
     /** Customers can never order more than stock or the per-order cap allows. */
     public function orderableLimit(): int
     {
         return max(0, min($this->stock, $this->max_per_order, (int) config('zovita.max_line_quantity')));
+    }
+
+    /**
+     * In-stock substitutes, best match first: same active ingredient ("same salt, other brand"),
+     * then same category, then same department. Used when this product is sold out.
+     *
+     * @return Collection<int, self>
+     */
+    public function alternatives(int $limit = 8)
+    {
+        $generics = trim((string) $this->generics);
+
+        return static::with('brand', 'category')
+            ->inStock()
+            ->whereKeyNot($this->getKey())
+            ->where(fn (Builder $q) => $q
+                ->where('category_id', $this->category_id)
+                ->orWhere('department_id', $this->department_id)
+                ->when($generics !== '', fn (Builder $q) => $q->orWhere('generics', $generics)))
+            ->when($generics !== '', fn (Builder $q) => $q->orderByRaw('generics = ? DESC', [$generics]))
+            ->orderByRaw('category_id = ? DESC', [$this->category_id])
+            ->orderByRaw('ABS(COALESCE(sale_price, price) - ?) ASC', [$this->current_price])
+            ->limit($limit)
+            ->get();
+    }
+
+    /** True when $other has the same active ingredient(s) as this product. */
+    public function sharesGenericWith(self $other): bool
+    {
+        return $this->generics && strcasecmp(trim($this->generics), trim((string) $other->generics)) === 0;
     }
 
     public function scopeInStock(Builder $query): void
@@ -107,6 +146,8 @@ class Product extends Model
             'category' => $this->category?->name,
             'form' => $this->form,
             'image' => $this->image,
+            'thumb' => $this->thumb,
+            'generics' => $this->generics,
             'price' => $this->price,
             'current_price' => $this->current_price,
             'discount_percent' => $this->discount_percent,

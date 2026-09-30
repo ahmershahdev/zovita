@@ -15,7 +15,7 @@ export default function SectionHeading({ index, eyebrow, title, aside, className
                 </h2>
             </div>
             {aside && (
-                <div className={cn('md:col-span-4 md:justify-self-end', dark ? 'text-paper/70' : 'text-ink-mute')} data-reveal>
+                <div className={cn('md:col-span-4 md:justify-self-end', dark ? 'text-snow/70' : 'text-ink-mute')} data-reveal>
                     {aside}
                 </div>
             )}

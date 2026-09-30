@@ -2,7 +2,7 @@ import { cn } from '@/lib/cn';
 
 const tones = {
     ink: 'bg-ink text-paper',
-    mint: 'bg-mint text-ink',
+    mint: 'bg-mint text-night',
     coral: 'bg-coral text-white',
     outline: 'border border-line-strong text-ink',
     soft: 'bg-paper-deep text-ink',

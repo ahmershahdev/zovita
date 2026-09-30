@@ -19,7 +19,7 @@ class NewsletterController extends Controller
             'recaptcha_token' => [Recaptcha::v3('newsletter')],
         ]);
 
-        $subscriber = NewsletterSubscriber::firstOrCreate(['email' => strtolower($data['email'])]);
+        $subscriber = NewsletterSubscriber::createOrFirst(['email' => strtolower($data['email'])]); // race-safe on the unique index
         if ($subscriber->wasRecentlyCreated) {
             $mailer->send($subscriber->email, new NewsletterWelcomeMail);
         }

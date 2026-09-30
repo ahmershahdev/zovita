@@ -3,13 +3,14 @@ import { useState } from 'react';
 import RecaptchaCheckbox from '@/Components/forms/RecaptchaCheckbox';
 import AuthShell from '@/Components/layout/AuthShell';
 import Button from '@/Components/ui/Button';
-import Field, { Checkbox } from '@/Components/ui/Field';
+import Field, { Checkbox, PasswordStrength } from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 
 export default function Register() {
     const [captchaReset, setCaptchaReset] = useState(0);
     const form = useForm({ name: '', email: '', password: '', password_confirmation: '', terms: false, recaptcha_token: '' });
     const { data, setData, errors, processing } = form;
+    const mismatch = data.password_confirmation.length > 0 && data.password_confirmation !== data.password;
 
     const submit = (e) => {
         e.preventDefault();
@@ -22,6 +23,7 @@ export default function Register() {
     return (
         <AuthShell
             title="Create account"
+            step={['01', '01']}
             eyebrow="Join Zovita"
             heading={
                 <>
@@ -39,12 +41,23 @@ export default function Register() {
             }
         >
             <form onSubmit={submit} className="space-y-5" noValidate>
-                <Field label="Full name" autoComplete="name" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} required autoFocus />
-                <Field label="Email" type="email" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} required />
-                <div className="grid gap-5 md:grid-cols-2">
-                    <Field label="Password" type="password" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} hint="8+ characters with letters and numbers." required />
-                    <Field label="Confirm password" type="password" autoComplete="new-password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} required />
+                <Field label="Full name" icon="user" placeholder="e.g. Ayesha Khan" autoComplete="name" maxLength={120} value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} required autoFocus />
+                <Field label="Email" type="email" icon="mail" placeholder="you@example.com" autoComplete="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} required />
+                <div>
+                    <Field label="Password" type="password" icon="lock" placeholder="At least 8 characters" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} required />
+                    <PasswordStrength value={data.password} />
                 </div>
+                <Field
+                    label="Confirm password"
+                    type="password"
+                    icon="lock"
+                    placeholder="Re-enter your password"
+                    autoComplete="new-password"
+                    value={data.password_confirmation}
+                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                    error={mismatch ? 'Passwords don’t match yet.' : undefined}
+                    required
+                />
                 <Checkbox
                     checked={data.terms}
                     onChange={(e) => setData('terms', e.target.checked)}

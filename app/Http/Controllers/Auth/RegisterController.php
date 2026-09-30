@@ -8,8 +8,10 @@ use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Services\Mail\TransactionalMailer;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,7 +24,12 @@ class RegisterController extends Controller
 
     public function store(RegisterRequest $request, TransactionalMailer $mailer): RedirectResponse
     {
-        $user = User::create($request->safe()->only(['name', 'email', 'password']));
+        try {
+            $user = User::create($request->safe()->only(['name', 'email', 'password']));
+        } catch (UniqueConstraintViolationException) {
+            // Two sign-ups with the same email raced past the unique validation rule.
+            throw ValidationException::withMessages(['email' => 'An account with this email already exists.']);
+        }
 
         event(new Registered($user));
         Auth::login($user);

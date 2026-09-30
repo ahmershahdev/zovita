@@ -45,7 +45,7 @@ export default function Toasts() {
                         toast.type === 'success' ? 'bg-ink text-paper' : 'bg-coral text-white',
                     )}
                 >
-                    <span className={cn('grid size-8 shrink-0 place-items-center rounded-full', toast.type === 'success' ? 'bg-mint text-ink' : 'bg-white/20')}>
+                    <span className={cn('grid size-8 shrink-0 place-items-center rounded-full', toast.type === 'success' ? 'bg-mint text-night' : 'bg-white/20')}>
                         <Icon name={toast.type === 'success' ? 'check' : 'close'} size={16} strokeWidth={2.2} />
                     </span>
                     <span className="line-clamp-2">{toast.message}</span>

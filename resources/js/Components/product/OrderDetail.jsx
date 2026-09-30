@@ -3,13 +3,13 @@ import { cn } from '@/lib/cn';
 import { date, money } from '@/lib/format';
 
 /** Status timeline + items + totals for a single order (tracking, account, confirmation). */
-export default function OrderDetail({ order }) {
+export default function OrderDetail({ order, hideTimeline = false }) {
     const cancelled = order.status === 'cancelled';
 
     return (
         <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-7">
-                <div className="rounded-4xl bg-card p-6 md:p-8">
+                <div className={cn('rounded-4xl bg-card p-6 md:p-8', hideTimeline && 'hidden')}>
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <p className="font-mono text-sm">{order.number}</p>
                         <p className="text-sm text-ink-mute">Placed {date(order.placed_at)}</p>

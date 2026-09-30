@@ -3,6 +3,7 @@ import Button from '@/Components/ui/Button';
 import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
+import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
 export default function Contact({ topics }) {
     const { app, auth } = usePage().props;
@@ -35,8 +36,9 @@ export default function Contact({ topics }) {
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
             <Head title="Contact us">
-                <meta name="description" content="Reach Zovita's care team for order updates, prescription help and product questions." />
+                <meta head-key="description" name="description" content="Reach Zovita's care team for order updates, prescription help and product questions." />
             </Head>
+            <Breadcrumbs items={[{ label: 'Contact' }]} className="mb-6" />
             <div className="grid gap-14 lg:grid-cols-12">
                 <div className="lg:col-span-5">
                     <p className="eyebrow text-ink-mute">Contact</p>
@@ -85,15 +87,15 @@ export default function Contact({ topics }) {
                 </div>
 
                 <form onSubmit={submit} className="grid gap-5 rounded-5xl bg-card p-6 md:grid-cols-2 md:p-10 lg:col-span-7" noValidate>
-                    <Field label="Full name" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} autoComplete="name" required />
-                    <Field label="Email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} autoComplete="email" required />
-                    <Field label="Phone" type="tel" optional value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} autoComplete="tel" />
+                    <Field label="Full name" placeholder="e.g. Ayesha Khan" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} autoComplete="name" required />
+                    <Field label="Email" placeholder="you@example.com" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} autoComplete="email" required />
+                    <Field label="Phone" placeholder="03XX XXXXXXX" type="tel" optional value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} autoComplete="tel" />
                     <Field as="select" label="Topic" value={data.topic} onChange={(e) => setData('topic', e.target.value)} error={errors.topic}>
                         {topics.map((t) => (
                             <option key={t}>{t}</option>
                         ))}
                     </Field>
-                    <Field as="textarea" label="Message" rows={6} value={data.message} onChange={(e) => setData('message', e.target.value)} error={errors.message} hint="Include your order number if it's about an order." className="md:col-span-2" required />
+                    <Field as="textarea" label="Message" placeholder="How can our pharmacists help you today?" rows={6} value={data.message} onChange={(e) => setData('message', e.target.value)} error={errors.message} hint="Include your order number if it's about an order." className="md:col-span-2" required />
                     {/* Honeypot — hidden from people, tempting to bots */}
                     <input type="text" name="website" tabIndex={-1} autoComplete="off" value={data.website} onChange={(e) => setData('website', e.target.value)} className="hidden" aria-hidden="true" />
                     {errors.recaptcha_token && <p className="text-sm text-coral md:col-span-2">{errors.recaptcha_token}</p>}
