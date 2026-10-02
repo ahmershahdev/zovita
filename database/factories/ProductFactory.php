@@ -34,6 +34,7 @@ class ProductFactory extends Factory
             'requires_prescription' => false,
             'is_featured' => false,
             'image_url' => 'https://example.test/image.jpg',
+            'image_path' => 'products/'.Str::slug($name).'.webp',
         ];
     }
 
@@ -45,6 +46,12 @@ class ProductFactory extends Factory
     public function prescription(): static
     {
         return $this->state(['requires_prescription' => true]);
+    }
+
+    /** No local photo, so the product is kept out of listings. */
+    public function withoutImage(): static
+    {
+        return $this->state(['image_path' => null]);
     }
 
     public function stock(int $stock): static

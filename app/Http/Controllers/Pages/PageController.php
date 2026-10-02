@@ -17,7 +17,7 @@ class PageController extends Controller
     public function about(): Response
     {
         return Inertia::render('Pages/About', [
-            'stats' => ['products' => Product::count(), 'brands' => Brand::count()],
+            'stats' => ['products' => Product::listed()->count(), 'brands' => Brand::count()],
         ]);
     }
 

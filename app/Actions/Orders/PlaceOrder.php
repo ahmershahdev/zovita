@@ -5,11 +5,18 @@ namespace App\Actions\Orders;
 use App\Actions\Prescriptions\StorePrescription;
 use App\Enums\OrderStatus;
 use App\Mail\OrderPlacedMail;
+use App\Models\Offer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Cart\CartService;
+use App\Services\Experiments\Experiments;
 use App\Services\Mail\TransactionalMailer;
+use App\Services\Personalization\Interactions;
+use App\Services\Personalization\OfferEngine;
+use App\Services\Personalization\Pricing;
+use App\Services\Personalization\Visitor;
+use App\Services\Security\ActivityLog;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +44,8 @@ class PlaceOrder
         private readonly CartService $cart,
         private readonly StorePrescription $storePrescription,
         private readonly TransactionalMailer $mailer,
+        private readonly Visitor $visitor,
+        private readonly Interactions $interactions,
     ) {}
 
     /**
@@ -56,9 +65,10 @@ class PlaceOrder
 
         // Set inside the transaction; if it rolls back, the stored file is deleted again below.
         $prescription = null;
+        $visitor = $this->visitor->key();
 
         try {
-            $order = DB::transaction(function () use ($items, $details, $user, $prescriptionFile, $token, &$prescription) {
+            $order = DB::transaction(function () use ($items, $details, $user, $prescriptionFile, $token, $visitor, &$prescription) {
                 $products = Product::whereIn('id', array_keys($items))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
 
                 $subtotal = 0;
@@ -101,6 +111,14 @@ class PlaceOrder
                     ? $this->storePrescription->handle($prescriptionFile, $details, $user, notify: false)
                     : null;
 
+                // Personal offers: re-read and locked here so one offer can never be redeemed by two
+                // parallel checkouts, then priced by the same function the bag preview uses.
+                $offers = Offer::where('visitor', $visitor)->active()->lockForUpdate()->get();
+                $personal = Pricing::apply(
+                    collect($items)->map(fn ($qty, $id) => ['product' => $products[$id], 'quantity' => $qty])->values(),
+                    $offers,
+                );
+
                 $deliveryFee = $payable >= config('zovita.free_delivery_over') ? 0 : (int) config('zovita.delivery_fee');
 
                 $order = $this->createWithUniqueNumber([
@@ -118,10 +136,14 @@ class PlaceOrder
                     'payment_method' => 'cod',
                     'subtotal' => round($subtotal, 2),
                     'savings' => round($subtotal - $payable, 2),
+                    'offer_discount' => $personal['discount'],
                     'delivery_fee' => $deliveryFee,
-                    'total' => round($payable + $deliveryFee, 2),
+                    'total' => round($payable - $personal['discount'] + $deliveryFee, 2),
                 ]);
                 $order->items()->createMany($lines);
+                if ($personal['used']) {
+                    Offer::whereKey($personal['used'])->update(['redeemed_at' => now(), 'order_id' => $order->id]);
+                }
 
                 return $order;
             }, attempts: 3);
@@ -138,6 +160,10 @@ class PlaceOrder
         }
 
         $this->cart->clear();
+        ActivityLog::record('order.placed', "Placed order {$order->number} (PKR ".number_format($order->total).')', $user, ['order' => $order->number]);
+        $this->interactions->purchased($items, $visitor, $user?->id);
+        OfferEngine::forget($visitor);
+        app(Experiments::class)->trackAll('purchase', $visitor);
 
         $this->mailer->send($order->email, new OrderPlacedMail($order));
         $this->mailer->toTeam(new OrderPlacedMail($order, forTeam: true));

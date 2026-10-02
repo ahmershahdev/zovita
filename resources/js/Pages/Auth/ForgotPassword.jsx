@@ -4,6 +4,7 @@ import Button from '@/Components/ui/Button';
 import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
+import { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
 
 export default function ForgotPassword() {
     const getToken = useRecaptchaV3('password_reset');
@@ -45,6 +46,7 @@ export default function ForgotPassword() {
                 <Button type="submit" size="lg" loading={form.processing} className="w-full" icon={<Icon name="mail" size={18} />}>
                     Email me a reset link
                 </Button>
+                <RecaptchaNotice className="text-center" />
             </form>
         </AuthShell>
     );

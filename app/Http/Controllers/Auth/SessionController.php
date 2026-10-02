@@ -22,7 +22,7 @@ class SessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        return redirect()->intended(route('account.dashboard'))->with('success', 'Welcome back.');
+        return redirect()->intended(route('account.dashboard'))->with('success', __('Welcome back.'));
     }
 
     public function destroy(Request $request): RedirectResponse

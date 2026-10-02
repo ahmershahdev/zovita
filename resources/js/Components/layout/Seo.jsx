@@ -8,7 +8,7 @@ import { Head, usePage } from '@inertiajs/react';
 export default function Seo() {
     const { seo, app } = usePage().props;
     if (!seo) return null;
-    const title = seo.title ? `${seo.title} — ${app.name}` : `${app.name} — Online pharmacy in Pakistan`;
+    const title = seo.title ? `${seo.title} — ${app.name}` : `${app.name} — Online pharmacy, care delivered`;
 
     return (
         <Head>

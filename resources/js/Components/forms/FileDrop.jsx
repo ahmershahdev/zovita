@@ -60,6 +60,7 @@ export default function FileDrop({ file, onChange, accept, maxMb, error, label =
                 <input
                     ref={input}
                     type="file"
+                    aria-label="Choose a prescription file (photo or PDF)"
                     className="sr-only"
                     accept={accept.map((t) => `.${t}`).join(',')}
                     onChange={(e) => pick(e.target.files)}

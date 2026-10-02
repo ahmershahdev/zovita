@@ -60,6 +60,12 @@ export default function OrderDetail({ order, hideTimeline = false }) {
                             <dd>− {money(order.savings, { precise: true })}</dd>
                         </div>
                     )}
+                    {order.offer_discount > 0 && (
+                        <div className="flex justify-between text-teal">
+                            <dt>Personal offers</dt>
+                            <dd>− {money(order.offer_discount, { precise: true })}</dd>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                         <dt className="text-ink-mute">Delivery</dt>
                         <dd>{order.delivery_fee > 0 ? money(order.delivery_fee) : 'Free'}</dd>

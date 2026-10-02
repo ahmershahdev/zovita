@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useRef } from 'react';
 import CartSummary from '@/Components/product/CartSummary';
 import ProductImage from '@/Components/product/ProductImage';
 import QuantityStepper from '@/Components/product/QuantityStepper';
@@ -6,6 +7,7 @@ import Badge from '@/Components/ui/Badge';
 import Button from '@/Components/ui/Button';
 import EmptyState from '@/Components/ui/EmptyState';
 import Icon from '@/Components/ui/Icon';
+import { collapse, photoIn, transfer } from '@/lib/fly';
 import { money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
@@ -13,7 +15,18 @@ export default function CartIndex({ cart, alternatives = {} }) {
     const update = (line, quantity) =>
         router.patch(route('cart.update', line.slug), { quantity }, { preserveScroll: true, preserveState: true });
 
-    const remove = (line) => router.delete(route('cart.destroy', line.slug), { preserveScroll: true });
+    // The request never waits on the animation: the row folds away while it is in flight.
+    const remove = (line, row) => {
+        collapse(row);
+        router.delete(route('cart.destroy', line.slug), { preserveScroll: true });
+    };
+
+    // Bag → wishlist: a heart flies to the header wishlist while the row folds away.
+    const saveForLater = (line, row) => {
+        transfer('cart', 'wishlist', { from: row.querySelector('img') ?? row, image: photoIn(row) });
+        collapse(row);
+        router.post(route('cart.save', line.slug), {}, { preserveScroll: true });
+    };
 
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
@@ -42,34 +55,7 @@ export default function CartIndex({ cart, alternatives = {} }) {
                 <div className="mt-12 grid gap-10 lg:grid-cols-12">
                     <ul className="divide-y divide-line border-y border-line lg:col-span-8">
                         {cart.lines.map((line) => (
-                            <li key={line.id} className="py-6">
-                              <div className="flex gap-4 md:gap-6">
-                                <Link href={route('products.show', line.slug)} className="grid size-24 shrink-0 place-items-center rounded-3xl bg-card md:size-32">
-                                    <ProductImage product={line} alt="" sizes="128px" dim={!line.in_stock} className="size-[80%] object-contain mix-blend-multiply" />
-                                </Link>
-                                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 md:flex-row md:items-center">
-                                    <div className="min-w-0">
-                                        <p className="eyebrow text-ink-mute">{line.brand}</p>
-                                        <Link href={route('products.show', line.slug)} className="mt-1 block font-medium hover:underline">
-                                            {line.name}
-                                        </Link>
-                                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-mute">
-                                            {money(line.current_price, { precise: true })} each
-                                            {line.requires_prescription && <Badge tone="ink">Rx</Badge>}
-                                            {!line.in_stock && <Badge tone="coral">Out of stock</Badge>}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 md:justify-end">
-                                        <QuantityStepper size="sm" value={line.quantity} max={line.max_quantity} min={1} onChange={(q) => update(line, q)} />
-                                        <p className="w-28 text-right font-medium">{money(line.line_total, { precise: true })}</p>
-                                        <button type="button" onClick={() => remove(line)} className="grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-coral hover:text-white" aria-label={`Remove ${line.name}`}>
-                                            <Icon name="close" size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                              </div>
-                              {alternatives[line.id]?.length > 0 && <Substitutes line={line} options={alternatives[line.id]} />}
-                            </li>
+                            <BagLine key={line.id} line={line} alternatives={alternatives[line.id]} onUpdate={update} onRemove={remove} onSave={saveForLater} />
                         ))}
                     </ul>
 
@@ -102,7 +88,7 @@ function Substitutes({ line, options }) {
     const swap = (alt) =>
         router.post(route('cart.store'), { product_id: alt.id, quantity: 1 }, {
             preserveScroll: true,
-            onSuccess: () => router.delete(route('cart.destroy', line.id), { preserveScroll: true }),
+            onSuccess: () => router.delete(route('cart.destroy', line.slug), { preserveScroll: true }),
         });
 
     return (
@@ -127,5 +113,52 @@ function Substitutes({ line, options }) {
                 ))}
             </ul>
         </div>
+    );
+}
+
+function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
+    const row = useRef(null);
+
+    return (
+        <li ref={row} className="overflow-hidden py-6">
+            <div className="flex gap-4 md:gap-6">
+                <Link href={route('products.show', line.slug)} className="grid size-24 shrink-0 place-items-center rounded-3xl bg-card md:size-32">
+                    <ProductImage product={line} alt="" sizes="128px" dim={!line.in_stock} className="size-[80%] object-contain mix-blend-multiply" />
+                </Link>
+                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 md:flex-row md:items-center">
+                    <div className="min-w-0">
+                        <p className="eyebrow text-ink-mute">{line.brand}</p>
+                        <Link href={route('products.show', line.slug)} className="mt-1 block font-medium hover:underline">
+                            {line.name}
+                        </Link>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-mute">
+                            {money(line.current_price, { precise: true })} each
+                            {line.requires_prescription && <Badge tone="ink">Rx</Badge>}
+                            {!line.in_stock && <Badge tone="coral">Out of stock</Badge>}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => onSave(line, row.current)}
+                            className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-mute underline decoration-line-strong underline-offset-4 transition-colors hover:text-coral hover:decoration-coral"
+                        >
+                            <Icon name="heart" size={13} /> Save for later
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 md:justify-end">
+                        <QuantityStepper size="sm" value={line.quantity} max={line.max_quantity} min={1} onChange={(q) => onUpdate(line, q)} />
+                        <p className="w-24 text-right font-medium sm:w-28">{money(line.line_total, { precise: true })}</p>
+                        <button
+                            type="button"
+                            onClick={() => onRemove(line, row.current)}
+                            className="grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-coral hover:text-white"
+                            aria-label={`Remove ${line.name}`}
+                        >
+                            <Icon name="close" size={16} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {alternatives?.length > 0 && <Substitutes line={line} options={alternatives} />}
+        </li>
     );
 }

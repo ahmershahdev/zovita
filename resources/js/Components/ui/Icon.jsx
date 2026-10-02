@@ -147,6 +147,9 @@ const paths = {
     sparkle: <path d="M12 3c.6 4.6 3.4 7.4 8 8-4.6.6-7.4 3.4-8 8-.6-4.6-3.4-7.4-8-8 4.6-.6 7.4-3.4 8-8Z" />,
 };
 
+/** Icons that point along the reading direction are mirrored in right-to-left (Urdu). */
+const DIRECTIONAL = new Set(['arrow', 'arrowLeft', 'arrowUpRight']);
+
 export default function Icon({ name, size = 20, className, strokeWidth = 1.6, ...props }) {
     return (
         <svg
@@ -159,7 +162,7 @@ export default function Icon({ name, size = 20, className, strokeWidth = 1.6, ..
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
-            className={className}
+            className={DIRECTIONAL.has(name) ? `rtl:-scale-x-100 ${className ?? ''}` : className}
             {...props}
         >
             {paths[name]}

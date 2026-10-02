@@ -21,7 +21,7 @@ class SearchController extends Controller
         $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
 
         return response()->json([
-            'products' => Product::with('brand', 'category')->search($term)
+            'products' => Product::with('brand', 'category')->listed()->search($term)
                 ->orderByRaw('name LIKE ? DESC', [str_replace(['%', '_'], ['\%', '\_'], $term).'%'])
                 ->orderByRaw('stock > 0 DESC')
                 ->limit(6)->get()->map->toCard(),

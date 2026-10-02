@@ -11,12 +11,15 @@ import Badge from '@/Components/ui/Badge';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 import Button from '@/Components/ui/Button';
 import Icon from '@/Components/ui/Icon';
+import Select from '@/Components/ui/Select';
 import Price from '@/Components/ui/Price';
 import SectionHeading from '@/Components/ui/SectionHeading';
 import useRecentlyViewed from '@/hooks/useRecentlyViewed';
 import useReveal from '@/hooks/useReveal';
 import { cn } from '@/lib/cn';
 import { money, pad } from '@/lib/format';
+import { fly } from '@/lib/fly';
+import { signal } from '@/lib/signals';
 import { shopUrl } from '@/lib/shopUrl';
 
 const PackScene = lazy(() => import('@/Components/three/PackScene'));
@@ -44,7 +47,7 @@ const DELIVERY = [
     ['Other cities', '2–5 days'],
 ];
 
-export default function ProductShow({ product, related, alternatives, priceStats }) {
+export default function ProductShow({ product, related, alternatives, priceStats, personalOffer = null }) {
     const { app } = usePage().props;
     const scope = useRef(null);
     const zoom = useRef(null);
@@ -54,19 +57,46 @@ export default function ProductShow({ product, related, alternatives, priceStats
     const [city, setCity] = useState(0);
     const [copied, setCopied] = useState(false);
     const recent = useRecentlyViewed(product);
+    const gallery = useRef(null);
     useReveal(scope, [product.slug]);
+
+    // Time actually spent looking at this product (visible tab only), sent when leaving it.
+    useEffect(() => {
+        let visibleSince = document.visibilityState === 'visible' ? Date.now() : null;
+        let total = 0;
+        const pause = () => {
+            if (visibleSince) total += Date.now() - visibleSince;
+            visibleSince = null;
+        };
+        const onVisibility = () => (document.visibilityState === 'visible' ? (visibleSince = Date.now()) : pause());
+        const flush = () => {
+            pause();
+            const seconds = Math.round(total / 1000);
+            total = 0;
+            if (seconds >= 3) signal('dwell', { product_id: product.id, seconds: Math.min(seconds, 600) });
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('pagehide', flush);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibility);
+            window.removeEventListener('pagehide', flush);
+            flush();
+        };
+    }, [product.id]);
 
     useEffect(() => {
         setQty(1);
         setView('photo');
     }, [product.slug]);
 
-    const add = () =>
+    const add = () => {
+        fly('cart', { from: gallery.current?.querySelector('img') ?? gallery.current, image: product.thumb ?? product.image });
         router.post(route('cart.store'), { product_id: product.id, quantity: qty }, {
             preserveScroll: true,
             onStart: () => setAdding(true),
             onFinish: () => setAdding(false),
         });
+    };
 
     const buyNow = () =>
         router.post(route('cart.store'), { product_id: product.id, quantity: qty }, { onSuccess: () => router.visit(route('checkout.create')) });
@@ -145,7 +175,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                     {/* Gallery */}
                     <div className="lg:col-span-7">
                         <div className="lg:sticky lg:top-28">
-                            <div className="group relative aspect-square overflow-hidden rounded-5xl bg-card">
+                            <div ref={gallery} className="group relative aspect-square overflow-hidden rounded-5xl bg-card">
                                 {view === 'photo' ? (
                                     <div className="absolute inset-0 cursor-zoom-in" onPointerMove={onZoom} data-cursor="Zoom">
                                         <div ref={zoom} className="absolute inset-0 transition-transform duration-700 ease-[var(--ease-expo)] group-hover:scale-[1.6]">
@@ -242,9 +272,25 @@ export default function ProductShow({ product, related, alternatives, priceStats
                             </a>
                         )}
 
+                        {personalOffer && (
+                            <div className="mt-8 flex items-start gap-4 rounded-3xl border border-teal/25 bg-mint-soft p-5">
+                                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-teal text-white">
+                                    <Icon name="sparkle" size={17} />
+                                </span>
+                                <div className="min-w-0">
+                                    <p className="font-medium">
+                                        {personalOffer.label} — {personalOffer.percent}% off, just for you
+                                    </p>
+                                    <p className="mt-1 text-sm text-ink-soft">
+                                        {personalOffer.reason}. Applied automatically in your bag · ends {new Date(personalOffer.expires_at).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="mt-8 flex items-end justify-between gap-4 border-y border-line py-6">
                             <div>
-                                <Price price={product.price} current={product.current_price} size="lg" />
+                                <Price price={product.price} current={product.current_price} personal={personalOffer?.percent ?? 0} size="lg" />
                                 <p className="mt-1 text-sm text-ink-mute">Per {product.pack} · incl. taxes</p>
                             </div>
                             <div className="text-right">
@@ -307,21 +353,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                                 <p className="flex items-center gap-2 text-sm font-medium">
                                     <Icon name="truck" size={18} className="text-teal" /> Delivery to
                                 </p>
-                                <label className="sr-only" htmlFor="delivery-city">
-                                    City
-                                </label>
-                                <select
-                                    id="delivery-city"
-                                    value={city}
-                                    onChange={(e) => setCity(Number(e.target.value))}
-                                    className="rounded-full border border-line-strong bg-card px-3 py-1.5 text-sm focus:border-ink focus:outline-none"
-                                >
-                                    {DELIVERY.map(([name], i) => (
-                                        <option key={name} value={i}>
-                                            {name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <Select variant="pill" ariaLabel="Delivery city" value={city} onChange={(v) => setCity(Number(v))} options={DELIVERY.map(([name], i) => ({ value: i, label: name }))} />
                             </div>
                             <p className="mt-3 text-sm text-ink-mute">
                                 Arrives in <strong className="text-ink">{DELIVERY[city][1]}</strong> · Cash on delivery · Free over {money(app.freeDeliveryOver)}
@@ -358,7 +390,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                                                     activeSection === id ? 'border-ink bg-ink text-paper lg:border-teal lg:bg-transparent lg:text-ink' : 'text-ink-mute hover:text-ink lg:border-transparent',
                                                 )}
                                             >
-                                                <span className="font-mono text-[0.65rem] opacity-60">{pad(i + 1)}</span>
+                                                <span className="font-mono text-[0.65rem] opacity-80">{pad(i + 1)}</span>
                                                 {label}
                                             </a>
                                         </li>

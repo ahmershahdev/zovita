@@ -36,7 +36,7 @@ class PrescriptionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.regex' => 'Enter a valid Pakistani mobile number, e.g. 0300 1234567.',
+            'phone.regex' => 'Enter a valid mobile number, e.g. 0300 1234567.',
             'file.mimes' => 'Upload a JPG, PNG, WEBP or PDF file.',
             'consent.accepted' => 'Please confirm the prescription is valid and issued to you.',
         ];

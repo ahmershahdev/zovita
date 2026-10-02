@@ -26,7 +26,8 @@ final class CatalogCache
 
     private static function key(string $key): string
     {
-        return 'catalog.'.self::version().'.'.$key;
+        // Cached payloads contain absolute asset URLs, so each host (www/apex, staging) gets its own copy.
+        return 'catalog.'.self::version().'.'.substr(md5(url('/')), 0, 8).'.'.$key;
     }
 
     private static function version(): int

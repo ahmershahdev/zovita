@@ -6,7 +6,11 @@ const listeners = new Set();
 const read = () => (typeof document === 'undefined' ? 'light' : document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
 
 function apply(theme) {
-    document.documentElement.dataset.theme = theme;
+    // Swap every colour in the same frame (no 0.5s body/colour transitions trailing behind).
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    root.dataset.theme = theme;
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = theme === 'dark' ? '#0a0f0e' : '#f3f0e8';
     try {
@@ -45,7 +49,7 @@ export default function useTheme() {
         transition.ready.then(() => {
             document.documentElement.animate(
                 { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-                { duration: 800, easing: 'cubic-bezier(0.76, 0, 0.24, 1)', pseudoElement: '::view-transition-new(root)' },
+                { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
             );
         });
     }, []);

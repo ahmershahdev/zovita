@@ -26,6 +26,19 @@ class CheckoutTest extends TestCase
         ], $overrides);
     }
 
+    public function test_busy_shopping_does_not_use_up_the_checkout_limit(): void
+    {
+        // Each route throttle has its own counter: bag updates must not count against checkout's 6/min.
+        Mail::fake();
+        $product = Product::factory()->stock(50)->create();
+        foreach (range(1, 7) as $i) {
+            $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1])->assertStatus(302);
+        }
+
+        $this->post(route('checkout.store'), $this->details())->assertRedirect();
+        $this->assertSame(1, Order::count());
+    }
+
     public function test_checkout_redirects_to_bag_when_empty(): void
     {
         $this->get(route('checkout.create'))->assertRedirect(route('cart.index'));
@@ -99,7 +112,7 @@ class CheckoutTest extends TestCase
         $this->assertSame(2, $product->fresh()->stock);
     }
 
-    public function test_checkout_validates_pakistani_mobile_numbers_and_city(): void
+    public function test_checkout_validates_local_mobile_numbers_and_city(): void
     {
         $product = Product::factory()->create();
         $this->post(route('cart.store'), ['product_id' => $product->id]);

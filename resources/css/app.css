@@ -380,16 +380,50 @@ html.lenis body {
     scale: 1;
 }
 
-/* ───────────────────────── Cursor ───────────────────────── */
+/* ───────────────────────── Cursor (capsule, see Cursor.jsx) ───────────────────────── */
+.cursor-half,
 .cursor-dot,
-.cursor-ring,
+.cursor-granule,
 .cursor-label {
     position: fixed;
     top: 0;
     left: 0;
     pointer-events: none;
     z-index: 110;
-    translate: -50% -50%;
+    will-change: transform;
+}
+
+.cursor-half {
+    box-shadow: 0 0 0 1.5px rgb(255 255 255 / 0.9), 0 6px 18px -6px rgb(11 27 51 / 0.45);
+    transition: opacity 0.3s, background-color 0.35s var(--ease-expo), box-shadow 0.35s;
+}
+
+.cursor-half-a { background: var(--color-teal); }
+.cursor-half-b { background: var(--color-mint); }
+
+.cursor-half.is-label {
+    background: var(--color-mint);
+    box-shadow: 0 14px 40px -12px rgb(0 0 0 / 0.4);
+}
+
+.cursor-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    box-shadow: 0 0 0 1.5px var(--color-paper);
+    transition: opacity 0.3s;
+}
+
+.cursor-granule {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    opacity: 0;
+}
+
+.cursor-label {
+    z-index: 111;
 }
 
 /* The native pointer is hidden only while the custom cursor is live; text fields keep the caret. */
@@ -407,8 +441,9 @@ html.has-cursor select {
 }
 
 @media (pointer: coarse) {
+    .cursor-half,
     .cursor-dot,
-    .cursor-ring,
+    .cursor-granule,
     .cursor-label {
         display: none;
     }
@@ -428,4 +463,309 @@ html.has-cursor select {
         opacity: 1;
         transform: none;
     }
+}
+
+/* ───────────────────────── Body map pins ───────────────────────── */
+.body-pin {
+    transition: opacity 0.35s var(--ease-expo);
+    will-change: transform;
+}
+
+.body-pin[data-visible='false'] {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.body-pin-dot {
+    position: relative;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 999px;
+    background: var(--color-card);
+    box-shadow: 0 0 0 2px var(--color-teal), 0 4px 14px rgb(0 0 0 / 0.18);
+    transition: scale 0.4s var(--ease-expo), background-color 0.3s;
+}
+
+.body-pin-dot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 1.5px solid var(--color-teal);
+    animation: pulse-ring 2.4s var(--ease-expo) infinite;
+}
+
+.body-pin:hover .body-pin-dot,
+.body-pin:focus-visible .body-pin-dot,
+.body-pin-dot.is-active {
+    scale: 1.35;
+    background: var(--color-teal);
+}
+
+.body-pin-label {
+    position: absolute;
+    left: 1.35rem;
+    top: 50%;
+    translate: -0.4rem -50%;
+    white-space: nowrap;
+    border-radius: 999px;
+    background: var(--color-night);
+    color: var(--color-snow);
+    padding: 0.3rem 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-expo), translate 0.45s var(--ease-expo);
+}
+
+.body-pin-label.is-shown {
+    opacity: 1;
+    translate: 0 -50%;
+}
+
+@keyframes scan-y {
+    from { transform: translateY(-2rem); }
+    to { transform: translateY(7rem); }
+}
+
+/* ───────────────────────── Bag & wishlist flights (lib/fly.js) ───────────────────────── */
+.fly-parcel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 120;
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+    will-change: transform, opacity;
+}
+
+.fly-parcel-cart {
+    border-radius: 1.4rem;
+    background: var(--color-plate);
+    box-shadow: 0 0 0 2px var(--color-mint), 0 24px 50px -18px rgb(11 27 51 / 0.55);
+    overflow: hidden;
+}
+
+.fly-parcel-cart img {
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.fly-parcel-wishlist,
+.fly-heart-half {
+    color: var(--color-coral);
+    filter: drop-shadow(0 8px 14px rgb(229 83 47 / 0.45));
+}
+
+.fly-ring {
+    position: fixed;
+    z-index: 119;
+    pointer-events: none;
+    border-radius: 999px;
+    translate: -50% -50%;
+    border: 2px solid var(--color-mint);
+}
+
+.fly-ring-coral {
+    border-color: var(--color-coral);
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0.3); }
+    60% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* The v3 badge is hidden; every protected form shows <RecaptchaNotice> instead, as Google permits. */
+.grecaptcha-badge {
+    visibility: hidden !important;
+}
+
+.fly-parcel.is-ghost {
+    box-shadow: none;
+    filter: blur(1.5px) saturate(1.3);
+}
+
+.fly-particle {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 121;
+    pointer-events: none;
+    border-radius: 999px;
+}
+
+.fly-particle-mint { background: var(--color-mint); box-shadow: 0 0 10px var(--color-mint); }
+.fly-particle-coral { background: var(--color-coral); box-shadow: 0 0 10px rgb(229 83 47 / 0.6); }
+.fly-particle.is-heart { background: none; box-shadow: none; color: var(--color-coral); }
+
+.fly-plus {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 122;
+    pointer-events: none;
+    border-radius: 999px;
+    padding: 0.15rem 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #0b1b33;
+}
+
+.fly-plus-mint { background: var(--color-mint); }
+.fly-plus-coral { background: var(--color-coral); color: #fff; }
+
+/* Second categorical slot for two-series charts (A/B variants), validated against both surfaces. */
+:root { --color-viz-2: #eb6834; }
+[data-theme='dark'] { --color-viz-2: #d95926; }
+
+/* Theme flips apply in one frame (see useTheme): suppress colour transitions while switching. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
+}
+
+/* ───────────────────────── Error page (Errors/Error.jsx) ───────────────────────── */
+.err-pill {
+    display: block;
+    width: calc(2.6rem * var(--s, 1));
+    height: calc(1.05rem * var(--s, 1));
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--c1) 50%, var(--c2) 50%);
+    box-shadow: inset 0 -3px 6px rgb(0 0 0 / 0.18), inset 0 2px 4px rgb(255 255 255 / 0.35), 0 10px 24px -10px rgb(0 0 0 / 0.6);
+    opacity: 0.85;
+}
+.err-pill-a { --c1: #9ef0c2; --c2: #f3f0e8; }
+.err-pill-b { --c1: #0f766e; --c2: #9ef0c2; }
+.err-pill-c { --c1: #e5532f; --c2: #f3f0e8; }
+.err-pill-d { --c1: #15294a; --c2: #6ee7c8; }
+
+.err-capsule {
+    position: relative;
+    display: block;
+    /* Sized to the cap height of the neighbouring digits and lifted onto their baseline. */
+    width: clamp(3.5rem, 12.8vw, 11.2rem);
+    height: clamp(5.7rem, 21vw, 18.3rem);
+    margin: 0 clamp(0.3rem, 1.2vw, 1rem) clamp(0.8rem, 2.9vw, 2.55rem);
+    cursor: pointer;
+}
+.err-capsule-half {
+    position: absolute;
+    inset-inline: 0;
+    height: 50%;
+    transition: transform 0.9s var(--ease-expo);
+    box-shadow: inset 0 -10px 30px rgb(0 0 0 / 0.25), inset 0 10px 24px rgb(255 255 255 / 0.25);
+}
+.err-capsule-top {
+    top: 0;
+    border-radius: 999px 999px 0.4rem 0.4rem;
+    background: linear-gradient(160deg, #b8f6d3, #6ee7c8);
+}
+.err-capsule-bottom {
+    bottom: 0;
+    border-radius: 0.4rem 0.4rem 999px 999px;
+    background: linear-gradient(160deg, #f3f0e8, #cfd8d3);
+}
+.err-capsule.is-open .err-capsule-top { transform: translateY(-12%) rotate(-14deg) translateX(-8%); }
+.err-capsule.is-open .err-capsule-bottom { transform: translateY(10%) rotate(10deg) translateX(6%); }
+.err-granule {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(0.4rem, 1.1vw, 0.8rem);
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: var(--color-snow);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: transform 0.9s var(--ease-expo), opacity 0.4s;
+    transition-delay: calc(var(--g) * 25ms);
+}
+.err-granule:nth-child(odd) { background: #9ef0c2; }
+.err-capsule.is-open .err-granule {
+    opacity: 1;
+    transform: translate(calc(-50% + (var(--g) - 4) * 0.9rem), calc(-50% + 2.5rem + (var(--g) * var(--g) * 0.12rem)));
+}
+
+/* Map tiles follow the site theme: a soft re-tint in dark mode instead of a glaring white map. */
+[data-theme='dark'] .map-tiles {
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.7) brightness(0.95) contrast(0.9);
+}
+
+/* ───────────────────────── Urdu (lang="ur", dir="rtl") ───────────────────────── */
+@utility font-urdu {
+    font-family: 'Noto Nastaliq Urdu', var(--font-sans);
+}
+
+/* Nastaliq is a tall, joined script: give it room, and never letter-space it (spacing breaks
+   the joins). Latin words inside Urdu text keep the Latin faces via the font stack order. */
+html[lang='ur'] body {
+    font-family: 'Geist Variable', 'Noto Nastaliq Urdu', ui-sans-serif, system-ui, sans-serif;
+    line-height: 2.05;
+}
+html[lang='ur'] :is(.font-display, .eyebrow, .font-mono, h1, h2, h3, h4, p, span, a, button, label, li, dd, dt) {
+    letter-spacing: 0 !important;
+}
+html[lang='ur'] .font-display {
+    font-family: 'Bricolage Grotesque Variable', 'Noto Nastaliq Urdu', sans-serif;
+    line-height: 1.55;
+}
+html[lang='ur'] .text-display,
+html[lang='ur'] .text-title {
+    line-height: 1.35;
+}
+html[lang='ur'] .eyebrow {
+    text-transform: none;
+    font-size: 0.8rem;
+}
+html[lang='ur'] .line-mask {
+    /* Nastaliq kaf/gaf strokes rise well above the line box; leave room so the mask doesn't cut them. */
+    padding-block: 0.5em 0.25em;
+    margin-block: -0.5em -0.25em;
+}
+
+/* Map picker pin (MapPicker.jsx) */
+.map-pin {
+    position: relative;
+    display: block;
+    width: 34px;
+    height: 34px;
+    border-radius: 50% 50% 50% 0;
+    background: var(--color-teal);
+    transform: rotate(-45deg);
+    box-shadow: 0 10px 20px -6px rgb(0 0 0 / 0.45);
+}
+.map-pin > span {
+    position: absolute;
+    inset: 9px;
+    border-radius: 999px;
+    background: var(--color-card);
+}
+.leaflet-container {
+    font-family: var(--font-sans);
+    background: var(--color-paper-deep);
+}
+
+/* Button label roll (Button.jsx): a one-line mask can't hold Nastaliq's tall strokes and dots, so
+   Urdu buttons keep a still label instead of clipping it. */
+html[lang='ur'] .roll {
+    overflow: visible;
+}
+html[lang='ur'] .roll > :first-child {
+    transform: none !important;
+}
+html[lang='ur'] .roll > [aria-hidden='true'] {
+    display: none;
+}
+html[lang='ur'] p.leading-relaxed {
+    line-height: 2;
 }

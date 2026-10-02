@@ -1,5 +1,5 @@
-const pkr = new Intl.NumberFormat('en-PK', { maximumFractionDigits: 0 });
-const pkrPrecise = new Intl.NumberFormat('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const pkr = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+const pkrPrecise = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 /** "PKR 1,234" — whole rupees for display, paisa only when present. */
 export function money(value, { precise = false } = {}) {
@@ -8,7 +8,7 @@ export function money(value, { precise = false } = {}) {
 }
 
 export function date(iso, options = { day: 'numeric', month: 'short', year: 'numeric' }) {
-    return new Date(iso).toLocaleDateString('en-PK', options);
+    return new Date(iso).toLocaleDateString('en-US', options);
 }
 
 export function pluralize(count, word, plural = `${word}s`) {

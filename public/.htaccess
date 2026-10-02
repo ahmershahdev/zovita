@@ -30,10 +30,10 @@ FileETag MTime Size
     # Brotli first, then gzip; only when the browser accepts it and the file exists.
     RewriteCond %{HTTP:Accept-Encoding} br
     RewriteCond %{REQUEST_FILENAME}.br -f
-    RewriteRule ^(.+)\.(js|mjs|css|svg|json)$ $1.$2.br [L,E=zv_enc:br]
+    RewriteRule ^(.+)\.(js|mjs|css|svg|json|bin)$ $1.$2.br [L,E=zv_enc:br]
     RewriteCond %{HTTP:Accept-Encoding} gzip
     RewriteCond %{REQUEST_FILENAME}.gz -f
-    RewriteRule ^(.+)\.(js|mjs|css|svg|json)$ $1.$2.gz [L,E=zv_enc:gzip]
+    RewriteRule ^(.+)\.(js|mjs|css|svg|json|bin)$ $1.$2.gz [L,E=zv_enc:gzip]
 
     # ── Front controller ──
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -53,6 +53,9 @@ FileETag MTime Size
 </FilesMatch>
 <FilesMatch "\.json\.(br|gz)$">
     ForceType application/json
+</FilesMatch>
+<FilesMatch "\.bin(\.(br|gz))?$">
+    ForceType application/octet-stream
 </FilesMatch>
 <IfModule mod_headers.c>
     <FilesMatch "\.br$">
@@ -103,6 +106,10 @@ FileETag MTime Size
     <FilesMatch "\.(woff2?|ttf|otf)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
         Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+    # Body-map mesh: versioned with ?v=mtime by the controller, so it can be cached for a year.
+    <FilesMatch "\.bin(\.(br|gz))?$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
     <FilesMatch "\.(webp|avif|png|jpe?g|gif|svg|ico)$">
         Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"

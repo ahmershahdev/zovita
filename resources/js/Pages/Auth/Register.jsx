@@ -1,7 +1,8 @@
 import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import RecaptchaCheckbox from '@/Components/forms/RecaptchaCheckbox';
+import RecaptchaCheckbox, { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
 import AuthShell from '@/Components/layout/AuthShell';
+import { fingerprint } from '@/lib/fingerprint';
 import Button from '@/Components/ui/Button';
 import Field, { Checkbox, PasswordStrength } from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
@@ -12,8 +13,10 @@ export default function Register() {
     const { data, setData, errors, processing } = form;
     const mismatch = data.password_confirmation.length > 0 && data.password_confirmation !== data.password;
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
+        const fp = await fingerprint();
+        form.transform((d) => ({ ...d, fp }));
         form.post(route('register'), {
             onError: () => setCaptchaReset((n) => n + 1),
             onFinish: () => form.reset('password', 'password_confirmation'),
@@ -80,6 +83,7 @@ export default function Register() {
                 <Button type="submit" size="lg" loading={processing} className="w-full" icon={<Icon name="arrow" size={18} />}>
                     Create account
                 </Button>
+                <RecaptchaNotice className="text-center" />
             </form>
         </AuthShell>
     );

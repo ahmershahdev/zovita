@@ -1,0 +1,990 @@
+{
+  "pages": {
+    "shipping": {
+      "title": "Shipping & delivery",
+      "kicker": "Delivered with care",
+      "intro": "Where we deliver, how long it takes, what it costs and exactly what happens between \"Place order\" and the knock on your door.",
+      "updated": "2026-10-02",
+      "facts": [
+        {
+          "icon": "truck",
+          "value": "1–3 days",
+          "label": "Major cities"
+        },
+        {
+          "icon": "globe",
+          "value": "2–5 days",
+          "label": "Everywhere else"
+        },
+        {
+          "icon": "package",
+          "value": "Free over {free}",
+          "label": "Otherwise {fee}"
+        },
+        {
+          "icon": "clock",
+          "value": "2 PM",
+          "label": "Same-day dispatch cut-off"
+        }
+      ],
+      "sections": [
+        {
+          "id": "areas",
+          "heading": "Delivery areas & timing",
+          "summary": "We ship nationwide. Big cities usually get parcels in 1–3 business days, everywhere else in 2–5.",
+          "blocks": [
+            {
+              "p": "We deliver nationwide, to every city and town our courier partners serve. Delivery windows are counted in business days (Monday to Saturday, excluding public holidays) from the moment your order is dispatched."
+            },
+            {
+              "table": {
+                "head": [
+                  "Area",
+                  "Typical delivery",
+                  "Examples"
+                ],
+                "rows": [
+                  [
+                    "Major cities",
+                    "1–3 business days",
+                    "Karachi, Lahore, Islamabad, Rawalpindi"
+                  ],
+                  [
+                    "Other cities",
+                    "2–4 business days",
+                    "Faisalabad, Multan, Peshawar, Hyderabad, Sialkot, Gujranwala, Quetta"
+                  ],
+                  [
+                    "Towns & remote areas",
+                    "3–5 business days",
+                    "Areas served through partner hubs"
+                  ]
+                ]
+              }
+            },
+            {
+              "p": "Orders confirmed before 2:00 PM PKT are usually dispatched the same day; later orders leave the next business day."
+            }
+          ]
+        },
+        {
+          "id": "fees",
+          "heading": "Delivery fees",
+          "summary": "Free delivery on orders over {free}. Below that, a flat {fee} — shown before you place the order.",
+          "blocks": [
+            {
+              "p": "Delivery is free when your bag total (after discounts) is over {free}. Smaller orders pay a flat {fee}, whatever the city. The exact fee is always shown in your bag and at checkout before you confirm — there are no surprise charges at the door."
+            },
+            {
+              "callout": {
+                "tone": "mint",
+                "title": "Tip",
+                "text": "Your bag shows how much more you need for free delivery, so you can add a refill or a daily essential and save the fee."
+              }
+            }
+          ]
+        },
+        {
+          "id": "journey",
+          "heading": "What happens after you order",
+          "summary": "Confirmation email → pharmacist check (if needed) → careful packing → dispatch → delivery with cash payment.",
+          "blocks": [
+            {
+              "steps": [
+                {
+                  "title": "Order received",
+                  "text": "You get an email with your order number immediately. You can follow progress any time on the Track order page."
+                },
+                {
+                  "title": "Pharmacist review",
+                  "text": "Orders with prescription medicine are checked by a licensed pharmacist, who may call you to confirm details before anything ships."
+                },
+                {
+                  "title": "Picking & packing",
+                  "text": "Every item is batch- and expiry-checked, sealed and packed with protection suited to it (liquids upright, glass cushioned)."
+                },
+                {
+                  "title": "Dispatched",
+                  "text": "Your parcel is handed to our courier partner. Delivery windows start from this point."
+                },
+                {
+                  "title": "Delivered",
+                  "text": "The rider calls ahead. Check the parcel is sealed and intact, then pay in cash."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "prescriptions",
+          "heading": "Prescription orders",
+          "summary": "Rx orders ship only after a pharmacist has verified a valid prescription — usually within a few hours on working days.",
+          "blocks": [
+            {
+              "p": "Prescription-only medicines are dispatched only after a pharmacist has reviewed a valid prescription issued to the patient. If anything is unclear (dose, date, legibility) we will call you rather than guess."
+            },
+            {
+              "list": [
+                "Upload a clear photo or PDF at checkout, or separately from the Upload prescription page.",
+                "Prescriptions must be legible, dated, signed and show the patient’s name.",
+                "If we cannot verify a prescription, the prescription items are cancelled and you are not charged for them."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "handling",
+          "heading": "Packaging & temperature-sensitive items",
+          "summary": "Sealed, tamper-evident packaging; heat-sensitive products are packed to protect them in transit.",
+          "blocks": [
+            {
+              "cards": [
+                {
+                  "icon": "shield",
+                  "title": "Tamper-evident",
+                  "text": "Parcels are sealed. Do not accept a parcel whose seal is broken — refuse it and tell us."
+                },
+                {
+                  "icon": "package",
+                  "title": "Protected",
+                  "text": "Liquids are bagged and packed upright; glass bottles and devices are cushioned."
+                },
+                {
+                  "icon": "leaf",
+                  "title": "Temperature aware",
+                  "text": "Heat-sensitive products are packed with insulation and routed for the shortest transit time."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "at-the-door",
+          "heading": "At the door: delivery & payment",
+          "summary": "The rider calls ahead; you check the parcel and pay cash. Missed deliveries are re-attempted.",
+          "blocks": [
+            {
+              "p": "All orders are cash on delivery. Please keep the exact amount ready where you can. You are welcome to check that the parcel is sealed and that the number of items matches your invoice before paying."
+            },
+            {
+              "list": [
+                "The rider calls before arriving — please keep your phone reachable.",
+                "If no one is available, the courier re-attempts delivery (usually up to two more times).",
+                "After failed attempts the parcel returns to us and we will contact you to re-arrange delivery."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "delays",
+          "heading": "Delays & address changes",
+          "summary": "Holidays, weather and wrong addresses can add time. Contact us quickly if your address needs changing.",
+          "blocks": [
+            {
+              "p": "Delivery estimates are not guaranteed. Things that can add time:"
+            },
+            {
+              "list": [
+                "Public holidays, Sundays and peak demand periods",
+                "Weather or route disruptions",
+                "Incomplete or incorrect addresses or unreachable phone numbers",
+                "Prescription orders awaiting verification"
+              ]
+            },
+            {
+              "callout": {
+                "tone": "ink",
+                "title": "Need to change the address?",
+                "text": "Call {phone} or email {email} with your order number. We can update it any time before dispatch."
+              }
+            }
+          ]
+        }
+      ],
+      "related": [
+        "returns",
+        "terms"
+      ]
+    },
+    "returns": {
+      "title": "Returns & refunds",
+      "kicker": "Fair and safe",
+      "intro": "A clear, fair return process — with the safety rules that medicines require. Wrong or damaged? We fix it at our cost.",
+      "updated": "2026-10-02",
+      "facts": [
+        {
+          "icon": "clock",
+          "value": "7 days",
+          "label": "To request a return"
+        },
+        {
+          "icon": "alert",
+          "value": "48 hours",
+          "label": "To report damage"
+        },
+        {
+          "icon": "swap",
+          "value": "Free",
+          "label": "Fixes for our mistakes"
+        },
+        {
+          "icon": "check",
+          "value": "5–7 days",
+          "label": "Refund processing"
+        }
+      ],
+      "sections": [
+        {
+          "id": "window",
+          "heading": "Return window",
+          "summary": "Ask for a return within 7 days of delivery. Damaged or wrong items: tell us within 48 hours.",
+          "blocks": [
+            {
+              "p": "You can request a return within 7 days of the delivery date. To keep everyone safe, a returned medicine can never be resold, so eligibility depends on the item and its condition (see below)."
+            },
+            {
+              "timeline": [
+                {
+                  "when": "Day 0",
+                  "title": "Delivered",
+                  "text": "Check the seal and the items against your invoice."
+                },
+                {
+                  "when": "Within 48 h",
+                  "title": "Report damage or mix-ups",
+                  "text": "Send your order number and a photo — we replace or refund in full, including delivery."
+                },
+                {
+                  "when": "Within 7 days",
+                  "title": "Change-of-mind returns",
+                  "text": "For unopened, eligible items in original packaging."
+                },
+                {
+                  "when": "After 7 days",
+                  "title": "Window closed",
+                  "text": "We can no longer accept returns, except where the law requires otherwise."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "eligibility",
+          "heading": "What can be returned",
+          "summary": "Unopened, room-temperature items in original packaging. Opened medicines and cold-chain items cannot.",
+          "blocks": [
+            {
+              "table": {
+                "head": [
+                  "Item",
+                  "Unopened",
+                  "Opened",
+                  "Damaged / wrong"
+                ],
+                "rows": [
+                  [
+                    "Tablets, capsules, syrups (OTC)",
+                    "Returnable",
+                    "Not returnable",
+                    "Replaced or refunded"
+                  ],
+                  [
+                    "Prescription medicines",
+                    "Returnable if sealed",
+                    "Not returnable",
+                    "Replaced or refunded"
+                  ],
+                  [
+                    "Refrigerated / cold-chain (e.g. insulin, some vaccines)",
+                    "Not returnable",
+                    "Not returnable",
+                    "Replaced or refunded"
+                  ],
+                  [
+                    "Skin, hair & personal care",
+                    "Returnable",
+                    "Not returnable",
+                    "Replaced or refunded"
+                  ],
+                  [
+                    "Baby formula & food",
+                    "Returnable",
+                    "Not returnable",
+                    "Replaced or refunded"
+                  ],
+                  [
+                    "Health devices",
+                    "Returnable in original box",
+                    "Warranty applies",
+                    "Replaced or refunded"
+                  ]
+                ]
+              }
+            },
+            {
+              "callout": {
+                "tone": "coral",
+                "title": "Why we are strict about opened medicines",
+                "text": "Once a medicine has left our controlled storage and been opened, we cannot guarantee how it was stored. Accepting it back would put the next customer at risk."
+              }
+            }
+          ]
+        },
+        {
+          "id": "how",
+          "heading": "How to return an item",
+          "summary": "Contact us with your order number, we confirm eligibility and arrange pickup or drop-off.",
+          "blocks": [
+            {
+              "steps": [
+                {
+                  "title": "Contact the care team",
+                  "text": "Email {email} or call {phone} ({hours}) with your order number, the item and the reason."
+                },
+                {
+                  "title": "We confirm eligibility",
+                  "text": "For damage or wrong items, include a photo of the product and its packaging."
+                },
+                {
+                  "title": "Hand it over",
+                  "text": "We arrange a courier pickup where available, or share the return address. Pack the item in its original packaging with the invoice."
+                },
+                {
+                  "title": "Inspection",
+                  "text": "We check the item within 2 business days of receiving it and email you the outcome."
+                },
+                {
+                  "title": "Refund or replacement",
+                  "text": "Approved refunds are processed within 5–7 business days."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "damaged",
+          "heading": "Damaged, missing or incorrect items",
+          "summary": "Our mistake, our cost: full refund or replacement including delivery fees.",
+          "blocks": [
+            {
+              "p": "If a parcel arrives damaged, an item is missing, or you received the wrong product or strength, tell us within 48 hours of delivery with a photo. We will send a replacement or refund you in full — including the delivery fee — and arrange collection at no cost to you."
+            },
+            {
+              "callout": {
+                "tone": "mint",
+                "title": "Do not use a product that arrived damaged",
+                "text": "A broken seal, leaking bottle or crushed blister may mean the medicine is compromised. Keep it aside and contact us."
+              }
+            }
+          ]
+        },
+        {
+          "id": "refunds",
+          "heading": "Refunds",
+          "summary": "Paid back to your bank account or mobile wallet within 5–7 business days of approval.",
+          "blocks": [
+            {
+              "p": "Because orders are paid in cash on delivery, refunds are sent by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) in the name you give us."
+            },
+            {
+              "table": {
+                "head": [
+                  "Situation",
+                  "Product price",
+                  "Delivery fee"
+                ],
+                "rows": [
+                  [
+                    "Damaged, wrong or missing item",
+                    "Refunded in full",
+                    "Refunded"
+                  ],
+                  [
+                    "Eligible change-of-mind return",
+                    "Refunded in full",
+                    "Not refunded"
+                  ],
+                  [
+                    "Order cancelled before dispatch",
+                    "Not charged",
+                    "Not charged"
+                  ],
+                  [
+                    "Prescription could not be verified",
+                    "Not charged for Rx items",
+                    "Adjusted"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "cancellations",
+          "heading": "Cancelling an order",
+          "summary": "Free to cancel any time before dispatch. After dispatch, refuse the parcel or follow the return process.",
+          "blocks": [
+            {
+              "p": "You can cancel an order free of charge any time before it is dispatched — just contact us with the order number. Once dispatched, you may refuse the parcel at the door; repeated refusals may lead us to ask for confirmation before shipping future orders."
+            }
+          ]
+        }
+      ],
+      "related": [
+        "shipping",
+        "terms"
+      ]
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "kicker": "Your data, respected",
+      "intro": "What we collect, why we need it, who sees it, how long we keep it and the control you have — written in plain language.",
+      "updated": "2026-10-02",
+      "facts": [
+        {
+          "icon": "lock",
+          "value": "Private",
+          "label": "Prescription storage"
+        },
+        {
+          "icon": "shield",
+          "value": "Never sold",
+          "label": "Your personal data"
+        },
+        {
+          "icon": "mail",
+          "value": "Opt-in",
+          "label": "Marketing email"
+        },
+        {
+          "icon": "user",
+          "value": "Yours",
+          "label": "Access, fix or delete"
+        }
+      ],
+      "sections": [
+        {
+          "id": "collect",
+          "heading": "What we collect",
+          "summary": "Only what is needed to deliver your order safely: contact details, address, order history and prescriptions you choose to upload.",
+          "blocks": [
+            {
+              "table": {
+                "head": [
+                  "Data",
+                  "Examples",
+                  "Why"
+                ],
+                "rows": [
+                  [
+                    "Identity & contact",
+                    "Name, email, phone number",
+                    "To confirm orders and reach you about delivery"
+                  ],
+                  [
+                    "Delivery details",
+                    "Address, city, delivery notes",
+                    "To deliver your parcel"
+                  ],
+                  [
+                    "Orders",
+                    "Items, prices, order status",
+                    "To fulfil, support and track your orders"
+                  ],
+                  [
+                    "Prescriptions",
+                    "Photos or PDFs you upload",
+                    "So a pharmacist can legally dispense Rx medicine"
+                  ],
+                  [
+                    "Account",
+                    "Password (hashed), wishlist",
+                    "To give you a secure account"
+                  ],
+                  [
+                    "Technical",
+                    "IP address, browser, security tokens",
+                    "To prevent fraud and abuse and keep the site secure"
+                  ]
+                ]
+              }
+            },
+            {
+              "p": "We do not ask for or store card details — orders are paid in cash on delivery."
+            }
+          ]
+        },
+        {
+          "id": "use",
+          "heading": "How we use your information",
+          "summary": "To run your orders, keep the service secure and, only if you opt in, send a monthly newsletter.",
+          "blocks": [
+            {
+              "cards": [
+                {
+                  "icon": "package",
+                  "title": "Fulfil orders",
+                  "text": "Process, pack, deliver and support your orders, including returns and refunds."
+                },
+                {
+                  "icon": "rx",
+                  "title": "Pharmacist review",
+                  "text": "Verify prescriptions and contact you about dosage or substitutions when needed."
+                },
+                {
+                  "icon": "mail",
+                  "title": "Service email",
+                  "text": "Order confirmations, password resets and replies to your messages."
+                },
+                {
+                  "icon": "shield",
+                  "title": "Security",
+                  "text": "Detect fraud, block automated abuse and protect accounts."
+                }
+              ]
+            },
+            {
+              "p": "We will only send marketing email (our monthly wellness newsletter) if you subscribe, and every email has a one-click unsubscribe link."
+            }
+          ]
+        },
+        {
+          "id": "prescriptions",
+          "heading": "Prescriptions & health information",
+          "summary": "Prescriptions are stored privately, are never web-accessible and are seen only by our pharmacists.",
+          "blocks": [
+            {
+              "p": "Prescription files are health information, so we treat them with extra care. They are stored on private server storage that has no public web address, are accessed only by our pharmacy team to fulfil your order, and are never used for marketing."
+            },
+            {
+              "callout": {
+                "tone": "mint",
+                "title": "Only what is needed",
+                "text": "Pharmacists see the prescription and the order it belongs to — nothing more about your account."
+              }
+            }
+          ]
+        },
+        {
+          "id": "sharing",
+          "heading": "Who we share it with",
+          "summary": "Only service providers that help us deliver the service — never advertisers or data brokers.",
+          "blocks": [
+            {
+              "table": {
+                "head": [
+                  "Provider",
+                  "Purpose",
+                  "What they receive"
+                ],
+                "rows": [
+                  [
+                    "Courier partners",
+                    "Delivering your parcel",
+                    "Name, phone, address, order value (for COD)"
+                  ],
+                  [
+                    "Resend",
+                    "Sending transactional email",
+                    "Email address and the message content"
+                  ],
+                  [
+                    "Google reCAPTCHA",
+                    "Protecting forms from bots",
+                    "Technical signals from your browser on protected forms"
+                  ],
+                  [
+                    "Hosting provider",
+                    "Running the website and database",
+                    "Data stored on our servers"
+                  ]
+                ]
+              }
+            },
+            {
+              "p": "We may also disclose information when required by law, for example to a regulator or under a valid court order."
+            }
+          ]
+        },
+        {
+          "id": "cookies",
+          "heading": "Cookies & local storage",
+          "summary": "Essential cookies only (session, security, theme). No advertising trackers.",
+          "blocks": [
+            {
+              "table": {
+                "head": [
+                  "Name",
+                  "Type",
+                  "Purpose",
+                  "Lifetime"
+                ],
+                "rows": [
+                  [
+                    "Session cookie",
+                    "Essential",
+                    "Keeps your bag, wishlist and sign-in working",
+                    "Until you close the browser / sign out"
+                  ],
+                  [
+                    "XSRF token",
+                    "Essential",
+                    "Protects forms against cross-site attacks",
+                    "Session"
+                  ],
+                  [
+                    "Theme preference",
+                    "Preference (local storage)",
+                    "Remembers light or dark mode",
+                    "Until cleared"
+                  ],
+                  [
+                    "Recently viewed",
+                    "Preference (local storage)",
+                    "Shows products you looked at, on this device only",
+                    "Until cleared"
+                  ],
+                  [
+                    "reCAPTCHA",
+                    "Security (Google)",
+                    "Distinguishes people from bots on forms",
+                    "Set by Google"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "security",
+          "heading": "How we protect it",
+          "summary": "Encrypted connections, hashed passwords, private file storage, rate limits and least-privilege access.",
+          "blocks": [
+            {
+              "list": [
+                "All traffic is encrypted with HTTPS.",
+                "Passwords are stored only as one-way hashes — nobody, including us, can read them.",
+                "Prescription files live on private storage with no public URL.",
+                "Login, checkout and contact forms are rate-limited and protected against bots.",
+                "Staff access is limited to what each role needs."
+              ]
+            },
+            {
+              "p": "No system is perfectly secure. If we ever become aware of a breach affecting your data, we will notify you and take immediate steps to contain it."
+            }
+          ]
+        },
+        {
+          "id": "retention",
+          "heading": "How long we keep it",
+          "summary": "Only as long as needed for your orders, legal record-keeping and security.",
+          "blocks": [
+            {
+              "timeline": [
+                {
+                  "when": "While active",
+                  "title": "Account data",
+                  "text": "Kept while your account is open; deleted on request."
+                },
+                {
+                  "when": "Up to 5 years",
+                  "title": "Orders & invoices",
+                  "text": "Kept for accounting, tax and pharmacy record-keeping obligations."
+                },
+                {
+                  "when": "As required",
+                  "title": "Prescriptions",
+                  "text": "Kept for the period pharmacy regulations require, then securely deleted."
+                },
+                {
+                  "when": "90 days",
+                  "title": "Security logs",
+                  "text": "Kept briefly to investigate abuse, then removed."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rights",
+          "heading": "Your rights & choices",
+          "summary": "You can see, correct, export or delete your data, and unsubscribe from marketing at any time.",
+          "blocks": [
+            {
+              "cards": [
+                {
+                  "icon": "eye",
+                  "title": "Access",
+                  "text": "Ask for a copy of the personal data we hold about you."
+                },
+                {
+                  "icon": "user",
+                  "title": "Correct",
+                  "text": "Update your profile from your account, or ask us to fix anything else."
+                },
+                {
+                  "icon": "close",
+                  "title": "Delete",
+                  "text": "Ask us to delete your account. Records we must keep by law are retained only for that purpose."
+                },
+                {
+                  "icon": "mail",
+                  "title": "Unsubscribe",
+                  "text": "Use the link in any newsletter, or tell us."
+                }
+              ]
+            },
+            {
+              "p": "To exercise any of these rights, email {email}. We respond within 30 days and may ask you to confirm your identity first."
+            }
+          ]
+        },
+        {
+          "id": "children",
+          "heading": "Children",
+          "summary": "Accounts are for adults. Parents and guardians order on behalf of children.",
+          "blocks": [
+            {
+              "p": "Zovita is intended for people aged 18 and over. Products for babies and children should be ordered by a parent or guardian. We do not knowingly collect personal data from children."
+            }
+          ]
+        },
+        {
+          "id": "changes",
+          "heading": "Changes & contact",
+          "summary": "We will post updates here and email you about significant changes.",
+          "blocks": [
+            {
+              "p": "If we change this policy we will update the date at the top of this page, and for significant changes we will notify account holders by email. Questions or concerns? Email {email} or call {phone} ({hours})."
+            }
+          ]
+        }
+      ],
+      "related": [
+        "terms",
+        "shipping"
+      ]
+    },
+    "terms": {
+      "title": "Terms of service",
+      "kicker": "The agreement",
+      "intro": "The terms that apply when you browse, create an account or order from Zovita. We have kept them as clear as the law allows.",
+      "updated": "2026-10-02",
+      "facts": [
+        {
+          "icon": "user",
+          "value": "18+",
+          "label": "To hold an account"
+        },
+        {
+          "icon": "rx",
+          "value": "Valid Rx",
+          "label": "For prescription medicine"
+        },
+        {
+          "icon": "package",
+          "value": "Cash on delivery",
+          "label": "How you pay"
+        },
+        {
+          "icon": "globe",
+          "value": "Local law",
+          "label": "Governs these terms"
+        }
+      ],
+      "sections": [
+        {
+          "id": "about",
+          "heading": "About these terms",
+          "summary": "By using the site or placing an order you agree to these terms, together with our Privacy, Shipping and Returns policies.",
+          "blocks": [
+            {
+              "p": "These terms form the agreement between you and Zovita for use of this website and for every order placed through it. Our Privacy policy, Shipping policy and Returns & refunds policy form part of these terms. If anything here conflicts with your statutory consumer rights, your statutory rights prevail."
+            }
+          ]
+        },
+        {
+          "id": "accounts",
+          "heading": "Your account",
+          "summary": "Keep your details accurate and your password private. You are responsible for activity on your account.",
+          "blocks": [
+            {
+              "list": [
+                "You must be 18 or older to create an account.",
+                "Provide accurate, current information and keep it up to date.",
+                "Keep your password confidential and tell us immediately if you suspect unauthorised use.",
+                "We may suspend accounts used for fraud, abuse or to obtain medicines unlawfully."
+              ]
+            },
+            {
+              "p": "You can also check out as a guest; these terms apply in the same way."
+            }
+          ]
+        },
+        {
+          "id": "orders",
+          "heading": "Placing an order",
+          "summary": "An order is an offer. The contract is formed when we confirm and dispatch it.",
+          "blocks": [
+            {
+              "steps": [
+                {
+                  "title": "You place an order",
+                  "text": "This is an offer to buy the items in your bag at the prices shown at checkout."
+                },
+                {
+                  "title": "We acknowledge it",
+                  "text": "The confirmation email confirms we received the order — it is not yet acceptance."
+                },
+                {
+                  "title": "We review it",
+                  "text": "Stock, pricing and (for Rx items) the prescription are checked."
+                },
+                {
+                  "title": "Acceptance",
+                  "text": "The contract is formed when we dispatch your order."
+                }
+              ]
+            },
+            {
+              "p": "We may decline or cancel an order (fully or partly) — for example if an item is unavailable, a prescription cannot be verified, a price was listed in obvious error, or quantities exceed safe-supply limits. You are never charged for cancelled items."
+            }
+          ]
+        },
+        {
+          "id": "prescriptions",
+          "heading": "Prescription medicines",
+          "summary": "Rx medicines are supplied only against a valid prescription for the named patient, after pharmacist review.",
+          "blocks": [
+            {
+              "p": "Prescription-only medicines are supplied only against a valid, unaltered prescription issued by a registered prescriber to the patient named on it. Our pharmacists may contact you or your prescriber and may refuse to supply where it would be unsafe or unlawful."
+            },
+            {
+              "callout": {
+                "tone": "coral",
+                "title": "Important",
+                "text": "Submitting a forged or altered prescription is a criminal offence. We report suspected fraud to the authorities."
+              }
+            }
+          ]
+        },
+        {
+          "id": "pricing",
+          "heading": "Prices, quantities & payment",
+          "summary": "Prices are in PKR including applicable taxes. Payment is cash on delivery.",
+          "blocks": [
+            {
+              "list": [
+                "All prices are in rupees (PKR) and include applicable taxes.",
+                "Delivery fees are shown before you place the order ({fee}, free over {free}).",
+                "Per-order quantity limits apply to some products for safety and fair availability.",
+                "Payment is cash on delivery. Please pay the rider only the amount on your invoice."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "delivery",
+          "heading": "Delivery, risk & ownership",
+          "summary": "Delivery times are estimates. Responsibility passes to you on delivery; ownership on payment.",
+          "blocks": [
+            {
+              "p": "We aim to deliver within the windows in our Shipping policy, but times are estimates. Risk in the goods passes to you when the parcel is delivered to you or someone at your address; ownership passes when payment is received."
+            }
+          ]
+        },
+        {
+          "id": "medical",
+          "heading": "Medical information disclaimer",
+          "summary": "Product information is for reference only and is not medical advice. Always follow your doctor or pharmacist.",
+          "blocks": [
+            {
+              "p": "Product descriptions, the body map, usage notes and other health content are provided for general information to help you navigate the store. They are not a diagnosis or a substitute for professional medical advice. Always read the label and leaflet and follow the instructions of your doctor or pharmacist."
+            },
+            {
+              "callout": {
+                "tone": "coral",
+                "title": "In an emergency",
+                "text": "Call 1122 or go to your nearest emergency department. Do not wait for an online order."
+              }
+            }
+          ]
+        },
+        {
+          "id": "use",
+          "heading": "Acceptable use",
+          "summary": "Use the site lawfully. No scraping, abuse, reselling of prescription medicine or attempts to break security.",
+          "blocks": [
+            {
+              "list": [
+                "Do not misuse the site, attempt to gain unauthorised access or interfere with its security.",
+                "Do not scrape or copy content or prices in bulk without written permission.",
+                "Do not buy prescription medicine for resale or for anyone other than the named patient.",
+                "Do not submit false information, reviews or contact requests."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ip",
+          "heading": "Content & trademarks",
+          "summary": "Site design and content belong to Zovita or its licensors. Product names and images belong to their manufacturers.",
+          "blocks": [
+            {
+              "p": "The Zovita name, logo, site design and original content are owned by Zovita or used under licence. Product names, brands and packaging images are the property of their respective manufacturers and are shown to identify the products we sell."
+            }
+          ]
+        },
+        {
+          "id": "liability",
+          "heading": "Our responsibility to you",
+          "summary": "We are responsible for foreseeable loss caused by our breach of these terms, and not for indirect loss.",
+          "blocks": [
+            {
+              "p": "We are responsible for loss you suffer that is a foreseeable result of our breaking these terms or failing to use reasonable care and skill. We are not responsible for indirect or unforeseeable loss, or for loss caused by events outside our reasonable control. Nothing in these terms limits liability that cannot be limited by law, including for death or personal injury caused by negligence."
+            }
+          ]
+        },
+        {
+          "id": "law",
+          "heading": "Disputes, governing law & changes",
+          "summary": "Talk to us first. Local consumer law applies. We will post any changes to these terms here.",
+          "blocks": [
+            {
+              "p": "If something goes wrong, please contact us first at {email} or {phone} — most issues are resolved quickly. These terms are governed by the laws of the jurisdiction in which Zovita is registered, whose courts have jurisdiction."
+            },
+            {
+              "p": "We may update these terms from time to time. The version shown when you place an order applies to that order."
+            }
+          ]
+        }
+      ],
+      "related": [
+        "privacy",
+        "returns"
+      ]
+    }
+  },
+  "nav": [
+    [
+      "shipping",
+      "Shipping",
+      "truck"
+    ],
+    [
+      "returns",
+      "Returns & refunds",
+      "swap"
+    ],
+    [
+      "privacy",
+      "Privacy",
+      "lock"
+    ],
+    [
+      "terms",
+      "Terms",
+      "file"
+    ]
+  ]
+}

@@ -46,6 +46,20 @@ class WishlistService
         return $saved;
     }
 
+    public function add(Product $product): void
+    {
+        if (! in_array($product->id, $this->ids(), true)) {
+            $this->toggle($product);
+        }
+    }
+
+    public function remove(Product $product): void
+    {
+        if (in_array($product->id, $this->ids(), true)) {
+            $this->toggle($product);
+        }
+    }
+
     public function mergeGuestInto(User $user): void
     {
         $guestIds = array_map('intval', (array) $this->session->pull(self::KEY, []));

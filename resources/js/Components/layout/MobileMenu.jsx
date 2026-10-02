@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useLenis } from '@/Components/motion/SmoothScroll';
 import Icon from '@/Components/ui/Icon';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
+import LanguageSwitch from '@/Components/ui/LanguageSwitch';
 import { cn } from '@/lib/cn';
 import { pad } from '@/lib/format';
 import { gsap, prefersReducedMotion } from '@/lib/gsap';
@@ -20,7 +21,8 @@ export default function MobileMenu({ open, onClose, links }) {
         document.documentElement.style.overflow = 'hidden';
         const onKey = (e) => e.key === 'Escape' && onClose();
         window.addEventListener('keydown', onKey);
-        const off = router.on('start', onClose);
+        // Real visits close it; hover prefetches (which also fire "start") must not.
+        const off = router.on('start', (event) => !event.detail.visit.prefetch && onClose());
         return () => {
             lenis?.start();
             document.documentElement.style.overflow = '';
@@ -57,7 +59,8 @@ export default function MobileMenu({ open, onClose, links }) {
                             Zovita<span className="text-mint">+</span>
                         </span>
                         <div className="flex items-center gap-3">
-                            <ThemeToggle className="border-white/25" />
+                            <LanguageSwitch className="border border-white/25 hover:bg-white hover:text-night" />
+                        <ThemeToggle className="border-white/25" />
                             <button type="button" onClick={onClose} className="grid size-11 place-items-center rounded-full border border-white/25" aria-label="Close menu">
                                 <Icon name="close" />
                             </button>

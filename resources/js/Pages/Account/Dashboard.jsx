@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import Badge from '@/Components/ui/Badge';
 import Button from '@/Components/ui/Button';
 import EmptyState from '@/Components/ui/EmptyState';
@@ -9,6 +9,8 @@ import { cn } from '@/lib/cn';
 import { date, money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 
+const MapPicker = lazy(() => import('@/Components/forms/MapPicker'));
+
 const tabs = [
     ['orders', 'Orders'],
     ['prescriptions', 'Prescriptions'],
@@ -16,7 +18,7 @@ const tabs = [
     ['security', 'Security'],
 ];
 
-export default function Dashboard({ profile, cities, orders, prescriptions, stats }) {
+export default function Dashboard({ profile, cities, orders, prescriptions, stats, signins = [], store }) {
     const [tab, setTab] = useState('orders');
 
     return (
@@ -27,11 +29,14 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
             <Breadcrumbs items={[{ label: 'Account' }]} className="mb-6" />
 
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                <div>
-                    <p className="eyebrow text-ink-mute">Your account</p>
+                <div className="flex items-end gap-5">
+                    <Avatar profile={profile} size="lg" />
+                    <div>
+                    <p className="eyebrow flex items-center gap-2 text-ink-mute">Your account · <span translate="no" className="normal-case">@{profile.username}</span></p>
                     <h1 className="mt-4 font-display text-title">
                         Hello, <span className="italic">{profile.name.split(' ')[0]}.</span>
                     </h1>
+                    </div>
                 </div>
                 <button type="button" onClick={() => router.post(route('logout'))} className="inline-flex items-center gap-2 self-start rounded-full border border-line-strong px-5 py-3 text-sm transition hover:bg-ink hover:text-paper md:self-auto">
                     <Icon name="logout" size={16} /> Sign out
@@ -70,8 +75,8 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
             <div className="mt-10" role="tabpanel">
                 {tab === 'orders' && <Orders orders={orders} />}
                 {tab === 'prescriptions' && <Prescriptions prescriptions={prescriptions} />}
-                {tab === 'profile' && <Profile profile={profile} cities={cities} />}
-                {tab === 'security' && <Security />}
+                {tab === 'profile' && <Profile profile={profile} cities={cities} store={store} />}
+                {tab === 'security' && <Security signins={signins} />}
             </div>
         </section>
     );
@@ -123,28 +128,145 @@ function Prescriptions({ prescriptions }) {
     );
 }
 
-function Profile({ profile, cities }) {
-    const form = useForm({ ...profile, phone: profile.phone ?? '', city: profile.city ?? '', address: profile.address ?? '' });
+function Avatar({ profile, size = 'md' }) {
+    const cls = size === 'lg' ? 'size-20 text-3xl md:size-24' : 'size-12 text-lg';
+    return profile.avatar ? (
+        <img src={profile.avatar} alt="" width="96" height="96" className={cn('shrink-0 rounded-full object-cover ring-4 ring-paper', cls)} />
+    ) : (
+        <span aria-hidden="true" className={cn('grid shrink-0 place-items-center rounded-full bg-mint font-display text-night ring-4 ring-paper', cls)}>
+            {profile.name
+                .split(' ')
+                .slice(0, 2)
+                .map((p) => p[0])
+                .join('')
+                .toUpperCase()}
+        </span>
+    );
+}
+
+function AvatarEditor({ profile }) {
+    const input = useRef(null);
+    const form = useForm({ avatar: null });
+
+    const pick = (file) => {
+        if (!file) return;
+        form.setData('avatar', file);
+        form.transform(() => ({ avatar: file }));
+        form.post(route('account.avatar.update'), { preserveScroll: true, forceFormData: true, onFinish: () => (input.current.value = '') });
+    };
+
+    return (
+        <div className="flex flex-wrap items-center gap-5 rounded-4xl border border-line bg-card p-5 md:col-span-2">
+            <Avatar profile={profile} size="lg" />
+            <div className="min-w-0 flex-1">
+                <p className="font-medium">Profile picture</p>
+                <p className="mt-1 text-sm text-ink-mute">JPG, PNG or WebP up to 3 MB. We crop it to a square.</p>
+                {form.errors.avatar && <p className="mt-2 text-sm text-coral">{form.errors.avatar}</p>}
+            </div>
+            <div className="flex gap-2">
+                <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" id="avatar-input" onChange={(e) => pick(e.target.files?.[0])} />
+                <label htmlFor="avatar-input" className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm text-paper">
+                    <Icon name="upload" size={14} /> {form.processing ? 'Uploading…' : profile.avatar ? 'Change' : 'Upload'}
+                </label>
+                {profile.avatar && (
+                    <button type="button" onClick={() => router.delete(route('account.avatar.destroy'), { preserveScroll: true })} className="rounded-full border border-line-strong px-4 py-2.5 text-sm hover:border-coral hover:text-coral">
+                        Remove
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function Profile({ profile, cities, store }) {
+    const form = useForm({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone ?? '',
+        city: profile.city ?? '',
+        address: profile.address ?? '',
+        lat: profile.lat ?? '',
+        lng: profile.lng ?? '',
+        current_password: '',
+    });
     const { data, setData, errors, processing } = form;
+    const emailChanged = data.email.trim().toLowerCase() !== profile.email;
 
     return (
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.put(route('account.profile.update'), { preserveScroll: true });
+                form.transform((d) => ({ ...d, lat: d.lat === '' ? null : d.lat, lng: d.lng === '' ? null : d.lng }));
+                form.put(route('account.profile.update'), { preserveScroll: true, onSuccess: () => form.setData('current_password', '') });
             }}
-            className="grid max-w-3xl gap-5 md:grid-cols-2"
+            className="grid max-w-4xl gap-5 md:grid-cols-2"
         >
-            <Field label="Full name" placeholder="e.g. Ayesha Khan" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} />
-            <Field label="Email" placeholder="you@example.com" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} />
-            <Field label="Mobile number" placeholder="03XX XXXXXXX" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} optional />
+            <AvatarEditor profile={profile} />
+
+            <div className="md:col-span-2">
+                <p className="mb-2 text-sm font-medium">Username</p>
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-paper-deep px-4 py-3.5">
+                    <Icon name="lock" size={15} className="text-ink-mute" />
+                    <span translate="no" className="font-mono">
+                        @{profile.username}
+                    </span>
+                    <span className="text-xs text-ink-mute">Assigned by Zovita and can’t be changed — it identifies you to our care team.</span>
+                </div>
+            </div>
+
+            <Field label="Full name" placeholder="e.g. Ayesha Khan" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} autoComplete="name" />
+            <Field label="Email" placeholder="you@example.com" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} autoComplete="email" hint={emailChanged ? 'You’ll sign in with the new email.' : undefined} />
+            {emailChanged && (
+                <Field
+                    label="Current password (to confirm the email change)"
+                    type="password"
+                    autoComplete="current-password"
+                    value={data.current_password}
+                    onChange={(e) => setData('current_password', e.target.value)}
+                    error={errors.current_password}
+                    className="md:col-span-2"
+                />
+            )}
+            <Field label="Mobile number" placeholder="03XX XXXXXXX" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} autoComplete="tel" optional />
             <Field as="select" label="City" value={data.city} onChange={(e) => setData('city', e.target.value)} error={errors.city} optional>
                 <option value="">Select a city</option>
                 {cities.map((c) => (
                     <option key={c}>{c}</option>
                 ))}
             </Field>
-            <Field as="textarea" label="Default delivery address" placeholder="House, street, area and landmark" rows={3} value={data.address} onChange={(e) => setData('address', e.target.value)} error={errors.address} className="md:col-span-2" optional />
+
+            <div className="md:col-span-2">
+                <p className="mb-2 flex items-center justify-between text-sm font-medium">
+                    <span>Delivery location</span>
+                    {data.lat !== '' && (
+                        <button type="button" onClick={() => form.setData({ ...data, lat: '', lng: '' })} className="text-xs text-ink-mute underline underline-offset-4 hover:text-coral">
+                            Clear pin
+                        </button>
+                    )}
+                </p>
+                <Suspense fallback={<div className="grid h-80 place-items-center rounded-3xl border border-line bg-card text-sm text-ink-mute">Loading map…</div>}>
+                    <MapPicker
+                        lat={profile.lat}
+                        lng={profile.lng}
+                        fallback={store}
+                        onChange={({ lat, lng, address }) => form.setData((d) => ({ ...d, lat, lng, address: address ?? d.address }))}
+                    />
+                </Suspense>
+                {(errors.lat || errors.lng) && <p className="mt-2 text-sm text-coral">{errors.lat || errors.lng}</p>}
+            </div>
+
+            <Field
+                as="textarea"
+                label="Delivery address"
+                placeholder="House, street, area and landmark"
+                rows={3}
+                value={data.address}
+                onChange={(e) => setData('address', e.target.value)}
+                error={errors.address}
+                className="md:col-span-2"
+                hint="Filled from the pin — add your house number and a landmark."
+                optional
+            />
             <div className="md:col-span-2">
                 <Button type="submit" loading={processing}>
                     Save changes
@@ -154,26 +276,51 @@ function Profile({ profile, cities }) {
     );
 }
 
-function Security() {
+function Security({ signins }) {
     const form = useForm({ current_password: '', password: '', password_confirmation: '' });
     const { data, setData, errors, processing } = form;
 
     return (
-        <form
-            onSubmit={(e) => {
-                e.preventDefault();
-                form.put(route('account.password.update'), { preserveScroll: true, errorBag: 'password', onSuccess: () => form.reset() });
-            }}
-            className="grid max-w-xl gap-5"
-        >
-            <Field label="Current password" placeholder="Your current password" type="password" autoComplete="current-password" value={data.current_password} onChange={(e) => setData('current_password', e.target.value)} error={errors.current_password} />
-            <Field label="New password" placeholder="At least 8 characters" type="password" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} hint="8+ characters with letters and numbers." />
-            <Field label="Confirm new password" placeholder="Re-enter the new password" type="password" autoComplete="new-password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
+        <div className="grid gap-12 lg:grid-cols-2">
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.put(route('account.password.update'), { preserveScroll: true, errorBag: 'password', onSuccess: () => form.reset() });
+                }}
+                className="grid max-w-xl content-start gap-5"
+            >
+                <h2 className="font-display text-3xl">Change password</h2>
+                <Field label="Current password" placeholder="Your current password" type="password" autoComplete="current-password" value={data.current_password} onChange={(e) => setData('current_password', e.target.value)} error={errors.current_password} />
+                <Field label="New password" placeholder="At least 8 characters" type="password" autoComplete="new-password" value={data.password} onChange={(e) => setData('password', e.target.value)} error={errors.password} hint="8+ characters with letters and numbers." />
+                <Field label="Confirm new password" placeholder="Re-enter the new password" type="password" autoComplete="new-password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} />
+                <div>
+                    <Button type="submit" loading={processing}>
+                        Update password
+                    </Button>
+                </div>
+            </form>
+
             <div>
-                <Button type="submit" loading={processing}>
-                    Update password
-                </Button>
+                <h2 className="font-display text-3xl">Recent sign-ins</h2>
+                <p className="mt-2 text-sm text-ink-mute">Don’t recognise one? Change your password and tell our care team.</p>
+                <ul className="mt-6 divide-y divide-line border-y border-line">
+                    {signins.length === 0 && <li className="py-4 text-sm text-ink-mute">No sign-ins recorded yet.</li>}
+                    {signins.map((s) => (
+                        <li key={s.at + s.type} className="flex items-center gap-4 py-4 text-sm">
+                            <span className={cn('grid size-9 shrink-0 place-items-center rounded-full', s.type === 'auth.failed' ? 'bg-coral/10 text-coral' : 'bg-mint-soft text-teal')}>
+                                <Icon name={s.type === 'auth.failed' ? 'alert' : 'check'} size={15} />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block">{s.type === 'auth.failed' ? 'Wrong password attempt' : 'Signed in'}</span>
+                                <span className="block text-xs text-ink-mute">
+                                    {s.browser} · {s.ip}
+                                </span>
+                            </span>
+                            <span className="shrink-0 text-xs text-ink-mute">{new Date(s.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        </li>
+                    ))}
+                </ul>
             </div>
-        </form>
+        </div>
     );
 }

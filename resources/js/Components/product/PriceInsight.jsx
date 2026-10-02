@@ -82,6 +82,7 @@ export default function PriceInsight({ stats }) {
                                     onPointerLeave={() => setHover(null)}
                                     onFocus={() => setHover(b.i)}
                                     onBlur={() => setHover(null)}
+                                    role="img"
                                     aria-label={`${money(b.from)} to ${money(b.to)}: ${b.count} products`}
                                     className="outline-none"
                                 />

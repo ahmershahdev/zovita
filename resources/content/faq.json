@@ -1,0 +1,209 @@
+[
+  {
+    "id": "ordering",
+    "title": "Ordering",
+    "icon": "bag",
+    "items": [
+      {
+        "q": "How do I place an order?",
+        "a": "Add products to your bag, open checkout, enter your contact and delivery details and place the order. You can check out as a guest or with an account. You will get a confirmation email with your order number straight away.",
+        "popular": true
+      },
+      {
+        "q": "Do I need an account to order?",
+        "a": "No — guest checkout works for everything. An account saves your details, shows your order history and keeps your wishlist across devices."
+      },
+      {
+        "q": "Is there a minimum order?",
+        "a": "No. Orders over {free} get free delivery; smaller orders pay a flat {fee}."
+      },
+      {
+        "q": "Why is there a limit on how many I can buy?",
+        "a": "Some medicines have per-order limits for safety and to keep stock fair for everyone. The limit is shown on the product page and in your bag."
+      },
+      {
+        "q": "Can I change or cancel my order?",
+        "a": "Yes, any time before it is dispatched. Call {phone} or email {email} with your order number. Cancelling before dispatch is free.",
+        "popular": true
+      },
+      {
+        "q": "An item I want is sold out. What can I do?",
+        "a": "Product pages and your bag suggest in-stock alternatives, starting with the same active ingredient (“same salt, other brand”). You can also save it to your wishlist and check back later."
+      }
+    ]
+  },
+  {
+    "id": "delivery",
+    "title": "Delivery",
+    "icon": "truck",
+    "items": [
+      {
+        "q": "How long does delivery take?",
+        "a": "Major cities (Karachi, Lahore, Islamabad, Rawalpindi) usually receive orders in 1–3 business days; other areas in 2–5 business days. Orders confirmed before 2 PM are generally dispatched the same day.",
+        "popular": true
+      },
+      {
+        "q": "How much is delivery?",
+        "a": "Free on orders over {free}. Below that, a flat {fee}, wherever you are. The fee is always shown before you place the order."
+      },
+      {
+        "q": "Where can I track my order?",
+        "a": "Use the Track order page with your order number and the email you used at checkout. Signed-in customers can follow every order from their account.",
+        "popular": true
+      },
+      {
+        "q": "Do you deliver everywhere?",
+        "a": "We deliver to all areas served by our courier partners, which covers nearly every city and town. Remote areas can take a day or two longer."
+      },
+      {
+        "q": "What if I am not home when the rider arrives?",
+        "a": "The rider calls before arriving. If you are unavailable the courier re-attempts delivery; after failed attempts the parcel comes back to us and we contact you to re-arrange."
+      },
+      {
+        "q": "Are temperature-sensitive products handled properly?",
+        "a": "Yes. Heat-sensitive items are packed with insulation and routed for the shortest transit time. If anything arrives damaged, do not use it — tell us within 48 hours."
+      }
+    ]
+  },
+  {
+    "id": "payment",
+    "title": "Payment & pricing",
+    "icon": "package",
+    "items": [
+      {
+        "q": "How do I pay?",
+        "a": "All orders are cash on delivery. Please check that the parcel is sealed before paying, and pay only the amount on your invoice.",
+        "popular": true
+      },
+      {
+        "q": "Are prices final? Do they include tax?",
+        "a": "Prices are in PKR and include applicable taxes. What you see at checkout — items, discounts and delivery — is what you pay at the door."
+      },
+      {
+        "q": "How do discounts work?",
+        "a": "Sale prices are applied automatically and shown with the saving on the product and in your bag. There are no codes to remember."
+      },
+      {
+        "q": "Will I get an invoice?",
+        "a": "Yes. Your confirmation email lists every item and price, and a printed invoice is included in the parcel."
+      }
+    ]
+  },
+  {
+    "id": "prescriptions",
+    "title": "Prescriptions",
+    "icon": "rx",
+    "items": [
+      {
+        "q": "Which products need a prescription?",
+        "a": "Products marked “Rx” are prescription-only medicines. You attach the prescription at checkout or upload it from the Upload prescription page, and a pharmacist reviews it before dispatch.",
+        "popular": true
+      },
+      {
+        "q": "What makes a prescription valid?",
+        "a": "It must be legible, dated and signed by a registered prescriber, and show the patient’s name and the medicine, strength and dosage. A clear photo or PDF is fine."
+      },
+      {
+        "q": "Is my prescription kept private?",
+        "a": "Yes. Prescriptions are stored on private storage that is never publicly accessible and are only viewed by our pharmacists to fulfil your order."
+      },
+      {
+        "q": "Can the pharmacist suggest a substitute?",
+        "a": "If a prescribed brand is out of stock, the pharmacist may suggest an equivalent with the same salt and strength. Nothing is substituted without your approval."
+      },
+      {
+        "q": "What if my prescription cannot be verified?",
+        "a": "We will call you first. If it still cannot be verified, the prescription items are cancelled and you are not charged for them; the rest of the order can still ship."
+      }
+    ]
+  },
+  {
+    "id": "returns",
+    "title": "Returns & refunds",
+    "icon": "swap",
+    "items": [
+      {
+        "q": "Can I return a product?",
+        "a": "Unopened, room-temperature items in original packaging can be returned within 7 days of delivery. For safety, opened medicines, cold-chain items and opened personal-care products cannot be returned unless they arrived damaged or incorrect.",
+        "popular": true
+      },
+      {
+        "q": "My order arrived damaged or wrong. What now?",
+        "a": "Contact us within 48 hours with your order number and a photo. We replace the item or refund you in full, including delivery, and collect the item at no cost."
+      },
+      {
+        "q": "How do refunds work with cash on delivery?",
+        "a": "Approved refunds are sent by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) within 5–7 business days."
+      },
+      {
+        "q": "Why can’t I return opened medicine?",
+        "a": "Once a medicine has left our controlled storage and been opened we cannot guarantee how it was stored, so it can never be resold safely."
+      }
+    ]
+  },
+  {
+    "id": "products",
+    "title": "Products & safety",
+    "icon": "shield",
+    "items": [
+      {
+        "q": "Are your products authentic?",
+        "a": "We source only through recognised distributors and manufacturers. Every item is sealed and batch-checked, and we check expiry dates before dispatch."
+      },
+      {
+        "q": "How do I know a medicine is right for me?",
+        "a": "Product pages show uses, dosage, precautions and warnings for reference, but they are not medical advice. Ask your doctor or our pharmacists — contact us any time during {hours}."
+      },
+      {
+        "q": "What is the body map?",
+        "a": "An interactive 3D guide: tap where it hurts, choose a symptom and see self-care tips, warning signs and products our pharmacists would suggest. It helps you navigate the store; it does not diagnose. In an emergency call 1122."
+      },
+      {
+        "q": "What does “same salt, other brand” mean?",
+        "a": "Different brands often contain the same active ingredient (the “salt” or generic) at the same strength. We show these side by side so you can choose by price or availability."
+      }
+    ]
+  },
+  {
+    "id": "account",
+    "title": "Account & wishlist",
+    "icon": "user",
+    "items": [
+      {
+        "q": "How do I reset my password?",
+        "a": "Choose “Forgot password?” on the sign-in page and enter your email. We send a secure reset link that expires after 60 minutes."
+      },
+      {
+        "q": "How does the wishlist work?",
+        "a": "Tap the heart on any product. Guests’ wishlists are saved on the device; when you sign in they are merged into your account. From the wishlist, “Move to bag” adds an item to your bag in one tap."
+      },
+      {
+        "q": "Can I save something in my bag for later?",
+        "a": "Yes — choose “Save for later” on any item in your bag and it moves to your wishlist."
+      },
+      {
+        "q": "How do I delete my account?",
+        "a": "Email {email} from the address on your account and we will delete it. Records we are legally required to keep (such as invoices) are retained only for that purpose."
+      }
+    ]
+  },
+  {
+    "id": "privacy",
+    "title": "Privacy & security",
+    "icon": "lock",
+    "items": [
+      {
+        "q": "Do you sell my data?",
+        "a": "Never. We share only what is needed with service providers that help us run the store — for example the courier who delivers your parcel."
+      },
+      {
+        "q": "Do you store card details?",
+        "a": "No. Orders are paid in cash on delivery, so we never ask for or store card details."
+      },
+      {
+        "q": "Why do some forms show a reCAPTCHA?",
+        "a": "Google reCAPTCHA protects sign-in, checkout and contact forms from bots and abuse, which keeps your account and our stock safe."
+      }
+    ]
+  }
+]

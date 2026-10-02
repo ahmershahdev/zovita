@@ -186,7 +186,7 @@ export default function Footer() {
             {/* Ticker */}
             <div className="border-b border-snow/10 py-5">
                 <Marquee duration={50} itemClassName="gap-12 pr-12">
-                    {['Authentic medicines', 'Pharmacist verified', 'Delivered across Pakistan', 'Cash on delivery', 'Care, calmly'].map((t) => (
+                    {['Authentic medicines', 'Pharmacist verified', 'Delivered nationwide', 'Cash on delivery', 'Care, calmly'].map((t) => (
                         <span key={t} className="flex items-center gap-12 font-display text-4xl text-snow/80 md:text-5xl">
                             {t}
                             <Icon name="sparkle" size={26} className="text-mint" />

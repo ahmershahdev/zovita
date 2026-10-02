@@ -3,8 +3,11 @@
 namespace App\Http\Requests\Checkout;
 
 use App\Rules\Recaptcha;
+use App\Services\Security\ActivityLog;
+use App\Services\Security\BanGuard;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class PlaceOrderRequest extends FormRequest
 {
@@ -43,6 +46,21 @@ class PlaceOrderRequest extends FormRequest
 
     public function messages(): array
     {
-        return ['phone.regex' => 'Enter a valid Pakistani mobile number, e.g. 0300 1234567.'];
+        return ['phone.regex' => 'Enter a valid mobile number, e.g. 0300 1234567.'];
+    }
+
+    /** Identities under an active ban (email and its aliases, phone, device, fingerprint, network) can't get through. */
+    public function after(): array
+    {
+        return [function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+            $guard = app(BanGuard::class);
+            if ($guard->match($guard->signals($this, $this->input('email'), $this->input('phone')))) {
+                ActivityLog::record('ban.blocked', 'Blocked checkout from banned details', meta: ['email' => $this->input('email')]);
+                $validator->errors()->add('email', __('We can\'t accept this request with these details. Please contact support.'));
+            }
+        }];
     }
 }

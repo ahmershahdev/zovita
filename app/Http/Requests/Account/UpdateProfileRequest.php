@@ -29,6 +29,10 @@ class UpdateProfileRequest extends FormRequest
             'phone' => ['nullable', 'regex:'.PlaceOrderRequest::PHONE_REGEX],
             'city' => ['nullable', Rule::in(config('zovita.cities'))],
             'address' => ['nullable', 'string', 'max:255'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90', 'required_with:lng'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180', 'required_with:lat'],
+            // Changing the sign-in email needs the current password (stops a hijacked session taking over the account).
+            'current_password' => [Rule::requiredIf(fn () => $this->input('email') !== $this->user()->email), 'nullable', 'current_password'],
         ];
     }
 }

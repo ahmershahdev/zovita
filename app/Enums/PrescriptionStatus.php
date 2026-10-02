@@ -11,6 +11,11 @@ enum PrescriptionStatus: string
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Received => 'Pending review',
+            self::Reviewing => 'In review',
+            self::Approved => 'Approved',
+            self::Rejected => 'Rejected',
+        };
     }
 }

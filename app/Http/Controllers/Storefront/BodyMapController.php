@@ -15,7 +15,13 @@ class BodyMapController extends Controller
 {
     public function show(): Response
     {
-        return Inertia::render('BodyMap/Show', ['regions' => BodyMap::regions()]);
+        $model = public_path('models/body.bin');
+
+        return Inertia::render('BodyMap/Show', [
+            'regions' => BodyMap::regions(),
+            // Baked by tools/bodymap/build-body.mjs; versioned so a rebuilt mesh is never served stale.
+            'model' => asset('models/body.bin').'?v='.(is_file($model) ? filemtime($model) : 0),
+        ]);
     }
 
     /** Products for one symptom: in-stock and over-the-counter first. */
@@ -45,6 +51,7 @@ class BodyMapController extends Controller
             ])->values();
 
         $payload['products'] = Product::with('brand', 'category')
+            ->listed()
             ->whereIn('category_id', $categories->pluck('id'))
             ->orderByRaw('stock > 0 DESC')
             ->orderBy('requires_prescription')

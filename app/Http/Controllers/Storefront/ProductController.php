@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\Personalization\Interactions;
+use App\Services\Personalization\OfferEngine;
 use App\Support\CatalogCache;
 use App\Support\Seo;
 use App\Support\ShopPath;
@@ -13,11 +15,14 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function show(Product $product): Response
+    public function show(Product $product, Interactions $interactions, OfferEngine $offers): Response
     {
         $product->load('brand', 'category', 'department');
+        $interactions->view($product);
+        $personalOffer = $offers->active()->firstWhere('product_id', $product->id);
 
         $related = Product::with('brand', 'category')
+            ->listed()
             ->where('id', '!=', $product->id)
             ->where('department_id', $product->department_id)
             ->orderByRaw('category_id = ? DESC', [$product->category_id])
@@ -36,7 +41,7 @@ class ProductController extends Controller
         $shopUrl = ShopPath::url($product->department->slug);
         Seo::set(
             title: $product->name,
-            description: $product->summary ?: $product->indication ?: "Buy {$product->name} online in Pakistan at Zovita.",
+            description: $product->summary ?: $product->indication ?: "Buy {$product->name} online at Zovita — authentic stock, cash on delivery.",
             canonical: $url,
             image: $product->image,
             type: 'product',
@@ -96,6 +101,7 @@ class ProductController extends Controller
             'priceStats' => CatalogCache::remember("price-stats.{$product->category_id}.{$product->id}", now()->addHour(), fn () => $this->priceStats($product)),
             'alternatives' => $alternatives,
             'related' => $related,
+            'personalOffer' => $personalOffer?->toClient(),
         ]);
     }
 

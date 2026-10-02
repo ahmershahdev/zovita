@@ -1,5 +1,8 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
+import Assistant from '@/Components/layout/Assistant';
+import { LocaleSync } from '@/Components/ui/LanguageSwitch';
+import CompactFooter from '@/Components/layout/CompactFooter';
 import Footer from '@/Components/layout/Footer';
 import Header from '@/Components/layout/Header';
 import Seo from '@/Components/layout/Seo';
@@ -14,6 +17,8 @@ import { gsap, prefersReducedMotion } from '@/lib/gsap';
 export default function StoreLayout({ children }) {
     const main = useRef(null);
     const lastUrl = useRef(null);
+    // Sign-in / sign-up keep the navbar (a way back to the bag and store) but get a slim footer.
+    const focused = usePage().component.startsWith('Auth/');
 
     // Soft page-enter transition when the path changes (not on filter/pagination query tweaks).
     useEffect(() => {
@@ -22,7 +27,8 @@ export default function StoreLayout({ children }) {
             const changed = lastUrl.current !== null && lastUrl.current !== path;
             lastUrl.current = path;
             if (!changed || prefersReducedMotion() || !main.current) return;
-            gsap.fromTo(main.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, clearProps: 'transform' });
+            // A light settle, not a fade from blank: content is visible from the first frame.
+            gsap.fromTo(main.current, { opacity: 0.6, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', clearProps: 'opacity,transform' });
         });
     }, []);
 
@@ -32,14 +38,16 @@ export default function StoreLayout({ children }) {
                 Skip to content
             </a>
             <Seo />
+            <LocaleSync />
             <Preloader />
             <Header />
             <main id="main" ref={main} tabIndex={-1} className="outline-none">
                 {children}
             </main>
-            <Footer />
+            {focused ? <CompactFooter /> : <Footer />}
             <ScrollToTop />
             <Toasts />
+            {!focused && <Assistant />}
             <Cursor />
         </SmoothScroll>
     );

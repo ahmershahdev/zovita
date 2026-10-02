@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Product;
+use App\Services\Personalization\Recommender;
 use App\Support\CatalogCache;
 use App\Support\ShopPath;
 use Inertia\Inertia;
@@ -27,30 +28,30 @@ class HomeController extends Controller
         ['label' => 'Body aches', 'image' => 'pain-and-body-aches', 'query' => ['q' => 'pain']],
     ];
 
-    public function __invoke(): Response
+    public function __invoke(Recommender $recommender): Response
     {
         $data = CatalogCache::remember('home', now()->addMinutes(30), function () {
             $cards = fn ($query) => $query->with('brand', 'category')->get()->map->toCard()->all();
 
             return [
-                'departments' => Department::withCount('products')->orderBy('sort_order')->get()
+                'departments' => Department::withCount(['products' => fn ($q) => $q->listed()])->orderBy('sort_order')->get()
                     ->map(fn (Department $d) => [
                         'name' => $d->name,
                         'slug' => $d->slug,
                         'blurb' => $d->blurb,
                         'count' => $d->products_count,
-                        'image' => $d->products()->where('is_featured', true)->first()?->thumb
-                            ?? $d->products()->first()?->thumb,
+                        'image' => $d->products()->listed()->where('is_featured', true)->first()?->thumb
+                            ?? $d->products()->listed()->first()?->thumb,
                     ])->all(),
-                'featured' => $cards(Product::where('is_featured', true)->inStock()->limit(12)),
-                'deals' => $cards(Product::whereNotNull('sale_price')->inStock()
+                'featured' => $cards(Product::listed()->where('is_featured', true)->inStock()->limit(12)),
+                'deals' => $cards(Product::listed()->whereNotNull('sale_price')->inStock()
                     ->orderByRaw('(price - sale_price) / price DESC')->limit(10)),
-                'supplements' => $cards(Product::whereHas('department', fn ($q) => $q->where('slug', 'vitamins-supplements'))
+                'supplements' => $cards(Product::listed()->whereHas('department', fn ($q) => $q->where('slug', 'vitamins-supplements'))
                     ->inStock()->orderByDesc('stock')->limit(10)),
                 'brands' => Brand::whereNotNull('logo_path')->withCount('products')->orderByDesc('products_count')->get()
                     ->map(fn (Brand $b) => ['name' => $b->name, 'slug' => $b->slug, 'logo' => asset($b->logo_path)])->all(),
                 'stats' => [
-                    'products' => Product::count(),
+                    'products' => Product::listed()->count(),
                     'brands' => Brand::count(),
                     'categories' => Category::count(),
                 ],
@@ -58,6 +59,8 @@ class HomeController extends Controller
         });
 
         return Inertia::render('Home', $data + [
+            // Not cached: learnt from this visitor (views, time on page, bag, purchases).
+            'rails' => $recommender->rails(),
             'conditions' => collect(self::CONDITIONS)->map(fn ($c) => [
                 'label' => $c['label'],
                 'image' => asset("images/conditions/{$c['image']}.webp"),

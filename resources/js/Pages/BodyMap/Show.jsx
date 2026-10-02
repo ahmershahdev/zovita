@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { lazy, useEffect, useRef, useState } from 'react';
+import { lazy, useCallback, useEffect, useRef, useState } from 'react';
 import ProductCard from '@/Components/product/ProductCard';
 import LazyScene from '@/Components/three/LazyScene';
 import Icon from '@/Components/ui/Icon';
@@ -14,7 +14,7 @@ const BodyScene = lazy(() => import('@/Components/three/BodyScene'));
 /** Regions that exist on the 3D model (the rest are chips beside it). */
 const ON_MODEL = ['head', 'face', 'chest', 'back', 'abdomen', 'pelvis', 'arms', 'legs'];
 
-export default function BodyMap({ regions }) {
+export default function BodyMap({ regions, model }) {
     const scope = useRef(null);
     const results = useRef(null);
     const { isDark } = useTheme();
@@ -25,6 +25,8 @@ export default function BodyMap({ regions }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [ready, setReady] = useState(false);
+    const onReady = useCallback(() => setReady(true), []);
     useReveal(scope);
 
     const byKey = Object.fromEntries(regions.map((r) => [r.key, r]));
@@ -57,6 +59,8 @@ export default function BodyMap({ regions }) {
     }, [symptom]);
 
     const label = (key) => byKey[key]?.label ?? '';
+    const labels = Object.fromEntries(regions.map((r) => [r.key, r.label]));
+    const focus = hovered ?? region;
 
     return (
         <div ref={scope}>
@@ -86,16 +90,19 @@ export default function BodyMap({ regions }) {
             <section className="container-x mt-12">
                 <div className="grid gap-6 lg:grid-cols-12">
                     {/* 3D model */}
-                    <div className="relative min-h-[34rem] overflow-hidden rounded-5xl border border-line bg-[radial-gradient(ellipse_at_50%_35%,var(--color-card),var(--color-paper-deep))] lg:col-span-7 lg:min-h-[44rem]">
-                        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(var(--color-line)_1px,transparent_1px),linear-gradient(90deg,var(--color-line)_1px,transparent_1px)] bg-[size:48px_48px] opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
+                    <div className="relative min-h-[32rem] overflow-hidden rounded-5xl border border-line bg-[radial-gradient(ellipse_at_50%_38%,var(--color-card),var(--color-paper-deep)_70%)] sm:min-h-[38rem] lg:col-span-7 lg:min-h-[46rem]">
+                        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(var(--color-line)_1px,transparent_1px),linear-gradient(90deg,var(--color-line)_1px,transparent_1px)] bg-[size:40px_40px] opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]" />
                         <LazyScene
                             Scene={BodyScene}
                             interactive
                             className="absolute inset-0"
+                            model={model}
+                            labels={labels}
                             selected={region}
                             hovered={hovered}
                             onHover={setHovered}
                             onSelect={pickRegion}
+                            onReady={onReady}
                             facing={facing}
                             dark={isDark}
                             fallback={
@@ -108,14 +115,39 @@ export default function BodyMap({ regions }) {
                             }
                         />
 
-                        <div className="pointer-events-none absolute inset-x-5 top-5 flex items-start justify-between gap-4">
-                            <p className="eyebrow rounded-full bg-paper/80 px-3 py-1.5 text-ink-mute backdrop-blur">Drag to rotate · Click to select</p>
-                            <p className={cn('eyebrow rounded-full bg-night px-3 py-1.5 text-snow transition-opacity duration-300', hovered ? 'opacity-100' : 'opacity-0')} aria-live="polite">
-                                {label(hovered)}
-                            </p>
+                        {/* Loader: shown until the mesh has streamed in */}
+                        <div className={cn('pointer-events-none absolute inset-0 grid place-items-center transition-opacity duration-700', ready ? 'opacity-0' : 'opacity-100')} aria-hidden={ready}>
+                            <div className="flex flex-col items-center gap-4">
+                                <span className="relative block h-28 w-px overflow-hidden bg-line-strong">
+                                    <span className="absolute inset-x-0 h-8 animate-[scan-y_1.4s_var(--ease-quart)_infinite] bg-teal" />
+                                </span>
+                                <p className="eyebrow text-ink-mute">Calibrating body scan</p>
+                            </div>
                         </div>
 
-                        <div className="glass absolute bottom-5 left-1/2 flex -translate-x-1/2 rounded-full border border-line p-1 text-sm">
+                        {/* HUD frame */}
+                        <div className="pointer-events-none absolute inset-4 hidden sm:block" aria-hidden="true">
+                            {['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r', 'bottom-0 left-0 border-b border-l', 'right-0 bottom-0 border-r border-b'].map((c) => (
+                                <span key={c} className={cn('absolute size-5 rounded-[3px] border-ink/40', c)} />
+                            ))}
+                        </div>
+
+                        <div className="pointer-events-none absolute inset-x-5 top-5 flex items-start justify-between gap-4 sm:inset-x-8 sm:top-8">
+                            <p className="eyebrow rounded-full bg-paper/80 px-3 py-1.5 text-ink-mute backdrop-blur">
+                                <span className="hidden sm:inline">Drag to rotate · Tap a pin or the body</span>
+                                <span className="sm:hidden">Drag · Tap to select</span>
+                            </p>
+                            <div className="text-right font-mono text-[0.66rem] uppercase leading-relaxed tracking-[0.1em] text-ink-mute" aria-live="polite">
+                                <p className="flex items-center justify-end gap-2">
+                                    <span className={cn('size-1.5 rounded-full', focus ? 'bg-teal' : 'bg-ink/30')} />
+                                    {focus ? (hovered && hovered !== region ? 'Scanning' : 'Locked') : 'Idle'}
+                                </p>
+                                <p className="mt-1 font-display text-xl normal-case tracking-tight text-ink sm:text-2xl">{focus ? label(focus) : 'Full body'}</p>
+                                <p>{focus ? `${byKey[focus]?.symptoms.length ?? 0} symptoms` : `${regions.length} regions`}</p>
+                            </div>
+                        </div>
+
+                        <div className="glass absolute bottom-5 left-1/2 flex -translate-x-1/2 rounded-full border border-line p-1 text-sm sm:bottom-8">
                             {['front', 'back'].map((f) => (
                                 <button
                                     key={f}
@@ -127,6 +159,11 @@ export default function BodyMap({ regions }) {
                                     {f}
                                 </button>
                             ))}
+                            {region && (
+                                <button type="button" onClick={() => { setRegion(null); setSymptom(null); setData(null); }} className="rounded-full px-4 py-2 text-ink-mute transition-colors hover:text-ink">
+                                    Reset
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -200,7 +237,7 @@ export default function BodyMap({ regions }) {
 
 function Step({ n, title, done, disabled, children }) {
     return (
-        <div className={cn('rounded-4xl border border-line bg-card p-6 transition-opacity duration-500', disabled && 'opacity-50')}>
+        <div className={cn('rounded-4xl border bg-card p-6 transition-colors duration-500', disabled ? 'border-dashed border-line-strong' : 'border-line')} aria-disabled={disabled || undefined}>
             <div className="mb-5 flex items-center gap-3">
                 <span className={cn('grid size-8 place-items-center rounded-full font-mono text-xs transition-colors', done ? 'bg-teal text-white' : 'border border-line-strong')}>
                     {done ? <Icon name="check" size={14} /> : pad(n)}
