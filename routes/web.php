@@ -12,8 +12,9 @@ use App\Http\Controllers\Admin\PrescriptionController as AdminPrescriptions;
 use App\Http\Controllers\Admin\ProductController as AdminProducts;
 use App\Http\Controllers\Admin\SecurityController as AdminSecurity;
 use App\Http\Controllers\Admin\StaffController as AdminStaff;
-use App\Http\Controllers\Admin\StaffTwoFactorSetupController;
 use App\Http\Controllers\Admin\UserController as AdminUsers;
+use App\Http\Controllers\Auth\EmailCodeLoginController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SessionController;
@@ -132,6 +133,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [SessionController::class, 'store'])->middleware('throttle:10,1,login');
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,10,register');
+    Route::get('/login/code', [EmailCodeLoginController::class, 'create'])->name('login.code');
+    Route::post('/login/code', [EmailCodeLoginController::class, 'store'])->middleware('throttle:5,10,login.code')->name('login.code.send');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:5,10,password.email')->name('password.email');
@@ -142,8 +145,13 @@ Route::middleware('guest')->group(function () {
 // Second sign-in step for customers who turned on two-step sign-in.
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
 Route::post('/two-factor-challenge', [TwoFactorChallengeController::class, 'store'])->middleware('throttle:10,1,two-factor')->name('two-factor.verify');
+Route::post('/two-factor-challenge/resend', [TwoFactorChallengeController::class, 'resend'])->middleware('throttle:5,10,two-factor.resend')->name('two-factor.resend');
 
 Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
+
+// E-mail confirmation: a signed link that expires after 10 minutes, and a resend button.
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])->middleware(['signed', 'throttle:10,1,verification.verify'])->name('verification.verify');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])->middleware(['auth', 'throttle:3,10,verification.send'])->name('verification.send');
 
 /*
 |--------------------------------------------------------------------------
@@ -178,16 +186,15 @@ Route::middleware('auth')->prefix('account')->name('account.')->group(function (
 */
 
 // Staff sign-in: unlinked, noindex, 5 attempts then a 15-minute lock (see LoginRequest), then a
-// mandatory second step: set up two-step sign-in, or enter its code. Both answer 404 unless a staff
-// password was just entered on this browser.
+// mandatory second step: the authenticator app's code, or a 6-digit code e-mailed to them until
+// they set one up. Both answer 404 unless a staff password was just entered on this browser.
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AdminSession::class, 'create'])->name('login');
     Route::post('/login', [AdminSession::class, 'store'])->middleware('throttle:5,1,login.admin');
     Route::post('/logout', [AdminSession::class, 'destroy'])->name('logout');
     Route::get('/two-factor', [TwoFactorChallengeController::class, 'create'])->defaults('staff', true)->name('two-factor.challenge');
     Route::post('/two-factor', [TwoFactorChallengeController::class, 'store'])->defaults('staff', true)->middleware('throttle:10,1,admin.two-factor')->name('two-factor.verify');
-    Route::get('/two-factor/setup', [StaffTwoFactorSetupController::class, 'create'])->name('two-factor.setup');
-    Route::post('/two-factor/setup', [StaffTwoFactorSetupController::class, 'store'])->middleware('throttle:10,1,admin.two-factor.setup')->name('two-factor.setup.store');
+    Route::post('/two-factor/resend', [TwoFactorChallengeController::class, 'resend'])->defaults('staff', true)->middleware('throttle:5,10,admin.two-factor.resend')->name('two-factor.resend');
 });
 
 // Every admin route needs a staff session that passed two-step sign-in (EnsureAdmin) and the
@@ -196,6 +203,10 @@ Route::middleware(['admin', 'throttle:120,1,admin.panel'])->prefix('admin')->nam
     Route::get('/', AdminDashboard::class)->middleware('staff:dashboard')->name('dashboard');
     Route::get('/security', [AdminSecurity::class, 'show'])->name('security');
     Route::post('/security/recovery-codes', [AdminSecurity::class, 'regenerate'])->middleware('throttle:5,1,admin.recovery')->name('security.recovery');
+    Route::post('/security/authenticator', [AdminSecurity::class, 'start'])->name('security.authenticator.start');
+    Route::post('/security/authenticator/confirm', [AdminSecurity::class, 'confirm'])->middleware('throttle:10,1,admin.authenticator')->name('security.authenticator.confirm');
+    Route::delete('/security/authenticator/setup', [AdminSecurity::class, 'cancel'])->name('security.authenticator.cancel');
+    Route::delete('/security/authenticator', [AdminSecurity::class, 'disable'])->middleware('throttle:5,1,admin.authenticator.off')->name('security.authenticator.destroy');
 
     Route::get('/orders', [AdminOrders::class, 'index'])->middleware('staff:orders.view')->name('orders.index');
     Route::get('/orders/{order:number}', [AdminOrders::class, 'show'])->middleware('staff:orders.view')->name('orders.show');

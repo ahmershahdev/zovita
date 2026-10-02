@@ -32,34 +32,6 @@ class TwoFactorAndRolesTest extends TestCase
         $this->assertSame('279037', $this->twoFactor()->code($secret, intdiv(2000000000, 30)));
     }
 
-    public function test_staff_without_two_step_must_set_it_up_before_any_session_starts(): void
-    {
-        $staff = User::factory()->create(['email' => 'new@zovita.com', 'password' => 'Secret@1234']);
-        $staff->setStaffRole(StaffRole::Pharmacist);
-
-        // Setup page is invisible until the staff password has just been entered.
-        $this->get(route('admin.two-factor.setup'))->assertNotFound();
-
-        $this->post(route('admin.login'), ['email' => 'new@zovita.com', 'password' => 'Secret@1234'])
-            ->assertRedirect(route('admin.two-factor.setup'));
-        $this->assertGuest();
-        $this->get(route('admin.dashboard'))->assertNotFound();
-
-        $page = $this->get(route('admin.two-factor.setup'))->assertOk();
-        $secret = str_replace(' ', '', $page->viewData('page')['props']['secret']);
-        $this->assertStringContainsString('<svg', $page->viewData('page')['props']['qr']);
-
-        $this->post(route('admin.two-factor.setup.store'), ['code' => '000000'])->assertSessionHasErrors('code');
-        $this->assertGuest();
-
-        $this->post(route('admin.two-factor.setup.store'), ['code' => $this->twoFactor()->code($secret)])
-            ->assertRedirect(route('admin.security'))
-            ->assertSessionHas('recovery_codes', fn ($codes) => count($codes) === TwoFactor::RECOVERY_CODES);
-        $this->assertAuthenticatedAs($staff);
-        $this->assertTrue($staff->fresh()->hasTwoFactor());
-        $this->get(route('admin.dashboard'))->assertOk();
-    }
-
     public function test_a_code_cannot_be_replayed_and_five_wrong_codes_restart_sign_in(): void
     {
         $staff = $this->makeStaff(attributes: ['email' => 'owner@zovita.com', 'password' => 'Secret@1234']);

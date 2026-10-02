@@ -57,7 +57,7 @@ class StaffController extends Controller
         $user->setStaffRole($role);
         ActivityLog::record('admin.staff.added', "Made {$user->email} a {$role->label()}", $request->user(), ['user_id' => $user->id]);
 
-        return back()->with('success', "{$user->name} is now a {$role->label()}. They'll set up two-step sign-in the first time they sign in at /admin/login.");
+        return back()->with('success', "{$user->name} is now a {$role->label()}. They sign in at /admin/login with their password and a code e-mailed to them.");
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -98,7 +98,7 @@ class StaffController extends Controller
         DB::table('sessions')->where('user_id', $user->id)->delete();
         ActivityLog::record('admin.staff.2fa_reset', "Reset two-step sign-in for {$user->email}", $request->user(), ['user_id' => $user->id]);
 
-        return back()->with('success', "{$user->name} will set up two-step sign-in again next time they sign in.");
+        return back()->with('success', "{$user->name} will get e-mailed sign-in codes until they set up an authenticator app again.");
     }
 
     private function guardLastOwner(User $user, ?StaffRole $next, callable $change): RedirectResponse

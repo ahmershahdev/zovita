@@ -23,6 +23,7 @@ class DashboardController extends Controller
             'profile' => $user->only('name', 'username', 'email', 'phone', 'city', 'address', 'lat', 'lng') + [
                 'avatar' => $user->avatarUrl(),
                 'member_since' => $user->created_at->toIso8601String(),
+                'email_verified' => $user->hasVerifiedEmail(),
             ],
             // Recent sign-ins, so customers can spot access they don't recognise.
             'signins' => $user->activities()->whereIn('type', ['auth.login', 'auth.failed'])->latest('created_at')->limit(6)->get()

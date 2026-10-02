@@ -97,11 +97,22 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 - Every account gets a **readable random username** (e.g. `calm-heron-4821`). Only an admin can change it.
 - Recent sign-ins (device, browser, approximate place) on the security tab.
 - Optional **two-step sign-in** with any authenticator app (TOTP, RFC 6238), eight single-use recovery codes, and replay protection: a code can't be used twice.
+- **Passwordless "e-mail me a code" sign-in**: a 6-digit code that works once and expires in 10 minutes; the screen looks the same whether or not the address has an account (no enumeration), and accounts with an authenticator still need its code afterwards.
+- **E-mail automation** (all on one branded template, sent through Resend):
+
+  | E-mail | When |
+  |---|---|
+  | Welcome + **confirm your e-mail** | Sign-up, and after changing the e-mail address (signed link, **expires in 10 minutes**, resend button on the account page) |
+  | **Sign-in code** | E-mail-code sign-in and staff second step (6 digits from a CSPRNG, stored only as an HMAC under a unique index, 10 minutes, single use, 5 tries, one per minute) |
+  | **Password reset** | "Forgot password?" (64 random characters, stored hashed, single use, **expires in 10 minutes**) |
+  | **New sign-in alert** | A sign-in from an IP not seen on the account in 90 days |
+  | Order confirmed / **status updates** / **refund issued** | Checkout (COD) or payment webhook (card), every status change, every refund |
+  | Prescription received / decision, refill reminders | As before |
 - Guest wishlist and activity merge into the account on sign-in.
 
 ### Admin panel (`/admin`, separate staff login)
 - **Hidden and gated:**
-  - Its own sign-in at `/admin/login`, then **mandatory two-step sign-in**: staff without it must scan a QR code before any session starts, and a session that hasn't passed the second step (a remember-me cookie, an old session) is refused.
+  - Its own sign-in at `/admin/login`, then a **mandatory second step**: a 6-digit code e-mailed to the staff member (10 minutes, single use), or their authenticator app's code once they set one up from **My security** in the panel. A session that hasn't passed the second step (a remember-me cookie, an old session) is refused.
   - Every admin URL returns **404** to anyone who isn't staff.
   - Sessions sign out after 30 minutes idle.
   - Staff login is throttled for 15 minutes after failures.
@@ -140,7 +151,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ### Languages
 - **English and اردو (Urdu)**: a full right-to-left layout and Noto Nastaliq Urdu.
-- A 607-entry dictionary, switched instantly with no reload. `hreflang` alternates are in the sitemap and `<head>`.
+- A 621-entry dictionary, switched instantly with no reload. `hreflang` alternates are in the sitemap and `<head>`.
 
 ### Speed
 - **Server-side rendering** (Inertia SSR, `npm run build:ssr` + `php artisan inertia:start-ssr`): every storefront page arrives as full HTML and hydrates without a mismatch. The head (title, meta, JSON-LD) stays server-rendered by Blade, so there are no duplicate tags.
@@ -328,7 +339,7 @@ Also: `experiment_events` and `experiment_assignments` (A/B), `webhook_events` (
 | **Enumeration** | Password reset, login and order tracking return identical responses whether or not the account or order exists. |
 | **Uploads** | MIME and extension allow-list, size cap, UUID file names, private disk, streamed to admins only. |
 | **Abuse by banned users** | Temporary, permanent and deep bans matched on canonical email, phone, device cookie, browser fingerprint, IP and network. |
-| **Admin exposure** | 404 for non-staff, separate login, **mandatory TOTP two-step sign-in** (replay-proof, hashed single-use recovery codes, five wrong codes restart the sign-in), **role permissions** on every route, idle timeout, every admin action written to the activity log. |
+| **Admin exposure** | 404 for non-staff, separate login, **mandatory second step** (e-mailed 10-minute single-use code, or replay-proof TOTP with hashed single-use recovery codes; five wrong codes restart the sign-in), **role permissions** on every route, idle timeout, every admin action written to the activity log. |
 | **Payments** | Amounts computed on the server; webhooks verified with HMAC-SHA256 (`t=…,v1=…`, constant-time compare, 5-minute replay window); every event id stored once; amount and currency must match; order and payment rows locked for every state change; idempotency keys on gateway calls; refunds capped at what was captured. |
 | **Malicious uploads** | Prescriptions and avatars are streamed to **ClamAV** (`clamd` INSTREAM over TCP or a Unix socket) before they are stored; an unreachable scanner refuses the upload unless explicitly configured to fail open. |
 | **Multi-server abuse controls** | Rate-limit counters (`CACHE_LIMITER_STORE`) and ban look-ups (`BAN_CACHE_STORE`) live in a shared store (**Redis** in production); issuing or lifting a ban bumps a version key so every server stops trusting cached answers at once, and cached hits are re-checked so an expired ban is never enforced. |
@@ -353,7 +364,7 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 | Suite | What it covers | Result |
 |---|---|---|
-| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **133 passed** (924 assertions) |
+| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **142 passed** (970 assertions) |
 | **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review with two-step sign-in, admin pages on a phone, interaction warning + acknowledgement, card payment through the sandbox gateway, retrying a cancelled payment, staff pages | **56 passed** |
 | **Lighthouse 13** | Home, shop, product, body map, FAQ, contact, policies, login, register, prescription, about | **Accessibility 100 · Best Practices 100 · SEO 100** (bag/checkout are `noindex` by design) |
 | **Load** (`node tests/load/run.mjs capacity`) | On a single XAMPP dev box (database sessions): shop and product pages about 32 req/s at p50 about 700 ms; FAQ about 55 req/s; static images about 830 req/s at 11 ms | No errors |
@@ -394,7 +405,7 @@ php artisan serve                   # → http://127.0.0.1:8000
 | Support | `/admin/login` | `support@zovita.com` | `Support@1234` |
 | Demo customer | `/login` | `demo@zovita.pk` | `password` |
 
-Every staff account sets up two-step sign-in (scan a QR code with an authenticator app) the first time it signs in.
+Staff sign in with their password plus a 6-digit code **e-mailed** to them (so seeded accounts work out of the box; with `MAIL_MAILER=log` the code is in `storage/logs/laravel.log`). Each can switch to an authenticator app from **My security** in the panel.
 
 > **Change the staff passwords before going live.** Use `php artisan user:admin you@example.com --role=owner` to promote your own account, then `php artisan user:admin admin@zovita.com --revoke` (or delete it).
 
@@ -413,6 +424,7 @@ Every staff account sets up two-step sign-in (scan a QR code with an authenticat
 | `ZOVITA_SUPPORT_PHONE`, `ZOVITA_SUPPORT_EMAIL`, `ZOVITA_ADMIN_EMAIL` | Contact details and where team notifications go. |
 | `ZOVITA_DELIVERY_FEE`, `ZOVITA_FREE_DELIVERY_OVER` | Delivery pricing. |
 | `QUEUE_CONNECTION` | `sync` locally; `database` or `redis` with workers in production. |
+| `PASSWORD_RESET_EXPIRE` | Minutes a password-reset link lives (default 10). |
 | `PAYMENTS_DRIVER`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`, `PAYMENTS_EXPIRES_MINUTES` | `sandbox` (local test gateway, refused in production), `stripe` or `none`. Stripe webhook: `POST /webhooks/payments/stripe` with `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_failed`, `charge.refunded`. |
 | `MALWARE_SCANNER`, `CLAMAV_SOCKET` / `CLAMAV_HOST` / `CLAMAV_PORT`, `MALWARE_SCAN_FAIL_OPEN` | `clamav` streams uploads to clamd; `none` locally. |
 | `CACHE_LIMITER_STORE`, `BAN_CACHE_STORE` | Shared store for throttle counters and ban look-ups (`redis` with several servers). |
@@ -461,8 +473,8 @@ app/
 │  ├─ Personalization/   Visitor, Interactions, OfferEngine, Pricing, Recommender, Refills
 │  ├─ Assistant/         preset intents → personal answers
 │  ├─ Experiments/       A/B bucketing + events
-│  ├─ Security/          BanGuard (shared cache), ActivityLog, TwoFactor, PendingLogin, MalwareScanner
-│  └─ Cart · Catalog (InteractionChecker) · Mail · Wishlist
+│  ├─ Security/          BanGuard (shared cache), ActivityLog, TwoFactor, LoginCodes, PendingLogin, MalwareScanner
+│  └─ Cart · Catalog (InteractionChecker) · Mail (AccountNotices) · Wishlist
 └─ Support/              Seo, CatalogCache, Username, UserAgent, Content
 resources/
 ├─ content/              FAQ + policies (pages, JSON-LD, llms-full.txt), interactions.json (drug rules)
@@ -481,7 +493,8 @@ deploy/                  nginx, supervisor, production env template
 ## Roadmap
 
 **Shipped in the last release**
-- ✅ Two-step sign-in (TOTP), mandatory for staff, plus staff roles (owner, pharmacist, support).
+- ✅ Two-step sign-in (TOTP, or e-mailed codes), mandatory for staff, plus staff roles (owner, pharmacist, support).
+- ✅ E-mail automation: sign-in codes, passwordless sign-in, e-mail confirmation, new-sign-in alerts, order status and refund e-mails, 10-minute password resets.
 - ✅ Card payments alongside cash on delivery, with signed webhooks, automatic expiry and refunds.
 - ✅ Refill reminders built on the "buys it regularly" signal.
 - ✅ Drug-interaction warnings in the bag from the stored active ingredients.

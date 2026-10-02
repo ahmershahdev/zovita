@@ -60,6 +60,15 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
                 ))}
             </div>
 
+            {!profile.email_verified && (
+                <div className="mt-10 flex flex-wrap items-center gap-4 rounded-3xl border border-[#e8c66d]/60 bg-[#fdf6e4] p-5 text-sm dark:bg-[#2c2410]" data-testid="verify-email">
+                    <Icon name="mail" size={20} className="shrink-0" />
+                    <p className="min-w-0 flex-1">Please confirm {profile.email} so order updates and sign-in codes reach you. The link we sent expires after 10 minutes.</p>
+                    <Button size="sm" variant="ghost" onClick={() => router.post(route('verification.send'), {}, { preserveScroll: true })}>
+                        Send a new link
+                    </Button>
+                </div>
+            )}
             <div className="scrollbar-none mt-12 flex gap-2 overflow-x-auto border-b border-line" role="tablist">
                 {tabs.map(([key, label]) => (
                     <button

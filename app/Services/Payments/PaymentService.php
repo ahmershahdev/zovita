@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use App\Services\Mail\AccountNotices;
 use App\Services\Security\ActivityLog;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -175,6 +176,7 @@ class PaymentService
             ]);
             $this->applyRefunded($payment, round($payment->refunded_amount + $amount, 2));
             ActivityLog::record('order.refunded', 'Refunded PKR '.number_format($amount, 2)." on {$order->number}".($reason ? " ({$reason})" : ''), $by, ['order' => $order->number]);
+            DB::afterCommit(fn () => app(AccountNotices::class)->refund($order, $amount)); // e-mail only once it's real
 
             return $refund;
         });

@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Refund;
+use App\Services\Mail\AccountNotices;
 use App\Services\Payments\PaymentService;
 use App\Services\Security\ActivityLog;
 use Illuminate\Http\RedirectResponse;
@@ -114,6 +115,11 @@ class OrderController extends Controller
 
             return $next === OrderStatus::Cancelled;
         });
+
+        $fresh = $order->fresh();
+        if ($fresh->status === $next) {
+            app(AccountNotices::class)->orderStatus($fresh); // e-mail the customer about the change
+        }
 
         if ($cancelled && $paidByCard) {
             $left = round($order->total - $order->fresh()->refunded_amount, 2);

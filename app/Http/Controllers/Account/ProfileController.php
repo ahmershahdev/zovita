@@ -23,8 +23,14 @@ class ProfileController extends Controller
         $emailChanged = $data['email'] !== $user->email;
 
         $user->fill($data);
+        if ($emailChanged) {
+            $user->forceFill(['email_verified_at' => null]); // the new address has to be confirmed
+        }
         $changed = array_keys($user->getDirty());
         $user->save();
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         if ($changed) {
             ActivityLog::record('profile.updated', 'Updated profile: '.implode(', ', array_map(fn ($f) => str_replace('_', ' ', $f), $changed)));

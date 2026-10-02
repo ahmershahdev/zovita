@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\Security\ActivityLog;
+use App\Services\Security\LoginCodes;
 use App\Services\Security\PendingLogin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,23 +29,25 @@ class AdminSessionController extends Controller
     }
 
     /**
-     * Password first, then the mandatory second step: staff who have two-step sign-in get the
-     * code prompt, staff who don't yet must set it up before any session starts. "Remember me"
-     * is never offered for staff.
+     * Password first, then a mandatory second step: a code from the staff member's authenticator
+     * app if they set one up (My security), otherwise a 6-digit code e-mailed to them. No staff
+     * session ever starts on a password alone. "Remember me" is never offered for staff.
      */
-    public function store(LoginRequest $request, PendingLogin $pending): RedirectResponse
+    public function store(LoginRequest $request, PendingLogin $pending, LoginCodes $codes): RedirectResponse
     {
         // A customer session on this browser is replaced by the staff session.
         if (Auth::check()) {
             Auth::guard('web')->logout();
         }
         $user = $request->validateUser(staff: true);
-        $pending->start($request, $user, remember: false, staff: true);
+        $method = $user->hasTwoFactor() ? 'totp' : 'email';
+        $pending->start($request, $user, remember: false, staff: true, method: $method);
+        if ($method === 'email') {
+            $codes->send($user);
+        }
         ActivityLog::record('admin.password_ok', 'Entered the correct staff password (second step pending)', $user);
 
-        return $user->hasTwoFactor()
-            ? to_route('admin.two-factor.challenge')
-            : to_route('admin.two-factor.setup');
+        return to_route('admin.two-factor.challenge');
     }
 
     public function destroy(Request $request): RedirectResponse

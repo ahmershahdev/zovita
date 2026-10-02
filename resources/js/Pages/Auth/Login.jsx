@@ -52,6 +52,9 @@ export default function Login() {
                 <Button type="submit" size="lg" loading={processing} className="w-full" icon={<Icon name="arrow" size={18} />}>
                     Sign in
                 </Button>
+                <Link href={route('login.code')} className="flex items-center justify-center gap-2 text-sm text-ink-mute underline decoration-line-strong underline-offset-4 hover:text-ink">
+                    <Icon name="mail" size={14} /> E-mail me a sign-in code instead
+                </Link>
                 <RecaptchaNotice className="text-center" />
             </form>
         </AuthShell>

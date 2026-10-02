@@ -24,9 +24,10 @@ class EnsureAdmin
         $user = $request->user();
         abort_unless($user?->isAdmin(), 404);
 
-        // Mandatory two-step sign-in: a staff session only counts once this browser passed the
-        // second step for this account (a password alone, or a remember-me cookie, is not enough).
-        if (! $user->hasTwoFactor() || $request->session()->get(PendingLogin::VERIFIED) !== $user->id) {
+        // Mandatory second step: a staff session only counts once this browser passed it (an
+        // authenticator code or an e-mailed code) for this account. A password alone, or a
+        // remember-me cookie, is never enough.
+        if ($request->session()->get(PendingLogin::VERIFIED) !== $user->id) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
