@@ -19,6 +19,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Rate Limiter Store
+    |--------------------------------------------------------------------------
+    | Store for every throttle counter. Set CACHE_LIMITER_STORE=redis in production so all app
+    | servers share one budget per client (null = the default store above).
+    */
+
+    'limiter' => env('CACHE_LIMITER_STORE'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Cache Stores
     |--------------------------------------------------------------------------
     |

@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
+    case AwaitingPayment = 'awaiting_payment';
     case Pending = 'pending';
     case Confirmed = 'confirmed';
     case Packed = 'packed';
@@ -14,6 +15,7 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::AwaitingPayment => 'Awaiting card payment',
             self::Pending => 'Order placed',
             self::Confirmed => 'Confirmed by pharmacist',
             self::Packed => 'Packed',

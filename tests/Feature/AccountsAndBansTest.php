@@ -17,8 +17,7 @@ class AccountsAndBansTest extends TestCase
 
     private function staff(): User
     {
-        $user = User::factory()->create(['email' => 'admin@zovita.com', 'password' => 'Admin@1234']);
-        $user->forceFill(['is_admin' => true])->save();
+        $user = $this->makeStaff(attributes: ['email' => 'admin@zovita.com', 'password' => 'Admin@1234']);
 
         return $user->fresh();
     }
@@ -44,7 +43,11 @@ class AccountsAndBansTest extends TestCase
         $this->post(route('login'), ['email' => 'admin@zovita.com', 'password' => 'Admin@1234'])->assertSessionHasErrors('email');
         $this->assertGuest();
 
-        $this->post(route('admin.login'), ['email' => 'admin@zovita.com', 'password' => 'Admin@1234'])->assertRedirect(route('admin.dashboard'));
+        // The right password alone isn't enough: the two-step code comes next.
+        $this->post(route('admin.login'), ['email' => 'admin@zovita.com', 'password' => 'Admin@1234'])->assertRedirect(route('admin.two-factor.challenge'));
+        $this->get(route('admin.dashboard'))->assertNotFound();
+        $staff = User::where('email', 'admin@zovita.com')->first();
+        $this->post(route('admin.two-factor.verify'), ['code' => $this->totp($staff)])->assertRedirect(route('admin.dashboard'));
         $this->assertAuthenticated();
         $this->get(route('admin.dashboard'))->assertOk();
     }
@@ -58,14 +61,14 @@ class AccountsAndBansTest extends TestCase
 
     public function test_staff_sessions_expire_when_idle(): void
     {
-        $this->actingAs($this->staff())->withSession(['admin_last_active' => now()->subHour()->timestamp]);
+        $this->actingAsStaff($this->staff())->withSession(['admin_last_active' => now()->subHour()->timestamp]);
         $this->get(route('admin.dashboard'))->assertRedirect(route('admin.login'));
         $this->assertGuest();
     }
 
     public function test_the_store_never_links_to_the_admin(): void
     {
-        $this->actingAs($this->staff());
+        $this->actingAsStaff($this->staff());
         $this->assertStringNotContainsString('/admin', $this->get(route('home'))->getContent());
     }
 
@@ -74,7 +77,7 @@ class AccountsAndBansTest extends TestCase
     public function test_temporary_ban_locks_the_account_until_it_expires(): void
     {
         $customer = User::factory()->create(['password' => 'secret-pass-123']);
-        $this->actingAs($this->staff())->post(route('admin.users.ban', $customer), ['severity' => 'temporary', 'duration' => '1d', 'reason' => 'Cooling off'])->assertSessionHas('success');
+        $this->actingAsStaff($this->staff())->post(route('admin.users.ban', $customer), ['severity' => 'temporary', 'duration' => '1d', 'reason' => 'Cooling off'])->assertSessionHas('success');
         auth()->logout();
 
         $this->post(route('login'), ['email' => $customer->email, 'password' => 'secret-pass-123'])->assertSessionHasErrors('email');
@@ -124,7 +127,7 @@ class AccountsAndBansTest extends TestCase
     {
         $customer = User::factory()->create(['password' => 'secret-pass-123']);
         $staff = $this->staff();
-        $this->actingAs($staff)->post(route('admin.users.ban', $customer), ['severity' => 'permanent', 'reason' => 'Mistake']);
+        $this->actingAsStaff($staff)->post(route('admin.users.ban', $customer), ['severity' => 'permanent', 'reason' => 'Mistake']);
         $this->delete(route('admin.users.unban', $customer))->assertSessionHas('success');
 
         $this->assertFalse($customer->fresh()->isBanned());
@@ -134,7 +137,7 @@ class AccountsAndBansTest extends TestCase
     public function test_banned_customers_appear_with_activity_in_the_admin(): void
     {
         $customer = User::factory()->create();
-        $this->actingAs($this->staff())->post(route('admin.users.ban', $customer), ['severity' => 'temporary', 'duration' => '1w', 'reason' => 'Rude']);
+        $this->actingAsStaff($this->staff())->post(route('admin.users.ban', $customer), ['severity' => 'temporary', 'duration' => '1w', 'reason' => 'Rude']);
 
         $this->get(route('admin.users.show', $customer))->assertOk()->assertInertia(fn ($page) => $page
             ->component('Admin/User')
@@ -157,7 +160,7 @@ class AccountsAndBansTest extends TestCase
     public function test_staff_can_change_a_username(): void
     {
         $customer = User::factory()->create();
-        $this->actingAs($this->staff())->patch(route('admin.users.username', $customer), ['username' => 'ayesha-k'])->assertSessionHas('success');
+        $this->actingAsStaff($this->staff())->patch(route('admin.users.username', $customer), ['username' => 'ayesha-k'])->assertSessionHas('success');
         $this->assertSame('ayesha-k', $customer->fresh()->username);
         $this->patch(route('admin.users.username', $customer), ['username' => 'Bad Name!'])->assertSessionHasErrors('username');
     }

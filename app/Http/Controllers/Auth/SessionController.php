@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\Security\PendingLogin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +18,16 @@ class SessionController extends Controller
         return Inertia::render('Auth/Login', ['status' => session('status')]);
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, PendingLogin $pending): RedirectResponse
     {
-        $request->authenticate();
-        $request->session()->regenerate();
+        $user = $request->validateUser();
+        if ($user->hasTwoFactor()) {
+            $pending->start($request, $user, $request->boolean('remember'), staff: false);
+
+            return to_route('two-factor.challenge');
+        }
+
+        $pending->complete($request, $user, $request->boolean('remember'), verifiedSecondStep: false);
 
         return redirect()->intended(route('account.dashboard'))->with('success', __('Welcome back.'));
     }

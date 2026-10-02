@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,10 +36,9 @@ class SecurityTest extends TestCase
             $this->followingRedirects()->get(route('shop.index', ['q' => $payload, 'brand' => $payload, 'sort' => $payload, 'min' => $payload]))->assertSuccessful();
         }
 
-        $admin = User::factory()->create();
-        $admin->forceFill(['is_admin' => true])->save();
+        $admin = $this->makeStaff();
         foreach ($payloads as $payload) {
-            $this->actingAs($admin->fresh())->get(route('admin.orders.index', ['q' => $payload, 'status' => $payload]))->assertOk();
+            $this->actingAsStaff($admin)->get(route('admin.orders.index', ['q' => $payload, 'status' => $payload]))->assertOk();
             $this->get(route('admin.users.index', ['q' => $payload]))->assertOk();
         }
 

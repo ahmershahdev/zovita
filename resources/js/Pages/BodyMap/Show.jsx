@@ -269,7 +269,7 @@ function Results({ data, regionLabel }) {
 
     return (
         <div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-4xl bg-night p-8 text-snow md:col-span-2">
                     <p className="eyebrow text-mint">
                         {regionLabel} · {symptom.label}

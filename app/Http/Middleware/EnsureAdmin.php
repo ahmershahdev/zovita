@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Security\PendingLogin;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,16 @@ class EnsureAdmin
     {
         $user = $request->user();
         abort_unless($user?->isAdmin(), 404);
+
+        // Mandatory two-step sign-in: a staff session only counts once this browser passed the
+        // second step for this account (a password alone, or a remember-me cookie, is not enough).
+        if (! $user->hasTwoFactor() || $request->session()->get(PendingLogin::VERIFIED) !== $user->id) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('admin.login')->with('error', 'Please sign in again with your two-step code.');
+        }
 
         $last = (int) $request->session()->get('admin_last_active', 0);
         if ($last && now()->timestamp - $last > self::IDLE_MINUTES * 60) {

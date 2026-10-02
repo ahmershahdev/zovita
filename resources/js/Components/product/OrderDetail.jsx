@@ -71,9 +71,15 @@ export default function OrderDetail({ order, hideTimeline = false }) {
                         <dd>{order.delivery_fee > 0 ? money(order.delivery_fee) : 'Free'}</dd>
                     </div>
                     <div className="flex items-baseline justify-between border-t border-line pt-4">
-                        <dt className="font-medium">Total · cash on delivery</dt>
+                        <dt className="font-medium">Total · {order.payment_status_label ?? 'Cash on delivery'}</dt>
                         <dd className="font-display text-3xl">{money(order.total, { precise: true })}</dd>
                     </div>
+                    {order.refunded_amount > 0 && (
+                        <div className="flex justify-between text-teal">
+                            <dt>Refunded to your card</dt>
+                            <dd>{money(order.refunded_amount, { precise: true })}</dd>
+                        </div>
+                    )}
                 </dl>
                 <div className="rounded-4xl border border-line p-6 text-sm md:p-8">
                     <p className="eyebrow text-ink-mute">Delivering to</p>

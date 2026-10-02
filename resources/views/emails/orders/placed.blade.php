@@ -42,7 +42,7 @@
             <tr><td style="color:#0f766e;">You saved</td><td align="right" style="color:#0f766e;">− PKR {{ number_format($order->savings, 2) }}</td></tr>
         @endif
         <tr><td style="color:#6b7280;">Delivery</td><td align="right">{{ $order->delivery_fee > 0 ? 'PKR '.number_format($order->delivery_fee, 2) : 'Free' }}</td></tr>
-        <tr><td style="font-weight:700;font-size:16px;padding-top:6px;">Total (cash on delivery)</td><td align="right" style="font-weight:700;font-size:16px;padding-top:6px;">PKR {{ number_format($order->total, 2) }}</td></tr>
+        <tr><td style="font-weight:700;font-size:16px;padding-top:6px;">Total ({{ $order->payment_method === 'card' ? 'paid by card' : 'cash on delivery' }})</td><td align="right" style="font-weight:700;font-size:16px;padding-top:6px;">PKR {{ number_format($order->total, 2) }}</td></tr>
     </table>
 
     <p style="margin:24px 0 0;font-size:13px;line-height:20px;color:#6b7280;">

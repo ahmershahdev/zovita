@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StaffRole;
 use App\Notifications\ResetPasswordNotification;
 use App\Support\Username;
 use Database\Factories\UserFactory;
@@ -21,7 +22,7 @@ class User extends Authenticatable
     protected $fillable = ['name', 'email', 'password', 'phone', 'city', 'address', 'lat', 'lng', 'locale'];
 
     /** @var list<string> */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
 
     protected function casts(): array
     {
@@ -35,6 +36,11 @@ class User extends Authenticatable
             'lat' => 'float',
             'lng' => 'float',
             'last_seen_at' => 'datetime',
+            'role' => StaffRole::class,
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
+            'refill_reminders' => 'boolean',
         ];
     }
 
@@ -90,9 +96,42 @@ class User extends Authenticatable
         return $this->hasMany(UserActivity::class);
     }
 
+    /** Staff = a known role and not banned. `is_admin` is kept in step with `role` (see setStaffRole). */
     public function isAdmin(): bool
     {
-        return (bool) ($this->getAttributes()['is_admin'] ?? false) && ! $this->isBanned();
+        return (bool) ($this->getAttributes()['is_admin'] ?? false) && $this->staffRole() !== null && ! $this->isBanned();
+    }
+
+    public function staffRole(): ?StaffRole
+    {
+        return StaffRole::tryFrom((string) ($this->getAttributes()['role'] ?? ''));
+    }
+
+    public function canStaff(string $permission): bool
+    {
+        return $this->isAdmin() && (bool) $this->staffRole()?->can($permission);
+    }
+
+    /** Grant a role (or remove staff access with null). Removing access also clears two-factor. */
+    public function setStaffRole(?StaffRole $role): void
+    {
+        $this->forceFill(['role' => $role, 'is_admin' => $role !== null]);
+        if ($role === null) {
+            $this->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null, 'two_factor_last_step' => null]);
+        }
+        $this->save();
+    }
+
+    public function hasTwoFactor(): bool
+    {
+        $attributes = $this->getAttributes();
+
+        return ! empty($attributes['two_factor_confirmed_at'] ?? null) && filled($attributes['two_factor_secret'] ?? null);
+    }
+
+    public function refillReminders(): HasMany
+    {
+        return $this->hasMany(RefillReminder::class);
     }
 
     public function offers(): HasMany

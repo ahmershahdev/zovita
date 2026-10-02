@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\UpdateProfileRequest;
+use App\Rules\CleanFile;
 use App\Services\Security\ActivityLog;
 use GdImage;
 use Illuminate\Http\RedirectResponse;
@@ -52,7 +53,7 @@ class ProfileController extends Controller
     public function avatar(Request $request): RedirectResponse
     {
         $request->validate([
-            'avatar' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072', 'dimensions:min_width=96,min_height=96,max_width=8000,max_height=8000'],
+            'avatar' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072', 'dimensions:min_width=96,min_height=96,max_width=8000,max_height=8000', new CleanFile],
         ]);
 
         $source = @imagecreatefromstring((string) file_get_contents($request->file('avatar')->getRealPath()));

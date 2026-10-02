@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useRef } from 'react';
 import CartSummary from '@/Components/product/CartSummary';
+import InteractionWarnings from '@/Components/product/InteractionWarnings';
 import ProductImage from '@/Components/product/ProductImage';
 import QuantityStepper from '@/Components/product/QuantityStepper';
 import Badge from '@/Components/ui/Badge';
@@ -52,12 +53,15 @@ export default function CartIndex({ cart, alternatives = {} }) {
                     />
                 </div>
             ) : (
-                <div className="mt-12 grid gap-10 lg:grid-cols-12">
-                    <ul className="divide-y divide-line border-y border-line lg:col-span-8">
+                <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12">
+                    <div className="min-w-0 space-y-8 lg:col-span-8">
+                    <InteractionWarnings warnings={cart.warnings} />
+                    <ul className="divide-y divide-line border-y border-line">
                         {cart.lines.map((line) => (
                             <BagLine key={line.id} line={line} alternatives={alternatives[line.id]} onUpdate={update} onRemove={remove} onSave={saveForLater} />
                         ))}
                     </ul>
+                    </div>
 
                     <aside className="lg:col-span-4">
                         <div className="lg:sticky lg:top-24">

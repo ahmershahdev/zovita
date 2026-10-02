@@ -19,10 +19,7 @@ class AdminTest extends TestCase
 
     private function makeAdmin(): User
     {
-        $user = User::factory()->create();
-        $user->forceFill(['is_admin' => true])->save();
-
-        return $user->fresh();
+        return $this->makeStaff();
     }
 
     private function prescription(array $attrs = []): Prescription
@@ -39,12 +36,12 @@ class AdminTest extends TestCase
         // Guests and customers get a plain 404 — the panel isn't advertised.
         $this->get(route('admin.dashboard'))->assertNotFound();
         $this->actingAs(User::factory()->create())->get(route('admin.dashboard'))->assertNotFound();
-        $this->actingAs($this->makeAdmin())->get(route('admin.dashboard'))->assertOk()->assertInertia(fn ($page) => $page->component('Admin/Dashboard'));
+        $this->actingAsStaff($this->makeAdmin())->get(route('admin.dashboard'))->assertOk()->assertInertia(fn ($page) => $page->component('Admin/Dashboard'));
     }
 
     public function test_every_admin_page_renders(): void
     {
-        $this->actingAs($this->makeAdmin());
+        $this->actingAsStaff($this->makeAdmin());
         foreach (['admin.dashboard', 'admin.orders.index', 'admin.users.index', 'admin.prescriptions.index', 'admin.products.index'] as $name) {
             $this->get(route($name))->assertOk();
         }
@@ -53,7 +50,7 @@ class AdminTest extends TestCase
     public function test_banning_signs_the_user_out_and_blocks_sign_in(): void
     {
         $customer = User::factory()->create(['password' => 'secret-password']);
-        $this->actingAs($this->makeAdmin())->post(route('admin.users.ban', $customer), ['severity' => 'permanent', 'reason' => 'Fraudulent prescriptions'])->assertSessionHas('success');
+        $this->actingAsStaff($this->makeAdmin())->post(route('admin.users.ban', $customer), ['severity' => 'permanent', 'reason' => 'Fraudulent prescriptions'])->assertSessionHas('success');
         $this->assertNotNull($customer->fresh()->banned_at);
 
         // A live session is ended on the next request…
@@ -68,7 +65,7 @@ class AdminTest extends TestCase
     public function test_admins_cannot_be_banned(): void
     {
         $admin = $this->makeAdmin();
-        $this->actingAs($admin)->post(route('admin.users.ban', $admin), ['severity' => 'permanent', 'reason' => 'test'])->assertSessionHas('error');
+        $this->actingAsStaff($admin)->post(route('admin.users.ban', $admin), ['severity' => 'permanent', 'reason' => 'test'])->assertSessionHas('error');
         $this->assertNull($admin->fresh()->banned_at);
     }
 
@@ -78,7 +75,7 @@ class AdminTest extends TestCase
         $p = $this->prescription();
         $order = Order::create(['prescription_id' => $p->id, 'number' => 'ZV-T-1', 'status' => OrderStatus::Pending, 'customer_name' => 'A', 'email' => 'a@example.com', 'phone' => '1', 'address' => 'x', 'city' => 'Karachi', 'subtotal' => 100, 'total' => 100]);
 
-        $this->actingAs($this->makeAdmin())->patch(route('admin.prescriptions.update', $p), ['status' => 'approved'])->assertSessionHas('success');
+        $this->actingAsStaff($this->makeAdmin())->patch(route('admin.prescriptions.update', $p), ['status' => 'approved'])->assertSessionHas('success');
 
         $this->assertSame(PrescriptionStatus::Approved, $p->fresh()->status);
         $this->assertSame(OrderStatus::Confirmed, $order->fresh()->status);
@@ -92,7 +89,7 @@ class AdminTest extends TestCase
         $p = $this->prescription();
         $order = Order::create(['prescription_id' => $p->id, 'number' => 'ZV-T-2', 'status' => OrderStatus::Pending, 'customer_name' => 'A', 'email' => 'a@example.com', 'phone' => '1', 'address' => 'x', 'city' => 'Karachi', 'subtotal' => 100, 'total' => 100]);
         $order->items()->create(['product_id' => $product->id, 'name' => $product->name, 'slug' => $product->slug, 'unit_price' => 50, 'quantity' => 2, 'line_total' => 100]);
-        $this->actingAs($this->makeAdmin());
+        $this->actingAsStaff($this->makeAdmin());
 
         $this->patch(route('admin.prescriptions.update', $p), ['status' => 'rejected'])->assertSessionHasErrors('note');
         $this->patch(route('admin.prescriptions.update', $p), ['status' => 'rejected', 'note' => 'Expired prescription'])->assertSessionHas('success');
@@ -124,7 +121,7 @@ class AdminTest extends TestCase
         $product = Product::factory()->create(['stock' => 1]);
         $order = Order::create(['number' => 'ZV-T-3', 'status' => OrderStatus::Confirmed, 'customer_name' => 'A', 'email' => 'a@example.com', 'phone' => '1', 'address' => 'x', 'city' => 'Karachi', 'subtotal' => 100, 'total' => 100]);
         $order->items()->create(['product_id' => $product->id, 'name' => $product->name, 'slug' => $product->slug, 'unit_price' => 50, 'quantity' => 2, 'line_total' => 100]);
-        $this->actingAs($this->makeAdmin());
+        $this->actingAsStaff($this->makeAdmin());
 
         $this->patch(route('admin.orders.update', $order), ['status' => 'cancelled']);
         $this->patch(route('admin.orders.update', $order), ['status' => 'cancelled']);

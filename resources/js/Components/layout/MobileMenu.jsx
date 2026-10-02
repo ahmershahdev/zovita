@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useLenis } from '@/Components/motion/SmoothScroll';
 import Icon from '@/Components/ui/Icon';
+import useMounted from '@/hooks/useMounted';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import LanguageSwitch from '@/Components/ui/LanguageSwitch';
 import { cn } from '@/lib/cn';
@@ -14,6 +15,7 @@ export default function MobileMenu({ open, onClose, links }) {
     const { nav, auth, app } = usePage().props;
     const lenis = useLenis();
     const root = useRef(null);
+    const mounted = useMounted();
 
     useEffect(() => {
         if (!open) return undefined;
@@ -39,6 +41,8 @@ export default function MobileMenu({ open, onClose, links }) {
         }, root);
         return () => ctx.revert();
     }, [open]);
+
+    if (!mounted) return null; // portal target only exists in the browser
 
     return createPortal(
         <div

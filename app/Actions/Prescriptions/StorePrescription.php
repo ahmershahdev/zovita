@@ -38,6 +38,8 @@ class StorePrescription
             'notes' => $contact['notes'] ?? null,
             'file_path' => $path,
             'original_name' => Str::limit($file->getClientOriginalName(), 180, ''),
+            // The upload already passed CleanFile validation when a scanner is configured.
+            'scan_status' => config('zovita.scanner.driver') === 'clamav' ? 'clean' : 'skipped',
             'status' => PrescriptionStatus::Received,
         ]);
 

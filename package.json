@@ -16,7 +16,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=1200"
+        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=1200",
+        "build:ssr": "php artisan ziggy:generate resources/js/ziggy.js && vite build && vite build --ssr"
     },
     "devDependencies": {
         "@playwright/test": "^1.63.0",

@@ -186,7 +186,7 @@ export default function Legal({ page }) {
 
             {/* Related + contact */}
             <section className="container-x mt-6 print:hidden">
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     {content.related.map((slug) => {
                         const r = legalPages[slug];
                         return (

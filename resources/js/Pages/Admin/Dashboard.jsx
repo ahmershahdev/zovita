@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { AreaChart, BarList, DataTable, PairedBars, Sparkline, fmt } from '@/Components/admin/Charts';
 import Icon from '@/Components/ui/Icon';
@@ -9,6 +9,8 @@ import { money } from '@/lib/format';
 export default function Dashboard({ days, ranges, kpis, series, topProducts, byDepartment, statuses, funnel, offers, experiments, attention, recentOrders, customers, catalog }) {
     const [metric, setMetric] = useState('revenue');
     const [table, setTable] = useState(false);
+    const permissions = usePage().props.auth.user?.permissions ?? [];
+    const can = (permission) => permissions.includes(permission);
 
     return (
         <AdminLayout
@@ -41,10 +43,10 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
 
             {/* Needs attention */}
             <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Attention href={route('admin.prescriptions.index')} icon="rx" value={attention.prescriptions} label="Prescriptions to review" tone={attention.prescriptions ? 'warn' : 'good'} />
-                <Attention href={route('admin.orders.index', { status: 'pending' })} icon="package" value={attention.pendingOrders} label="Orders awaiting confirmation" tone={attention.pendingOrders ? 'warn' : 'good'} />
-                <Attention href={route('admin.products.index', { stock: 'low' })} icon="alert" value={attention.lowStock} label="Products low on stock (≤ 5)" tone={attention.lowStock ? 'warn' : 'good'} />
-                <Attention href={route('admin.products.index', { stock: 'out' })} icon="close" value={attention.soldOut} label="Products sold out" tone={attention.soldOut ? 'bad' : 'good'} />
+                <Attention allowed={can('prescriptions.review')} href={route('admin.prescriptions.index')} icon="rx" value={attention.prescriptions} label="Prescriptions to review" tone={attention.prescriptions ? 'warn' : 'good'} />
+                <Attention allowed={can('orders.view')} href={route('admin.orders.index', { status: 'pending' })} icon="package" value={attention.pendingOrders} label="Orders awaiting confirmation" tone={attention.pendingOrders ? 'warn' : 'good'} />
+                <Attention allowed={can('products.manage')} href={route('admin.products.index', { stock: 'low' })} icon="alert" value={attention.lowStock} label="Products low on stock (≤ 5)" tone={attention.lowStock ? 'warn' : 'good'} />
+                <Attention allowed={can('products.manage')} href={route('admin.products.index', { stock: 'out' })} icon="close" value={attention.soldOut} label="Products sold out" tone={attention.soldOut ? 'bad' : 'good'} />
             </div>
 
             {/* KPIs */}
@@ -190,9 +192,11 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
 
 Dashboard.layout = (page) => page;
 
-function Attention({ href, icon, value, label, tone }) {
+function Attention({ href, icon, value, label, tone, allowed = true }) {
+    // Cards for areas this role can't open are shown for awareness but aren't links.
+    const Tag = allowed ? Link : 'div';
     return (
-        <Link href={href} className="group flex items-center gap-4 rounded-4xl border border-line bg-card p-5 transition-colors hover:border-ink">
+        <Tag href={allowed ? href : undefined} className={cn('group flex items-center gap-4 rounded-4xl border border-line bg-card p-5 transition-colors', allowed && 'hover:border-ink')}>
             <span className={cn('grid size-11 place-items-center rounded-full', tone === 'good' ? 'bg-mint-soft text-teal' : tone === 'bad' ? 'bg-coral/10 text-coral' : 'bg-[#fdf1d8] text-[#8a5a00] dark:bg-[#3a2c0d] dark:text-[#f2c66d]')}>
                 <Icon name={icon} size={18} />
             </span>
@@ -200,12 +204,12 @@ function Attention({ href, icon, value, label, tone }) {
                 <span className="block font-display text-3xl leading-none">{value}</span>
                 <span className="mt-1 block text-xs text-ink-mute">{label}</span>
             </span>
-            <Icon name="arrow" size={15} className="text-ink-mute transition-transform group-hover:translate-x-1" />
-        </Link>
+            {allowed && <Icon name="arrow" size={15} className="text-ink-mute transition-transform group-hover:translate-x-1" />}
+        </Tag>
     );
 }
 
 export function OrderStatus({ status, label }) {
-    const tone = { delivered: 'good', confirmed: 'good', shipped: 'good', packed: 'neutral', pending: 'warn', cancelled: 'bad' }[status] ?? 'neutral';
+    const tone = { delivered: 'good', confirmed: 'good', shipped: 'good', packed: 'neutral', pending: 'warn', awaiting_payment: 'neutral', cancelled: 'bad' }[status] ?? 'neutral';
     return <StatusPill tone={tone}>{label}</StatusPill>;
 }

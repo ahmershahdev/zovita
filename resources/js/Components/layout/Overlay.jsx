@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLenis } from '@/Components/motion/SmoothScroll';
+import useMounted from '@/hooks/useMounted';
 import { cn } from '@/lib/cn';
 
 /** Full-screen/side sheet shell: locks scroll, closes on Esc, backdrop click and navigation. */
@@ -23,6 +24,9 @@ export default function Overlay({ open, onClose, side = 'top', label, className,
             off();
         };
     }, [open, onClose, lenis]);
+
+    const mounted = useMounted();
+    if (!mounted) return null; // portal target only exists in the browser
 
     const panel = {
         top: cn('inset-x-0 top-0 max-h-[92vh] rounded-b-4xl', open ? 'translate-y-0' : '-translate-y-full'),

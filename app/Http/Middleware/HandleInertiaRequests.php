@@ -53,7 +53,12 @@ class HandleInertiaRequests extends Middleware
             'messages' => Inertia::once(fn () => app()->getLocale() === 'en' ? (object) [] : (json_decode((string) @file_get_contents(lang_path(app()->getLocale().'.json')), true) ?: (object) []))
                 ->as('messages-'.app()->getLocale()),
             'auth' => [
-                'user' => fn () => $request->user() ? $request->user()->only('id', 'name', 'email') + ['is_admin' => $request->user()->isAdmin()] : null,
+                'user' => fn () => $request->user() ? $request->user()->only('id', 'name', 'email') + [
+                    'is_admin' => $request->user()->isAdmin(),
+                    // Staff role and what it may do: the admin sidebar only shows what the role allows.
+                    'role' => $request->user()->isAdmin() ? $request->user()->staffRole()?->label() : null,
+                    'permissions' => $request->user()->isAdmin() ? ($request->user()->staffRole()?->permissions() ?? []) : [],
+                ] : null,
             ],
             'cart' => ['count' => fn () => app(CartService::class)->count()],
             'wishlist' => fn () => app(WishlistService::class)->ids(),
@@ -70,7 +75,7 @@ class HandleInertiaRequests extends Middleware
             'experiments' => fn () => app(Experiments::class)->assignments(),
             // Badge counts for the admin sidebar (admins only).
             'admin' => fn () => $request->user()?->isAdmin() ? [
-                'prescriptions' => Prescription::whereIn('status', ['received', 'reviewing'])->count(),
+                'prescriptions' => $request->user()->canStaff('prescriptions.review') ? Prescription::whereIn('status', ['received', 'reviewing'])->count() : 0,
             ] : null,
             'nav' => fn () => CatalogCache::remember('nav', now()->addHour(), fn () => Department::orderBy('sort_order')
                 ->with(['categories' => fn ($q) => $q->withCount(['products' => fn ($p) => $p->listed()])->orderByDesc('products_count')])
@@ -84,7 +89,9 @@ class HandleInertiaRequests extends Middleware
                     'categories' => $d->categories->take(6)->map->only('name', 'slug')->values(),
                 ])->all()),
             'recaptcha' => fn () => app(RecaptchaService::class)->clientConfig(),
-            'flash' => [
+            // Never inside a hover prefetch: its cached props would replay the toast later
+            // (KeepFlashForBackgroundRequests keeps the message for the real page instead).
+            'flash' => strtolower((string) $request->header('Purpose')) === 'prefetch' ? ['success' => null, 'error' => null] : [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\Security\ActivityLog;
+use App\Services\Security\PendingLogin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,18 +27,24 @@ class AdminSessionController extends Controller
         return Inertia::render('Admin/Login');
     }
 
-    public function store(LoginRequest $request): RedirectResponse
+    /**
+     * Password first, then the mandatory second step: staff who have two-step sign-in get the
+     * code prompt, staff who don't yet must set it up before any session starts. "Remember me"
+     * is never offered for staff.
+     */
+    public function store(LoginRequest $request, PendingLogin $pending): RedirectResponse
     {
         // A customer session on this browser is replaced by the staff session.
         if (Auth::check()) {
             Auth::guard('web')->logout();
         }
-        $request->authenticate(staff: true);
-        $request->session()->regenerate();
-        $request->session()->put('admin_last_active', now()->timestamp);
-        ActivityLog::record('admin.login', 'Signed in to the admin panel');
+        $user = $request->validateUser(staff: true);
+        $pending->start($request, $user, remember: false, staff: true);
+        ActivityLog::record('admin.password_ok', 'Entered the correct staff password (second step pending)', $user);
 
-        return redirect()->intended(route('admin.dashboard'));
+        return $user->hasTwoFactor()
+            ? to_route('admin.two-factor.challenge')
+            : to_route('admin.two-factor.setup');
     }
 
     public function destroy(Request $request): RedirectResponse

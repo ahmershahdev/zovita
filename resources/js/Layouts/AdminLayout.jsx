@@ -6,11 +6,13 @@ import ThemeToggle from '@/Components/ui/ThemeToggle';
 import { cn } from '@/lib/cn';
 
 const nav = [
-    { label: 'Today', icon: 'pulse', route: 'admin.dashboard', match: 'admin.dashboard' },
-    { label: 'Orders', icon: 'package', route: 'admin.orders.index', match: 'admin.orders.*' },
-    { label: 'Prescriptions', icon: 'rx', route: 'admin.prescriptions.index', match: 'admin.prescriptions.*', badge: 'prescriptions' },
-    { label: 'Customers', icon: 'user', route: 'admin.users.index', match: 'admin.users.*' },
-    { label: 'Products', icon: 'cube', route: 'admin.products.index', match: 'admin.products.*' },
+    { label: 'Today', icon: 'pulse', route: 'admin.dashboard', match: 'admin.dashboard', perm: 'dashboard' },
+    { label: 'Orders', icon: 'package', route: 'admin.orders.index', match: 'admin.orders.*', perm: 'orders.view' },
+    { label: 'Prescriptions', icon: 'rx', route: 'admin.prescriptions.index', match: 'admin.prescriptions.*', badge: 'prescriptions', perm: 'prescriptions.review' },
+    { label: 'Customers', icon: 'user', route: 'admin.users.index', match: 'admin.users.*', perm: 'customers.view' },
+    { label: 'Products', icon: 'cube', route: 'admin.products.index', match: 'admin.products.*', perm: 'products.manage' },
+    { label: 'Staff', icon: 'shield', route: 'admin.staff.index', match: 'admin.staff.*', perm: 'staff.manage' },
+    { label: 'My security', icon: 'lock', route: 'admin.security', match: 'admin.security' },
 ];
 
 /**
@@ -35,7 +37,7 @@ export default function AdminLayout({ title, actions, children }) {
                 </div>
 
                 <nav aria-label="Admin" className="scrollbar-none flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-10 lg:flex-col lg:overflow-visible lg:px-0">
-                    {nav.map((item) => {
+                    {nav.filter((item) => !item.perm || auth.user?.permissions?.includes(item.perm)).map((item) => {
                         const active = route().current(item.match);
                         const count = item.badge ? admin?.[item.badge] : 0;
                         return (
@@ -64,6 +66,7 @@ export default function AdminLayout({ title, actions, children }) {
                     <div className="rounded-2xl border border-line p-3">
                         <p className="truncate text-sm font-medium">{auth.user?.name}</p>
                         <p className="truncate text-xs text-ink-mute">{auth.user?.email}</p>
+                        {auth.user?.role && <p className="mt-2 inline-flex rounded-full bg-mint-soft px-2.5 py-0.5 text-xs text-teal">{auth.user.role}</p>}
                         <button type="button" onClick={() => router.post(route('admin.logout'))} className="mt-3 flex items-center gap-2 text-xs text-ink-mute hover:text-coral">
                             <Icon name="logout" size={13} /> Sign out
                         </button>

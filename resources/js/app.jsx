@@ -9,7 +9,7 @@ import '@fontsource/noto-nastaliq-urdu/arabic-600.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import StoreLayout from '@/Layouts/StoreLayout';
 import { installPrefetch } from '@/lib/prefetch';
 
@@ -30,7 +30,12 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />);
+        // Server-rendered HTML (INERTIA_SSR_ENABLED) is hydrated; otherwise render from scratch.
+        if (el.hasChildNodes()) {
+            hydrateRoot(el, <App {...props} />);
+        } else {
+            createRoot(el).render(<App {...props} />);
+        }
     },
     // Pages are usually prefetched on hover, so the bar only appears for genuinely slow visits.
     progress: { color: '#0f766e', showSpinner: false, delay: 350 },

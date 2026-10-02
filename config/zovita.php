@@ -74,6 +74,38 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Upload virus scanning (App\Services\Security\MalwareScanner)
+    |--------------------------------------------------------------------------
+    | "clamav" streams every prescription and avatar to clamd (INSTREAM) before it is stored.
+    | Set CLAMAV_SOCKET for a Unix socket, otherwise host/port are used. With fail_open=false an
+    | unreachable scanner refuses the upload rather than letting an unscanned file through.
+    */
+
+    'scanner' => [
+        'driver' => env('MALWARE_SCANNER', 'none'),
+        'host' => env('CLAMAV_HOST', '127.0.0.1'),
+        'port' => (int) env('CLAMAV_PORT', 3310),
+        'socket' => env('CLAMAV_SOCKET'),
+        'timeout' => (float) env('CLAMAV_TIMEOUT', 10),
+        'fail_open' => (bool) env('MALWARE_SCAN_FAIL_OPEN', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shared stores for abuse controls
+    |--------------------------------------------------------------------------
+    | Rate-limit counters use config('cache.limiter') (CACHE_LIMITER_STORE) and ban look-ups are
+    | cached in BAN_CACHE_STORE. Point both at "redis" when running more than one app server, so
+    | every server sees the same counters and the same bans the moment they are issued.
+    */
+
+    'bans' => [
+        'store' => env('BAN_CACHE_STORE'),
+        'ttl' => (int) env('BAN_CACHE_TTL', 300),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | A/B experiments (App\Services\Experiments\Experiments)
     |--------------------------------------------------------------------------
     | Variants are assigned per visitor by hash; results appear in the admin dashboard.
