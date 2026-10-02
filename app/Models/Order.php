@@ -12,7 +12,7 @@ class Order extends Model
 {
     protected $fillable = [
         'user_id', 'prescription_id', 'number', 'checkout_token', 'status', 'customer_name', 'email', 'phone', 'address', 'city',
-        'postal_code', 'notes', 'payment_method', 'subtotal', 'savings', 'delivery_fee', 'total',
+        'postal_code', 'notes', 'payment_method', 'subtotal', 'savings', 'offer_discount', 'delivery_fee', 'total',
     ];
 
     protected function casts(): array
@@ -21,6 +21,7 @@ class Order extends Model
             'status' => OrderStatus::class,
             'subtotal' => 'float',
             'savings' => 'float',
+            'offer_discount' => 'float',
             'delivery_fee' => 'float',
             'total' => 'float',
         ];
@@ -83,6 +84,7 @@ class Order extends Model
             'payment_method' => $this->payment_method,
             'subtotal' => $this->subtotal,
             'savings' => $this->savings,
+            'offer_discount' => $this->offer_discount,
             'delivery_fee' => $this->delivery_fee,
             'timeline' => collect(OrderStatus::timeline())->map(fn (OrderStatus $step, int $i) => [
                 'key' => $step->value,

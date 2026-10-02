@@ -86,8 +86,8 @@ class ShopController extends Controller
         Seo::set(
             title: $page > 1 ? "{$name} — page {$page}" : $name,
             description: $department?->blurb
-                ? "{$name}: {$paginator->total()} products. {$department->blurb} Authentic stock, cash on delivery across Pakistan."
-                : "Shop {$paginator->total()} authentic medicines, syrups, supplements and healthcare essentials online in Pakistan.",
+                ? "{$name}: {$paginator->total()} products. {$department->blurb} Authentic stock, cash on delivery nationwide."
+                : "Shop {$paginator->total()} authentic medicines, syrups, supplements and healthcare essentials online.",
             canonical: $pageUrl($page),
             index: $v['q'] === '' && $v['sort'] === 'featured' && $v['form'] === '' && ! $v['in_stock'] && $v['min'] === null && $v['max'] === null && $v['rx'] === '',
             jsonLd: [

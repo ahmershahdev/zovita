@@ -51,10 +51,11 @@ class CatalogImporter
                     ['name' => $item['category'], 'department_id' => $department->id],
                 );
 
-                $brandSlug = Str::slug($item['brand']);
+                $brandName = Brand::cleanName($item['brand']);
+                $brandSlug = Str::slug($brandName);
                 $brand = Brand::updateOrCreate(['slug' => $brandSlug], [
-                    'name' => $item['brand'],
-                    'logo_path' => $this->brandLogo($brandSlug),
+                    'name' => $brandName,
+                    'logo_path' => $this->brandLogo(Str::slug($item['brand'])) ?? $this->brandLogo($brandSlug),
                 ]);
 
                 Product::updateOrCreate(['slug' => $item['slug']], [
@@ -71,14 +72,14 @@ class CatalogImporter
                     'requires_prescription' => $item['requires_prescription'],
                     'is_featured' => in_array($item['slug'], $featuredSlugs, true),
                     'generics' => $this->clip($item['generics'] ?? null, 255),
-                    'summary' => $this->cleanSummary($item['summary'] ?? '', $item['brand']),
-                    'description' => $item['description'] ?? null,
-                    'indication' => $item['indication'] ?? null,
-                    'dosage' => $item['dosage'] ?? null,
-                    'precautions' => $item['precautions'] ?? null,
-                    'how_it_works' => $item['how_it_works'] ?? null,
-                    'highlights' => $item['highlights'] ?? null,
-                    'warnings' => $item['warnings'] ?? null,
+                    'summary' => self::neutralCopy($this->cleanSummary($item['summary'] ?? '', $item['brand'])),
+                    'description' => self::neutralCopy($item['description'] ?? null),
+                    'indication' => self::neutralCopy($item['indication'] ?? null),
+                    'dosage' => self::neutralCopy($item['dosage'] ?? null),
+                    'precautions' => self::neutralCopy($item['precautions'] ?? null),
+                    'how_it_works' => self::neutralCopy($item['how_it_works'] ?? null),
+                    'highlights' => self::neutralCopy($item['highlights'] ?? null),
+                    'warnings' => self::neutralCopy($item['warnings'] ?? null),
                     'image_url' => $this->isPlaceholder($item['image']) ? null : $item['image'],
                     'source_url' => $item['source_url'] ?? null,
                 ]);
@@ -166,5 +167,22 @@ class CatalogImporter
         }
 
         return null;
+    }
+
+    /** Store copy is market-neutral: strip country references from scraped marketing text. */
+    public static function neutralCopy(?string $text): ?string
+    {
+        if ($text === null || $text === '') {
+            return $text;
+        }
+
+        return trim(preg_replace([
+            '/\s*,?\s+(?:in|across|throughout|all over|of|from|for)\s+(?:the\s+whole\s+of\s+)?Pakistan\b/iu',
+            "/\\bPakistan(?:'|’)s\\s+/iu",
+            '/\bPakistani\s+/iu',
+            '/\bPakistan\b/iu',
+            '/ {2,}/',
+            '/\s+([.,;])/',
+        ], ['', '', '', 'the country', ' ', '$1'], $text));
     }
 }

@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { lazy, useLayoutEffect, useRef } from 'react';
 import LazyScene from '@/Components/three/LazyScene';
 import Icon from '@/Components/ui/Icon';
@@ -32,7 +32,8 @@ export default function AuthShell({ title, eyebrow, heading, intro, children, fo
     return (
         <section ref={root} className="px-3 pb-10 pt-4 md:px-5">
             <Head title={title}>
-                <meta head-key="robots" name="robots" content="noindex,follow" />
+                {/* Server decides per route: sign-in/up are indexable, password-reset pages are not. */}
+                <meta head-key="robots" name="robots" content={usePage().props.seo?.robots ?? 'noindex,follow'} />
             </Head>
             <div className="mx-auto grid min-h-[calc(100svh-8rem)] max-w-[1600px] overflow-hidden rounded-[2.5rem] border border-line bg-card lg:grid-cols-[1.05fr_1fr]">
                 {/* Visual panel */}

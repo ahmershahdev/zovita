@@ -64,12 +64,13 @@ class Product extends Model
             : 0);
     }
 
-    /** Locally cached image when available, otherwise the catalog source URL. */
+    /**
+     * Locally cached WebP, or null. The source CDN is never hotlinked: its URLs rot (403s, renamed
+     * extensions) and a broken image is worse than the neutral fallback the UI draws for null.
+     */
     protected function image(): Attribute
     {
-        return Attribute::get(fn () => $this->image_path
-            ? asset('storage/'.$this->image_path)
-            : $this->image_url);
+        return Attribute::get(fn () => $this->image_path ? asset('storage/'.$this->image_path) : null);
     }
 
     /** 320px WebP variant written alongside the main image by catalog:cache-images. */
@@ -97,6 +98,7 @@ class Product extends Model
         $generics = trim((string) $this->generics);
 
         return static::with('brand', 'category')
+            ->listed()
             ->inStock()
             ->whereKeyNot($this->getKey())
             ->where(fn (Builder $q) => $q
@@ -114,6 +116,12 @@ class Product extends Model
     public function sharesGenericWith(self $other): bool
     {
         return $this->generics && strcasecmp(trim($this->generics), trim((string) $other->generics)) === 0;
+    }
+
+    /** Products shown in listings, rails, search and the sitemap: only those with a real local photo. */
+    public function scopeListed(Builder $query): void
+    {
+        $query->whereNotNull($this->qualifyColumn('image_path'));
     }
 
     public function scopeInStock(Builder $query): void

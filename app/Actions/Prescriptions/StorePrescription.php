@@ -7,6 +7,7 @@ use App\Mail\PrescriptionMail;
 use App\Models\Prescription;
 use App\Models\User;
 use App\Services\Mail\TransactionalMailer;
+use App\Services\Security\ActivityLog;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
@@ -39,6 +40,8 @@ class StorePrescription
             'original_name' => Str::limit($file->getClientOriginalName(), 180, ''),
             'status' => PrescriptionStatus::Received,
         ]);
+
+        ActivityLog::record('prescription.uploaded', "Uploaded prescription {$prescription->reference}", $user);
 
         if ($notify) {
             $this->mailer->send($prescription->email, new PrescriptionMail($prescription));

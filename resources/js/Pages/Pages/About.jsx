@@ -22,7 +22,7 @@ export default function About({ stats }) {
     return (
         <div ref={scope}>
             <Head title="About">
-                <meta head-key="description" name="description" content="Zovita is building Pakistan's calmest, most trustworthy online pharmacy." />
+                <meta head-key="description" name="description" content="Zovita is building the calmest, most trustworthy online pharmacy." />
             </Head>
             <div className="container-x pt-8 md:pt-10">
                 <Breadcrumbs items={[{ label: 'About' }]} />

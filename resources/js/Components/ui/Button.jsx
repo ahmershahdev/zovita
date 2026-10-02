@@ -28,7 +28,7 @@ const trackOrigin = (e) => {
 
 function Roll({ children }) {
     return (
-        <span className="relative block overflow-hidden">
+        <span className="roll relative block overflow-hidden">
             <span className="block transition-transform duration-500 ease-[var(--ease-expo)] group-hover/btn:-translate-y-full">{children}</span>
             <span aria-hidden="true" className="absolute inset-0 block translate-y-full transition-transform duration-500 ease-[var(--ease-expo)] group-hover/btn:translate-y-0">
                 {children}

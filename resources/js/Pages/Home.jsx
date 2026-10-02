@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Magnetic from '@/Components/motion/Magnetic';
 import Marquee from '@/Components/motion/Marquee';
 import ProductRail from '@/Components/product/ProductRail';
@@ -7,22 +7,26 @@ import LazyHeroScene from '@/Components/three/LazyHeroScene';
 import Button from '@/Components/ui/Button';
 import Icon from '@/Components/ui/Icon';
 import SectionHeading from '@/Components/ui/SectionHeading';
+import { useVariant } from '@/hooks/usePersonal';
 import useReveal from '@/hooks/useReveal';
+import useT from '@/hooks/useT';
 import { cn } from '@/lib/cn';
 import { pad } from '@/lib/format';
 import { gsap, prefersReducedMotion, ScrollTrigger } from '@/lib/gsap';
 import { shopUrl } from '@/lib/shopUrl';
+import { track } from '@/lib/signals';
 
-export default function Home({ departments, featured, deals, supplements, brands, conditions, stats }) {
+export default function Home({ departments, featured, deals, supplements, brands, conditions, stats, rails = {} }) {
     const scope = useRef(null);
     useReveal(scope);
 
     return (
         <div ref={scope}>
-            <Head title="Online pharmacy in Pakistan" />
+            <Head title="Online pharmacy — care, delivered" />
 
             <Hero stats={stats} />
             <TrustMarquee />
+            <ForYou rails={rails} />
             <Departments departments={departments} />
             <BodyMapTeaser />
 
@@ -84,6 +88,10 @@ export default function Home({ departments, featured, deals, supplements, brands
 
 function Hero({ stats }) {
     const { app } = usePage().props;
+    const t = useT();
+    // A/B experiment "hero_cta": which first step converts better.
+    const heroCta = useVariant('hero_cta');
+    useEffect(() => track('hero_cta', 'exposure'), []);
     const [query, setQuery] = useState('');
     const root = useRef(null);
 
@@ -115,7 +123,7 @@ function Hero({ stats }) {
                 <div>
                     <p data-hero-fade className="eyebrow mb-8 flex items-center gap-3 text-ink-mute">
                         <span className="size-2 animate-pulse rounded-full bg-teal" />
-                        Online pharmacy · Pakistan
+                        Online pharmacy · Since 2026
                     </p>
                     <h1 className="font-display text-display">
                         <span data-hero-line className="line-mask">
@@ -133,7 +141,7 @@ function Hero({ stats }) {
                 <div className="grid gap-10 md:grid-cols-12 md:items-end">
                     <div className="md:col-span-5">
                         <p data-hero-fade className="max-w-md text-lg leading-relaxed text-ink-soft">
-                            {stats.products}+ authentic medicines, syrups and supplements from {stats.brands} trusted brands — checked by a pharmacist, paid on delivery.
+                            {t(":products+ authentic medicines, syrups and supplements from :brands trusted brands — checked by a pharmacist, paid on delivery.", { products: stats.products, brands: stats.brands })}
                         </p>
                         <form data-hero-fade onSubmit={search} className="mt-8 flex max-w-md items-center gap-2 rounded-full border border-line-strong bg-card/80 p-1.5 pl-5 backdrop-blur focus-within:border-ink">
                             <Icon name="search" size={18} className="text-ink-mute" />
@@ -149,9 +157,15 @@ function Hero({ stats }) {
                     </div>
                     <div data-hero-fade className="flex flex-wrap items-center gap-3 md:col-span-7 md:justify-end">
                         <Magnetic>
-                            <Button href={route('shop.index')} size="lg" icon={<Icon name="arrowUpRight" size={18} />}>
-                                Shop the pharmacy
-                            </Button>
+                            {heroCta === 'symptom' ? (
+                                <Button href={route('body-map')} onClick={() => track('hero_cta', 'click')} size="lg" icon={<Icon name="body" size={18} />}>
+                                    Start from a symptom
+                                </Button>
+                            ) : (
+                                <Button href={route('shop.index')} onClick={() => track('hero_cta', 'click')} size="lg" icon={<Icon name="arrowUpRight" size={18} />}>
+                                    Shop the pharmacy
+                                </Button>
+                            )}
                         </Magnetic>
                         <Magnetic>
                             <Button href={route('prescriptions.create')} size="lg" variant="ghost" icon={<Icon name="upload" size={18} />}>
@@ -512,5 +526,56 @@ function CatalogChart({ departments }) {
                 })}
             </ul>
         </figure>
+    );
+}
+
+/** Rails learnt from this visitor: what they keep buying and what fits what they browse. */
+function ForYou({ rails }) {
+    const { personal, auth } = usePage().props;
+    const hasForYou = rails.for_you?.length > 0;
+    const hasAgain = rails.buy_again?.length > 0;
+    if (!hasForYou && !hasAgain) return null;
+
+    return (
+        <section className="container-x py-14 md:py-20" aria-labelledby="for-you-title">
+            <div className="flex flex-wrap items-end justify-between gap-6">
+                <div>
+                    <p className="eyebrow flex items-center gap-2 text-teal">
+                        <Icon name="sparkle" size={13} /> {auth.user ? `For you, ${auth.user.name.split(' ')[0]}` : 'For you'}
+                    </p>
+                    <h2 id="for-you-title" className="mt-4 font-display text-title">
+                        {hasAgain ? (
+                            <>
+                                Ready for a <span className="italic">refill?</span>
+                            </>
+                        ) : (
+                            <>
+                                Picked from what <span className="italic">you browse.</span>
+                            </>
+                        )}
+                    </h2>
+                    {rails.top_categories?.length > 0 && (
+                        <p className="mt-4 max-w-xl text-ink-soft">Because you've been looking at {rails.top_categories.join(', ')}.</p>
+                    )}
+                </div>
+                {personal?.count > 0 && (
+                    <Link href={route('cart.index')} className="flex items-center gap-3 rounded-full bg-mint-soft px-5 py-3 text-sm text-teal">
+                        <Icon name="sparkle" size={15} /> {personal.count} personal {personal.count === 1 ? 'offer' : 'offers'} waiting
+                    </Link>
+                )}
+            </div>
+            {hasAgain && (
+                <>
+                    <p className="eyebrow mt-12 text-ink-mute">Buy again</p>
+                    <ProductRail products={rails.buy_again} className="mt-6" />
+                </>
+            )}
+            {hasForYou && (
+                <>
+                    <p className="eyebrow mt-12 text-ink-mute">Picked for you</p>
+                    <ProductRail products={rails.for_you} className="mt-6" />
+                </>
+            )}
+        </section>
     );
 }

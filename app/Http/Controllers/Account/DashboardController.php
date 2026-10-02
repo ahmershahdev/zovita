@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Prescription;
+use App\Support\UserAgent;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +17,19 @@ class DashboardController extends Controller
         $user = $request->user();
 
         return Inertia::render('Account/Dashboard', [
-            'profile' => $user->only('name', 'email', 'phone', 'city', 'address'),
+            'profile' => $user->only('name', 'username', 'email', 'phone', 'city', 'address', 'lat', 'lng') + [
+                'avatar' => $user->avatarUrl(),
+                'member_since' => $user->created_at->toIso8601String(),
+            ],
+            // Recent sign-ins, so customers can spot access they don't recognise.
+            'signins' => $user->activities()->whereIn('type', ['auth.login', 'auth.failed'])->latest('created_at')->limit(6)->get()
+                ->map(fn ($a) => [
+                    'type' => $a->type,
+                    'at' => $a->created_at->toIso8601String(),
+                    'ip' => $a->ip,
+                    'browser' => UserAgent::describe($a->user_agent),
+                ]),
+            'store' => config('zovita.store'),
             'cities' => config('zovita.cities'),
             'orders' => $user->orders()->withSum('items as items_count', 'quantity')->latest()->limit(20)->get()
                 ->map(fn (Order $order) => $order->toSummary()),

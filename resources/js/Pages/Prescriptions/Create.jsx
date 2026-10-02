@@ -1,7 +1,7 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import FileDrop from '@/Components/forms/FileDrop';
-import RecaptchaCheckbox from '@/Components/forms/RecaptchaCheckbox';
+import RecaptchaCheckbox, { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
 import Button from '@/Components/ui/Button';
 import Field, { Checkbox } from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
@@ -85,6 +85,7 @@ export default function PrescriptionCreate({ limits }) {
                     <Button type="submit" size="lg" loading={processing} className="w-full" icon={<Icon name="upload" size={18} />}>
                         Send prescription
                     </Button>
+                    <RecaptchaNotice className="text-center" />
                 </form>
             </div>
         </section>

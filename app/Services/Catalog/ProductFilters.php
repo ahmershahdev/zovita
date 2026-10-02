@@ -49,6 +49,7 @@ class ProductFilters
     public function scoped(): Builder
     {
         return Product::query()
+            ->listed()
             ->when($this->department, fn (Builder $q) => $q->where('products.department_id', $this->department->id))
             ->search($this->values['q']);
     }

@@ -1,5 +1,6 @@
-import { useId, useState } from 'react';
+import { Children, useId, useState } from 'react';
 import Icon from '@/Components/ui/Icon';
+import Select from '@/Components/ui/Select';
 import { cn } from '@/lib/cn';
 
 const control =
@@ -30,6 +31,22 @@ export default function Field({ label, error, hint, as = 'input', className, chi
                 </label>
             )}
             <div className="relative">
+                {as === 'select' ? (
+                    // Themed listbox instead of the native menu; <option> children become its options.
+                    <Select
+                        id={id}
+                        name={props.name}
+                        value={props.value}
+                        invalid={!!error}
+                        describedBy={describedBy}
+                        disabled={props.disabled}
+                        placeholder={Children.toArray(children).find((c) => c.props?.value === '')?.props.children ?? 'Choose…'}
+                        options={Children.toArray(children)
+                            .filter((c) => c.props && c.props.value !== '' && !c.props.disabled)
+                            .map((c) => ({ value: c.props.value ?? c.props.children, label: c.props.children }))}
+                        onChange={(value) => props.onChange?.({ target: { value, name: props.name } })}
+                    />
+                ) : (
                 <Control
                     id={id}
                     type={isPassword && reveal ? 'text' : type}
@@ -47,6 +64,7 @@ export default function Field({ label, error, hint, as = 'input', className, chi
                 >
                     {children}
                 </Control>
+                )}
                 {icon && (
                     <Icon name={icon} size={18} className="pointer-events-none absolute left-4 top-[1.15rem] text-ink-mute transition-colors peer-focus:text-ink" />
                 )}

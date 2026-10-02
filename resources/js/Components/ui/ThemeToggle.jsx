@@ -18,7 +18,7 @@ export default function ThemeToggle({ className }) {
             <span
                 className={cn(
                     'grid size-7 place-items-center rounded-full bg-ink text-paper transition-transform duration-700 ease-[var(--ease-expo)]',
-                    isDark && 'translate-x-7',
+                    isDark && 'translate-x-7 rtl:-translate-x-7',
                 )}
             >
                 <svg viewBox="0 0 24 24" className={cn('size-4 transition-transform duration-700 ease-[var(--ease-expo)]', isDark ? 'rotate-0' : '-rotate-90')} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">

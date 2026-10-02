@@ -1,9 +1,11 @@
 import { Link, useForm } from '@inertiajs/react';
 import AuthShell from '@/Components/layout/AuthShell';
+import { fingerprint } from '@/lib/fingerprint';
 import Button from '@/Components/ui/Button';
 import Field, { Checkbox } from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
+import { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
 
 export default function Login() {
     const getToken = useRecaptchaV3('login');
@@ -13,7 +15,8 @@ export default function Login() {
     const submit = async (e) => {
         e.preventDefault();
         const token = await getToken();
-        form.transform((d) => ({ ...d, recaptcha_token: token ?? '' }));
+        const fp = await fingerprint();
+        form.transform((d) => ({ ...d, fp, recaptcha_token: token ?? '' }));
         form.post(route('login'), { onFinish: () => form.reset('password') });
     };
 
@@ -49,7 +52,7 @@ export default function Login() {
                 <Button type="submit" size="lg" loading={processing} className="w-full" icon={<Icon name="arrow" size={18} />}>
                     Sign in
                 </Button>
-                <p className="text-center text-xs text-ink-mute">Protected by reCAPTCHA v3.</p>
+                <RecaptchaNotice className="text-center" />
             </form>
         </AuthShell>
     );

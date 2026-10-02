@@ -6,6 +6,7 @@ import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 import Button from '@/Components/ui/Button';
 import EmptyState from '@/Components/ui/EmptyState';
 import Icon from '@/Components/ui/Icon';
+import Select from '@/Components/ui/Select';
 import Pagination from '@/Components/ui/Pagination';
 import useReveal from '@/hooks/useReveal';
 import { cn } from '@/lib/cn';
@@ -47,7 +48,7 @@ export default function ShopIndex({ department, departments, products, filters, 
     return (
         <div ref={scope}>
             <Head title={department?.name ?? 'Shop all products'}>
-                <meta head-key="description" name="description" content={department?.blurb ?? 'Shop authentic medicines, syrups, supplements and healthcare essentials online in Pakistan.'} />
+                <meta head-key="description" name="description" content={department?.blurb ?? 'Shop authentic medicines, syrups, supplements and healthcare essentials online.'} />
                 {canonical && <link head-key="canonical" rel="canonical" href={canonical} />}
             </Head>
 
@@ -65,7 +66,7 @@ export default function ShopIndex({ department, departments, products, filters, 
                         {title}
                     </h1>
                     <p className="text-ink-mute md:col-span-4 md:text-right" data-reveal>
-                        {department?.blurb ?? 'Authentic stock, pharmacist-verified orders and cash on delivery across Pakistan.'}
+                        {department?.blurb ?? 'Authentic stock, pharmacist-verified orders and cash on delivery nationwide.'}
                     </p>
                 </div>
 
@@ -86,7 +87,7 @@ export default function ShopIndex({ department, departments, products, filters, 
                                 department?.slug === d.slug ? 'border-ink bg-ink text-paper' : 'border-line-strong hover:border-ink',
                             )}
                         >
-                            {d.name} <span className="ml-1 font-mono text-xs opacity-60">{d.count}</span>
+                            {d.name} <span className="ml-1 font-mono text-xs opacity-80">{d.count}</span>
                         </Link>
                     ))}
                 </nav>
@@ -115,16 +116,7 @@ export default function ShopIndex({ department, departments, products, filters, 
                         <button type="button" onClick={() => setDrawer(true)} className="flex h-11 items-center gap-2 rounded-full border border-line-strong px-4 text-sm lg:hidden">
                             <Icon name="filter" size={18} /> Filters {active.length > 0 && <span className="grid size-5 place-items-center rounded-full bg-ink font-mono text-[0.65rem] text-paper">{active.length}</span>}
                         </button>
-                        <label className="flex h-11 items-center gap-2 rounded-full border border-line-strong bg-card pl-4 pr-2 text-sm">
-                            <span className="text-ink-mute">Sort</span>
-                            <select value={filters.sort} onChange={(e) => apply({ sort: e.target.value })} className="bg-transparent pr-1 font-medium focus:outline-none">
-                                {facets.sorts.map((s) => (
-                                    <option key={s.value} value={s.value}>
-                                        {s.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                        <Select variant="pill" prefix="Sort" ariaLabel="Sort products" value={filters.sort} onChange={(sort) => apply({ sort })} options={facets.sorts} />
                     </div>
 
                     <div className="mb-8 flex flex-wrap items-center gap-2">
@@ -145,6 +137,7 @@ export default function ShopIndex({ department, departments, products, filters, 
 
                     {products.data.length ? (
                         <>
+                            <h2 className="sr-only">Products</h2>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 md:gap-x-6">
                                 {products.data.map((p, i) => (
                                     <ProductCard key={p.id} product={p} priority={i < 6} />
@@ -205,7 +198,7 @@ function Option({ active, onClick, label, count }) {
             className={cn('flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition', active ? 'bg-ink text-paper' : 'hover:bg-paper-deep')}
         >
             <span className="truncate capitalize">{label}</span>
-            <span className="ml-2 font-mono text-xs opacity-60">{count}</span>
+            <span className="ml-2 font-mono text-xs opacity-80">{count}</span>
         </button>
     );
 }

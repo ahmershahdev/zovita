@@ -4,6 +4,8 @@ import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
+import { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
+import StoreMap from '@/Components/layout/StoreMap';
 
 export default function Contact({ topics }) {
     const { app, auth } = usePage().props;
@@ -100,13 +102,15 @@ export default function Contact({ topics }) {
                     <input type="text" name="website" tabIndex={-1} autoComplete="off" value={data.website} onChange={(e) => setData('website', e.target.value)} className="hidden" aria-hidden="true" />
                     {errors.recaptcha_token && <p className="text-sm text-coral md:col-span-2">{errors.recaptcha_token}</p>}
                     <div className="flex flex-wrap items-center justify-between gap-4 md:col-span-2">
-                        <p className="text-xs text-ink-mute">Protected by reCAPTCHA v3.</p>
+                        <RecaptchaNotice />
                         <Button type="submit" size="lg" loading={processing} icon={<Icon name="arrow" size={18} />}>
                             Send message
                         </Button>
                     </div>
                 </form>
             </div>
+
+            <StoreMap className="mt-16" />
         </section>
     );
 }

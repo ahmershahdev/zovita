@@ -7,6 +7,7 @@ import Icon from '@/Components/ui/Icon';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 import { money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
+import { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
 
 export default function CheckoutCreate({ cart, cities, defaults, checkoutToken }) {
     const getToken = useRecaptchaV3('checkout');
@@ -119,8 +120,9 @@ export default function CheckoutCreate({ cart, cities, defaults, checkoutToken }
                                 <Link href={route('legal', 'terms')} className="underline">
                                     terms
                                 </Link>
-                                . Protected by reCAPTCHA.
+                                .
                             </p>
+                            <RecaptchaNotice className="mt-2 text-center" />
                         </CartSummary>
                     </div>
                 </aside>

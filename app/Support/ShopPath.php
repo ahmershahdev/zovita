@@ -62,6 +62,18 @@ final class ShopPath
     /** Canonical path for a set of filter values (always the same order). */
     public static function build(?string $department, array $v): string
     {
+        // Only real slugs become path segments; anything else (typos, injection attempts) is dropped
+        // instead of producing a URL that can't be routed.
+        $slug = fn ($value) => is_string($value) && preg_match('/^[a-z0-9-]{1,80}$/', $value) ? $value : '';
+        $department = $slug($department) ?: null;
+        $v['category'] = $slug($v['category'] ?? '');
+        $v['brand'] = $slug($v['brand'] ?? '');
+        $v['form'] = $slug($v['form'] ?? '');
+        $v['min'] = is_numeric($v['min'] ?? null) ? (int) $v['min'] : null;
+        $v['max'] = is_numeric($v['max'] ?? null) ? (int) $v['max'] : null;
+        $v['sort'] = array_key_exists($v['sort'] ?? '', ProductFilters::SORTS) ? $v['sort'] : 'featured';
+        $v['page'] = max(1, (int) ($v['page'] ?? 1));
+
         $parts = array_filter([
             $department,
             $v['category'] ?? '',

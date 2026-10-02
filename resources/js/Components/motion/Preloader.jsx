@@ -6,7 +6,8 @@ export default function Preloader() {
     const root = useRef(null);
     const [done, setDone] = useState(() => {
         try {
-            return prefersReducedMotion() || sessionStorage.getItem('zv-intro') === '1';
+            // Once per session; never for reduced motion or automated browsers (crawlers, audits).
+            return prefersReducedMotion() || navigator.webdriver || sessionStorage.getItem('zv-intro') === '1';
         } catch {
             return true;
         }
@@ -28,17 +29,17 @@ export default function Preloader() {
             },
         });
 
-        tl.from('[data-word]', { yPercent: 110, duration: 1, stagger: 0.08 })
+        tl.from('[data-word]', { yPercent: 110, duration: 0.6, stagger: 0.06 })
             .to(counter, {
                 value: 100,
-                duration: 1.1,
+                duration: 0.7,
                 ease: 'power2.inOut',
                 onUpdate: () => {
                     number.textContent = String(Math.round(counter.value)).padStart(3, '0');
                 },
             }, 0)
-            .to('[data-word]', { yPercent: -110, duration: 0.7, stagger: 0.05, ease: 'expo.in' }, '+=0.1')
-            .to(root.current, { clipPath: 'inset(0 0 100% 0)', duration: 0.9, ease: 'expo.inOut' }, '-=0.3');
+            .to('[data-word]', { yPercent: -110, duration: 0.45, stagger: 0.04, ease: 'expo.in' }, '+=0.05')
+            .to(root.current, { clipPath: 'inset(0 0 100% 0)', duration: 0.6, ease: 'expo.inOut' }, '-=0.25');
 
         return () => tl.kill();
     }, [done]);

@@ -7,6 +7,8 @@ import { cn } from '@/lib/cn';
 import { pad } from '@/lib/format';
 import { gsap } from '@/lib/gsap';
 import { shopUrl } from '@/lib/shopUrl';
+import useT from '@/hooks/useT';
+import LanguageSwitch from '@/Components/ui/LanguageSwitch';
 import MobileMenu from './MobileMenu';
 import SearchOverlay from './SearchOverlay';
 
@@ -26,6 +28,7 @@ export const primary = [
  */
 export default function Header() {
     const { cart, wishlist, auth, nav, app } = usePage().props;
+    const t = useT();
     const [hidden, setHidden] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [megaOpen, setMegaOpen] = useState(false);
@@ -90,21 +93,21 @@ export default function Header() {
     const closeSearch = useCallback(() => setSearchOpen(false), []);
     const closeMenu = useCallback(() => setMenuOpen(false), []);
     const dept = nav[activeDept] ?? nav[0];
-    const iconBtn = 'relative grid size-10 place-items-center rounded-full transition-colors duration-300 hover:bg-ink hover:text-paper';
+    const iconBtn = 'relative grid size-9 shrink-0 place-items-center sm:size-10 rounded-full transition-colors duration-300 hover:bg-ink hover:text-paper';
 
     return (
         <>
             <div className="bg-night text-snow">
                 <Marquee duration={38} className="h-9 items-center" itemClassName="gap-10 pr-10">
                     {[
-                        `Free delivery over PKR ${app.freeDeliveryOver.toLocaleString()}`,
+                        t('Free delivery over PKR :amount', { amount: app.freeDeliveryOver.toLocaleString() }),
                         'Pharmacist-verified orders',
                         'Cash on delivery',
                         'New · Body map symptom finder',
                         '100% authentic stock',
-                    ].map((t) => (
-                        <span key={t} className="eyebrow flex items-center gap-10 text-[0.62rem]! text-snow/75">
-                            {t}
+                    ].map((line) => (
+                        <span key={line} className="eyebrow flex items-center gap-10 text-[0.62rem]! text-snow/75">
+                            {line}
                             <span className="size-1 rounded-full bg-mint" />
                         </span>
                     ))}
@@ -125,15 +128,15 @@ export default function Header() {
                         megaOpen ? 'rounded-[2rem]' : 'rounded-full',
                     )}
                 >
-                    <div className="flex h-16 items-center gap-3 pl-3 pr-2 md:pl-5">
-                        <Link href={route('home')} className="group flex items-center gap-2" aria-label="Zovita home" data-cursor-magnetic>
+                    <div className="flex h-16 items-center gap-2 pl-3 pr-1.5 sm:gap-3 sm:pr-2 md:pl-5">
+                        <Link href={route('home')} className="group flex shrink-0 items-center gap-2" aria-label="Zovita home" data-cursor-magnetic>
                             <img src={`${app.url}/images/brand/logo.png`} alt="" className="size-9 rounded-full transition-transform duration-700 ease-[var(--ease-expo)] group-hover:rotate-[360deg]" width="36" height="36" />
-                            <span className="font-display text-[1.7rem] leading-none">
+                            <span className="font-display text-[1.5rem] leading-none max-[369px]:sr-only sm:text-[1.7rem]">
                                 Zovita<span className="text-teal">+</span>
                             </span>
                         </Link>
 
-                        <nav className="relative ml-4 hidden items-center lg:flex" aria-label="Primary" onMouseLeave={() => setIndicator(null)}>
+                        <nav className="relative ml-2 hidden items-center lg:flex xl:ml-4" aria-label="Primary" onMouseLeave={() => setIndicator(null)}>
                             <span
                                 aria-hidden="true"
                                 className="absolute top-1/2 h-10 -translate-y-1/2 rounded-full bg-ink/[0.07] transition-[left,width,opacity] duration-500 ease-[var(--ease-expo)]"
@@ -155,7 +158,7 @@ export default function Header() {
                                         }}
                                         aria-expanded={item.mega ? megaOpen : undefined}
                                         aria-current={current ? 'page' : undefined}
-                                        className="relative flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-[0.92rem] xl:px-4"
+                                        className="relative flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-[0.92rem] xl:px-4"
                                     >
                                         {current && <span className="size-1.5 rounded-full bg-teal" />}
                                         {item.label}
@@ -169,7 +172,7 @@ export default function Header() {
                         <button
                             type="button"
                             onClick={() => setSearchOpen(true)}
-                            className="ml-auto hidden h-10 w-full max-w-60 items-center gap-2.5 rounded-full border border-line-strong px-4 text-left text-sm text-ink-mute transition-colors hover:border-ink hover:text-ink md:flex lg:hidden xl:flex"
+                            className="ml-auto hidden h-10 w-full min-w-0 max-w-60 items-center gap-2.5 rounded-full border border-line-strong px-4 text-left text-sm text-ink-mute transition-colors hover:border-ink hover:text-ink md:flex lg:hidden xl:flex"
                         >
                             <Icon name="search" size={16} />
                             <span className="flex-1 truncate">Search 1,000+ products</span>
@@ -177,13 +180,20 @@ export default function Header() {
                         </button>
 
                         <div className="ml-auto flex items-center gap-1 md:ml-1">
+                            <span className="hidden sm:contents">
+                                <LanguageSwitch />
+                            </span>
                             <ThemeToggle className="hidden sm:flex" />
                             <button type="button" onClick={() => setSearchOpen(true)} className={cn(iconBtn, 'md:hidden lg:grid xl:hidden')} aria-label="Search">
                                 <Icon name="search" size={19} />
                             </button>
-                            <Link href={route('wishlist.index')} className={cn(iconBtn, 'hidden sm:grid')} aria-label={`Wishlist, ${wishlist.length} items`}>
-                                <Icon name="heart" size={19} />
-                                {wishlist.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-coral ring-2 ring-paper" />}
+                            <Link href={route('wishlist.index')} data-fly-target="wishlist" className={iconBtn} aria-label={`Wishlist, ${wishlist.length} items`}>
+                                <Icon name="heart" size={19} fill={wishlist.length ? 'currentColor' : 'none'} className={wishlist.length ? 'text-coral' : undefined} />
+                                {wishlist.length > 0 && (
+                                    <span key={wishlist.length} className="absolute -right-0.5 -top-0.5 grid h-4.5 min-w-4.5 animate-[pop-in_0.5s_var(--ease-expo)] place-items-center rounded-full bg-coral px-1 font-mono text-[0.6rem] leading-none text-white ring-2 ring-paper">
+                                        {wishlist.length}
+                                    </span>
+                                )}
                             </Link>
                             <Link href={auth.user ? route('account.dashboard') : route('login')} className={cn(iconBtn, 'hidden sm:grid')} aria-label={auth.user ? 'Your account' : 'Sign in'}>
                                 <Icon name="user" size={19} />
@@ -191,11 +201,12 @@ export default function Header() {
                             <Link
                                 href={route('cart.index')}
                                 data-cursor-magnetic
-                                className="group relative ml-1 flex h-11 items-center gap-2 overflow-hidden rounded-full bg-ink pl-4 pr-1.5 text-paper"
+                                data-fly-target="cart"
+                                className="group relative ml-1 flex h-11 shrink-0 items-center gap-2 overflow-hidden rounded-full bg-ink pl-3 pr-1.5 text-paper sm:pl-4"
                                 aria-label={`Bag, ${cart.count} items`}
                             >
                                 <Icon name="bag" size={17} className="transition-transform duration-500 group-hover:-rotate-12" />
-                                <span className="hidden text-sm sm:inline">Bag</span>
+                                <span className="hidden text-sm sm:inline lg:hidden xl:inline">Bag</span>
                                 <span ref={badge} className="grid h-8 min-w-8 place-items-center rounded-full bg-mint px-2 font-mono text-xs text-night">
                                     {cart.count}
                                 </span>
@@ -203,7 +214,7 @@ export default function Header() {
                             <button
                                 type="button"
                                 onClick={() => setMenuOpen(true)}
-                                className="group grid size-11 place-items-center rounded-full lg:hidden"
+                                className="group grid size-10 shrink-0 place-items-center rounded-full sm:size-11 lg:hidden"
                                 aria-label="Open menu"
                                 aria-expanded={menuOpen}
                             >

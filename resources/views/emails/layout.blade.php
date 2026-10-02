@@ -34,7 +34,7 @@
                                 Questions? Reply to this email or reach us at
                                 <a href="mailto:{{ config('zovita.support_email') }}" style="color:#0b1b33;">{{ config('zovita.support_email') }}</a>
                                 · {{ config('zovita.support_phone') }}<br>
-                                Zovita Health · Pakistan · <a href="{{ url('/') }}" style="color:#0b1b33;">{{ parse_url(config('app.url'), PHP_URL_HOST) }}</a>
+                                Zovita Health · <a href="{{ url('/') }}" style="color:#0b1b33;">{{ parse_url(config('app.url'), PHP_URL_HOST) }}</a>
                             </td></tr>
                         </table>
                     </td>

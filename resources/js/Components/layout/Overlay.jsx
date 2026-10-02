@@ -14,7 +14,8 @@ export default function Overlay({ open, onClose, side = 'top', label, className,
         document.documentElement.style.overflow = 'hidden';
         const onKey = (e) => e.key === 'Escape' && onClose();
         window.addEventListener('keydown', onKey);
-        const off = router.on('start', onClose);
+        // Real visits close it; hover prefetches (which also fire "start") must not.
+        const off = router.on('start', (event) => !event.detail.visit.prefetch && onClose());
         return () => {
             lenis?.start();
             document.documentElement.style.overflow = '';
