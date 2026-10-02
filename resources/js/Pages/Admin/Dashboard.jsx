@@ -40,7 +40,7 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
             />
 
             {/* Needs attention */}
-            <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Attention href={route('admin.prescriptions.index')} icon="rx" value={attention.prescriptions} label="Prescriptions to review" tone={attention.prescriptions ? 'warn' : 'good'} />
                 <Attention href={route('admin.orders.index', { status: 'pending' })} icon="package" value={attention.pendingOrders} label="Orders awaiting confirmation" tone={attention.pendingOrders ? 'warn' : 'good'} />
                 <Attention href={route('admin.products.index', { stock: 'low' })} icon="alert" value={attention.lowStock} label="Products low on stock (≤ 5)" tone={attention.lowStock ? 'warn' : 'good'} />
@@ -48,7 +48,7 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
             </div>
 
             {/* KPIs */}
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {kpis.map((k, i) => {
                     const delta = k.previous ? ((k.value - k.previous) / k.previous) * 100 : null;
                     const key = i === 1 ? 'orders' : 'revenue';
@@ -65,7 +65,7 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
                 })}
             </div>
 
-            <div className="mt-6 grid gap-6 xl:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <Panel
                     className="xl:col-span-2"
                     title={metric === 'revenue' ? 'Revenue per day' : 'Orders per day'}
@@ -128,7 +128,7 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
                 </Panel>
 
                 <Panel title="A/B experiments" description="Unique visitors per variant" className="xl:col-span-2" help="We show two versions of some parts of the site to different visitors to see which works better. The longer bar under “Conversion” is the version that sells more. Tell your developer which one wins once each side has a few hundred visitors.">
-                    <div className="grid gap-8 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                         {experiments.map((exp) => (
                             <div key={exp.name}>
                                 <p className="font-mono text-xs uppercase tracking-wider text-ink-mute">{exp.name}</p>

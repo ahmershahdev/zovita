@@ -54,7 +54,7 @@ export default function Users({ users, filters }) {
                     </div>
                 </div>
 
-                <ul className="grid gap-3 md:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {users.data.map((u) => (
                         <li key={u.id} className={cn('flex items-center gap-4 rounded-3xl border p-4', u.banned ? 'border-coral/30 bg-coral/5' : 'border-line')}>
                             {u.avatar ? (

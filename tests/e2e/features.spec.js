@@ -64,3 +64,17 @@ test('admin: dashboard charts and prescription review', async ({ page }) => {
     await page.goto('/admin/prescriptions');
     await expect(page.getByRole('heading', { name: 'Prescriptions' })).toBeVisible();
 });
+
+test('admin pages fit a phone without sideways scroll @mobile', async ({ page }) => {
+    await page.goto('/admin/login');
+    await page.getByLabel('Work email').fill('admin@zovita.com');
+    await page.getByLabel('Password', { exact: true }).fill('Admin@1234');
+    await page.getByRole('button', { name: /Sign in to the admin panel/ }).click();
+    await expect(page.getByRole('heading', { name: 'Today at Zovita' })).toBeVisible();
+    for (const path of ['/admin', '/admin/orders', '/admin/users', '/admin/prescriptions', '/admin/products']) {
+        await page.goto(path);
+        await page.waitForLoadState('networkidle');
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        expect(overflow, `${path} scrolls sideways`).toBeLessThanOrEqual(1);
+    }
+});

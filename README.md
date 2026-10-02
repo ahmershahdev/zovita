@@ -163,6 +163,13 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ## Data model
 
+17 domain tables and 22 foreign keys, grouped into catalogue, commerce, customers, personalisation, security and inbox. Every column is shown, generated from the live MySQL schema.
+
+<img src=".github/assets/erd.png" alt="Zovita+ entity relationship diagram: all 17 domain tables with their columns, keys and foreign-key relationships" width="100%">
+
+<details>
+<summary><b>Simplified relationship view (Mermaid)</b></summary>
+
 ```mermaid
 erDiagram
     DEPARTMENTS ||--o{ CATEGORIES : groups
@@ -254,6 +261,8 @@ erDiagram
     }
 ```
 
+</details>
+
 Also: `experiment_events` (A/B exposures and conversions), `contact_messages`, `newsletter_subscribers`, plus Laravel's `sessions`, `cache` and `jobs`.
 
 ## Security
@@ -293,7 +302,7 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 | Suite | What it covers | Result |
 |---|---|---|
 | **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B, admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs | **96 passed** (673 assertions) |
-| **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review | **49 passed** |
+| **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review, admin pages on a phone | **51 passed** |
 | **Lighthouse 13** | Home, shop, product, body map, FAQ, contact, policies, login, register, prescription, about | **Accessibility 100 · Best Practices 100 · SEO 100** (bag/checkout are `noindex` by design) |
 | **Load** (`node tests/load/run.mjs capacity`) | On a single XAMPP dev box (database sessions): shop and product pages about 32 req/s at p50 about 700 ms; FAQ about 55 req/s; static images about 830 req/s at 11 ms | No errors |
 | **Abuse** (`node tests/load/run.mjs abuse`) | 25 connections flooding `/shop` from one client for 20 s | 293 served, then **429 for the rest**, with no 5xx |
