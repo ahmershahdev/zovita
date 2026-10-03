@@ -15,8 +15,8 @@ use Inertia\Response;
 
 /**
  * Second sign-in step: a code from the authenticator app ("totp") or a one-time code e-mailed by
- * LoginCodes ("email"). Staff always get one of the two (e-mail until they set up an app from
- * their panel); customers get it when they turned on two-step sign-in or chose "e-mail me a code".
+ * LoginCodes ("email"). Staff get the authenticator step once they set up an app from their
+ * panel; customers get it when they turned on two-step sign-in or chose "e-mail me a code".
  * The staff variant lives under /admin and answers 404 unless a staff password was just entered.
  */
 class TwoFactorChallengeController extends Controller

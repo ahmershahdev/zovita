@@ -7,6 +7,7 @@ import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import StoreLayout from '@/Layouts/StoreLayout';
+import { LocaleSync } from '@/Components/ui/LanguageSwitch';
 
 /**
  * Second sign-in step: a code from the authenticator app ("totp"), or a one-time 6-digit code we
@@ -113,4 +114,12 @@ export default function TwoFactorChallenge(props) {
 }
 
 // Staff get the bare admin-style screen; customers keep the store chrome.
-TwoFactorChallenge.layout = (page) => (page.props.staff ? page : <StoreLayout>{page}</StoreLayout>);
+TwoFactorChallenge.layout = (page) =>
+    page.props.staff ? (
+        <>
+            <LocaleSync />
+            {page}
+        </>
+    ) : (
+        <StoreLayout>{page}</StoreLayout>
+    );

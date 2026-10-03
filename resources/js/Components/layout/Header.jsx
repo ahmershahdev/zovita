@@ -187,7 +187,7 @@ export default function Header() {
                             <button type="button" onClick={() => setSearchOpen(true)} className={cn(iconBtn, 'md:hidden lg:grid xl:hidden')} aria-label="Search">
                                 <Icon name="search" size={19} />
                             </button>
-                            <Link href={route('wishlist.index')} data-fly-target="wishlist" className={iconBtn} aria-label={`Wishlist, ${wishlist.length} items`}>
+                            <Link href={route('wishlist.index')} data-fly-target="wishlist" className={iconBtn} aria-label={t('Wishlist, :count items', { count: wishlist.length })}>
                                 <Icon name="heart" size={19} fill={wishlist.length ? 'currentColor' : 'none'} className={wishlist.length ? 'text-coral' : undefined} />
                                 {wishlist.length > 0 && (
                                     <span key={wishlist.length} className="absolute -right-0.5 -top-0.5 grid h-4.5 min-w-4.5 animate-[pop-in_0.5s_var(--ease-expo)] place-items-center rounded-full bg-coral px-1 font-mono text-[0.6rem] leading-none text-white ring-2 ring-paper">
@@ -203,7 +203,7 @@ export default function Header() {
                                 data-cursor-magnetic
                                 data-fly-target="cart"
                                 className="group relative ml-1 flex h-11 shrink-0 items-center gap-2 overflow-hidden rounded-full bg-ink pl-3 pr-1.5 text-paper sm:pl-4"
-                                aria-label={`Bag, ${cart.count} items`}
+                                aria-label={t('Bag, :count items', { count: cart.count })}
                             >
                                 <Icon name="bag" size={17} className="transition-transform duration-500 group-hover:-rotate-12" />
                                 <span className="hidden text-sm sm:inline lg:hidden xl:inline">Bag</span>

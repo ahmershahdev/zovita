@@ -21,6 +21,7 @@ import { money, pad } from '@/lib/format';
 import { fly } from '@/lib/fly';
 import { signal } from '@/lib/signals';
 import { shopUrl } from '@/lib/shopUrl';
+import useT from '@/hooks/useT';
 
 const PackScene = lazy(() => import('@/Components/three/PackScene'));
 
@@ -48,6 +49,7 @@ const DELIVERY = [
 ];
 
 export default function ProductShow({ product, related, alternatives, priceStats, personalOffer = null }) {
+    const t = useT();
     const { app } = usePage().props;
     const scope = useRef(null);
     const zoom = useRef(null);
@@ -265,7 +267,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                                 <span className="flex-1 text-sm">
                                     <strong className="block text-ink">Sold out — {alternatives.length} in-stock alternatives</strong>
                                     <span className="text-ink-mute">
-                                        {alternatives[0].same_generic ? `Same active ingredient from ${alternatives[0].brand}` : `Closest match: ${alternatives[0].name}`}
+                                        {alternatives[0].same_generic ? t('Same active ingredient from :brand', { brand: alternatives[0].brand }) : t('Closest match: :name', { name: alternatives[0].name })}
                                     </span>
                                 </span>
                                 <Icon name="arrow" size={18} />
@@ -333,7 +335,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                                 {savings > 0 && <p className="text-center text-sm text-teal">You save {money(savings)} on this item</p>}
                                 {cheapestSame && cheapestSame.current_price < product.current_price && (
                                     <a href="#alternatives" className="block text-center text-sm text-ink-mute underline decoration-line-strong underline-offset-4 hover:text-ink">
-                                        Same salt from {money(cheapestSame.current_price)} ({cheapestSame.brand})
+                                        {t('Same salt from :price (:brand)', { price: money(cheapestSame.current_price), brand: cheapestSame.brand })}
                                     </a>
                                 )}
                             </div>
@@ -454,7 +456,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
                                 <ProductCard product={p} />
                                 {p.current_price !== product.current_price && (
                                     <p className={cn('mt-2 px-1 text-xs', p.current_price < product.current_price ? 'text-teal' : 'text-ink-mute')}>
-                                        {p.current_price < product.current_price ? `${money(product.current_price - p.current_price)} cheaper` : `${money(p.current_price - product.current_price)} more`}
+                                        {p.current_price < product.current_price ? t(':amount cheaper', { amount: money(product.current_price - p.current_price) }) : t(':amount more', { amount: money(p.current_price - product.current_price) })}
                                     </p>
                                 )}
                             </div>
@@ -466,7 +468,7 @@ export default function ProductShow({ product, related, alternatives, priceStats
             {related.length > 0 && (
                 <section className="container-x py-14 md:py-20">
                     <SectionHeading
-                        eyebrow={`More in ${product.department.name}`}
+                        eyebrow={t('More in :department', { department: product.department.name })}
                         title={
                             <>
                                 You may also <span className="italic">need.</span>

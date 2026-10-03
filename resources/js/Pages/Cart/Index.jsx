@@ -11,6 +11,7 @@ import Icon from '@/Components/ui/Icon';
 import { collapse, photoIn, transfer } from '@/lib/fly';
 import { money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
+import useT from '@/hooks/useT';
 
 export default function CartIndex({ cart, alternatives = {} }) {
     const update = (line, quantity) =>
@@ -121,6 +122,7 @@ function Substitutes({ line, options }) {
 }
 
 function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
+    const t = useT();
     const row = useRef(null);
 
     return (
@@ -136,7 +138,7 @@ function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
                             {line.name}
                         </Link>
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-mute">
-                            {money(line.current_price, { precise: true })} each
+                            {t(':price each', { price: money(line.current_price, { precise: true }) })}
                             {line.requires_prescription && <Badge tone="ink">Rx</Badge>}
                             {!line.in_stock && <Badge tone="coral">Out of stock</Badge>}
                         </div>
@@ -155,7 +157,7 @@ function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
                             type="button"
                             onClick={() => onRemove(line, row.current)}
                             className="grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-coral hover:text-white"
-                            aria-label={`Remove ${line.name}`}
+                            aria-label={t('Remove :name', { name: line.name })}
                         >
                             <Icon name="close" size={16} />
                         </button>

@@ -11,7 +11,7 @@ class MakeAdmin extends Command
     protected $signature = 'user:admin {email}
         {--role=owner : owner, pharmacist or support}
         {--revoke : Remove admin access instead}
-        {--reset-2fa : Make them set up two-step sign-in again (lost phone)}';
+        {--reset-2fa : Remove their authenticator app (lost phone)}';
 
     protected $description = 'Grant, change or revoke admin-panel access for an existing account';
 
@@ -26,7 +26,7 @@ class MakeAdmin extends Command
 
         if ($this->option('reset-2fa')) {
             $user->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null, 'two_factor_last_step' => null])->save();
-            $this->components->info("{$user->email} will set up two-step sign-in again at their next staff sign-in.");
+            $this->components->info("{$user->email} can sign in with their password again and set up a new authenticator app.");
 
             return self::SUCCESS;
         }

@@ -5,7 +5,7 @@
 # Zovita+
 
 **Care, delivered with calm.**
-An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symptom body map, a guided assistant, a store that adapts to each shopper, drug-interaction warnings, refill reminders, pharmacist-reviewed prescriptions, English and Urdu, and card payments or cash on delivery. Staff work in a role-based admin panel behind mandatory two-step sign-in.
+An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symptom body map, a guided assistant, a store that adapts to each shopper, drug-interaction warnings, refill reminders, pharmacist-reviewed prescriptions, English and Urdu, and card payments or cash on delivery. Staff work in a role-based admin panel with optional authenticator-app two-step sign-in.
 
 [![CI](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml)
 ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-0b1b33?logo=php&logoColor=white)
@@ -112,7 +112,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ### Admin panel (`/admin`, separate staff login)
 - **Hidden and gated:**
-  - Its own sign-in at `/admin/login`, then a **mandatory second step**: a 6-digit code e-mailed to the staff member (10 minutes, single use), or their authenticator app's code once they set one up from **My security** in the panel. A session that hasn't passed the second step (a remember-me cookie, an old session) is refused.
+  - Its own sign-in at `/admin/login` with e-mail and password. Once a staff member turns on an authenticator app from **My security** in the panel, every later sign-in also asks for its 6-digit code (recovery codes cover a lost phone). A session that didn't come through the staff sign-in (a customer session, a remember-me cookie) is refused.
   - Every admin URL returns **404** to anyone who isn't staff.
   - Sessions sign out after 30 minutes idle.
   - Staff login is throttled for 15 minutes after failures.
@@ -364,7 +364,7 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 | Suite | What it covers | Result |
 |---|---|---|
-| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **142 passed** (970 assertions) |
+| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **145 passed** (973 assertions) |
 | **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review with two-step sign-in, admin pages on a phone, interaction warning + acknowledgement, card payment through the sandbox gateway, retrying a cancelled payment, staff pages | **56 passed** |
 | **Lighthouse 13** | Home, shop, product, body map, FAQ, contact, policies, login, register, prescription, about | **Accessibility 100 · Best Practices 100 · SEO 100** (bag/checkout are `noindex` by design) |
 | **Load** (`node tests/load/run.mjs capacity`) | On a single XAMPP dev box (database sessions): shop and product pages about 32 req/s at p50 about 700 ms; FAQ about 55 req/s; static images about 830 req/s at 11 ms | No errors |
@@ -405,7 +405,7 @@ php artisan serve                   # → http://127.0.0.1:8000
 | Support | `/admin/login` | `support@zovita.com` | `Support@1234` |
 | Demo customer | `/login` | `demo@zovita.pk` | `password` |
 
-Staff sign in with their password plus a 6-digit code **e-mailed** to them (so seeded accounts work out of the box; with `MAIL_MAILER=log` the code is in `storage/logs/laravel.log`). Each can switch to an authenticator app from **My security** in the panel.
+Staff sign in with just their e-mail and password, so the seeded demo accounts work out of the box. After signing in, open **My security** in the panel to turn on two-step sign-in with an authenticator app; from then on that account also needs the app's code.
 
 > **Change the staff passwords before going live.** Use `php artisan user:admin you@example.com --role=owner` to promote your own account, then `php artisan user:admin admin@zovita.com --revoke` (or delete it).
 
@@ -463,7 +463,7 @@ app/
 ├─ Enums/                OrderStatus, PrescriptionStatus, StaffRole (permissions per role)
 ├─ Http/
 │  ├─ Controllers/       Storefront/ · Pages/ · Auth/ · Account/ · Admin/   (thin)
-│  ├─ Middleware/        RequestGuard, SecurityHeaders (nonce CSP), EnsureAdmin (two-step), EnsureStaffCan,
+│  ├─ Middleware/        RequestGuard, SecurityHeaders (nonce CSP), EnsureAdmin (staff session + optional two-step), EnsureStaffCan,
 │  │                     EnsureNotBanned, SetLocale, HandleInertiaRequests
 │  └─ Requests/          validation, reCAPTCHA and ban checks, grouped by area
 ├─ Listeners/            sign-in activity, guest → account merge
@@ -493,7 +493,7 @@ deploy/                  nginx, supervisor, production env template
 ## Roadmap
 
 **Shipped in the last release**
-- ✅ Two-step sign-in (TOTP, or e-mailed codes), mandatory for staff, plus staff roles (owner, pharmacist, support).
+- ✅ Two-step sign-in (TOTP, or e-mailed codes), opt-in for staff from My security, plus staff roles (owner, pharmacist, support).
 - ✅ E-mail automation: sign-in codes, passwordless sign-in, e-mail confirmation, new-sign-in alerts, order status and refund e-mails, 10-minute password resets.
 - ✅ Card payments alongside cash on delivery, with signed webhooks, automatic expiry and refunds.
 - ✅ Refill reminders built on the "buys it regularly" signal.

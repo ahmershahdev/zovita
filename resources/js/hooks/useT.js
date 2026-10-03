@@ -7,6 +7,13 @@ import { useCallback } from 'react';
  * Placeholders use Laravel's syntax: t('Add :count more', { count: 3 }).
  */
 let current = {};
+let currentLocale = 'en';
+
+/** The interface language of the page being rendered (dates and other Intl formatting follow it). */
+export const activeLocale = () => currentLocale;
+export const setActiveLocale = (code) => {
+    currentLocale = code || 'en';
+};
 
 export function translate(messages, key, replace) {
     let text = (messages && messages[key]) || key;
@@ -17,8 +24,9 @@ export function translate(messages, key, replace) {
 }
 
 export default function useT() {
-    const { messages } = usePage().props;
+    const { messages, locale } = usePage().props;
     current = messages || {};
+    currentLocale = locale?.code ?? 'en';
     return useCallback((key, replace) => translate(messages, key, replace), [messages]);
 }
 

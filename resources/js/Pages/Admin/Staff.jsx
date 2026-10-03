@@ -5,9 +5,11 @@ import Icon from '@/Components/ui/Icon';
 import Select from '@/Components/ui/Select';
 import AdminLayout, { PageGuide, Panel, StatusPill } from '@/Layouts/AdminLayout';
 import { date } from '@/lib/format';
+import useT from '@/hooks/useT';
 
 /** Owner-only: who works in the admin panel, their role and their two-step sign-in. */
 export default function Staff({ staff, roles }) {
+    const t = useT();
     const form = useForm({ email: '', role: 'support' });
     const roleOptions = roles.map((r) => ({ value: r.value, label: r.label }));
 
@@ -24,7 +26,7 @@ export default function Staff({ staff, roles }) {
         router.delete(route('admin.staff.destroy', member.id), { preserveScroll: true });
     };
     const resetTwoFactor = (member) => {
-        if (!window.confirm(`Reset ${member.name}'s two-step sign-in? They'll get e-mailed sign-in codes until they set up an app again.`)) return;
+        if (!window.confirm(`Reset ${member.name}'s two-step sign-in? Their authenticator app is removed; they sign in with their password and can set up a new one.`)) return;
         router.post(route('admin.staff.reset-2fa', member.id), {}, { preserveScroll: true });
     };
 
@@ -35,13 +37,13 @@ export default function Staff({ staff, roles }) {
                 steps={[
                     'Everyone here can sign in at /admin/login. What they can open depends on their role.',
                     'To add someone, they first create a normal customer account. Then type their e-mail below and pick a role.',
-                    'Every sign-in needs a second code: e-mailed to them, or from an authenticator app once they set one up in My security. It can\'t be turned off.',
-                    'Lost phone? Use "Reset two-step" so they can set it up again. There must always be at least one owner.',
+                    'They sign in with their password. Each can turn on two-step sign-in with an authenticator app from My security; from then on they also need its code.',
+                    'Lost phone? Use "Reset two-step" to remove their authenticator app so they can sign in and set up a new one. There must always be at least one owner.',
                 ]}
             />
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                <Panel title="Team" description={`${staff.length} ${staff.length === 1 ? 'person' : 'people'} with admin access`} className="xl:col-span-2">
+                <Panel title="Team" description={staff.length === 1 ? t('1 person with admin access') : t(':count people with admin access', { count: staff.length })} className="xl:col-span-2">
                     <ul className="divide-y divide-line">
                         {staff.map((m) => (
                             <li key={m.id} className="flex flex-wrap items-center gap-4 py-4">
@@ -52,8 +54,8 @@ export default function Staff({ staff, roles }) {
                                         {m.email} · {m.last_login_at ? `last sign-in ${date(m.last_login_at)}` : 'never signed in'}
                                     </span>
                                 </span>
-                                <StatusPill tone="good">{m.two_factor ? 'Authenticator app' : 'E-mailed codes'}</StatusPill>
-                                <Select variant="pill" ariaLabel={`Role for ${m.name}`} value={m.role} options={roleOptions} onChange={(role) => setRole(m, role)} />
+                                <StatusPill tone={m.two_factor ? 'good' : 'warn'}>{m.two_factor ? 'Authenticator app' : 'Password only'}</StatusPill>
+                                <Select variant="pill" ariaLabel={t('Role for :name', { name: m.name })} value={m.role} options={roleOptions} onChange={(role) => setRole(m, role)} />
                                 <span className="flex gap-2">
                                     {m.two_factor && (
                                         <button type="button" onClick={() => resetTwoFactor(m)} className="rounded-full border border-line-strong px-3 py-1.5 text-xs hover:border-ink">

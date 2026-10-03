@@ -98,7 +98,7 @@ class SitemapController extends Controller
                     : '- Payment: cash on delivery (no card details asked for or stored).',
                 '- Medicine safety: the bag checks active ingredients for well-known interactions (e.g. two paracetamol products, blood thinner + NSAID, sildenafil + nitrate) and shows what to do; serious ones must be acknowledged and are shown to the pharmacist. Not medical advice.',
                 '- Refill reminders: customers who buy the same medicine regularly get an e-mail a few days before it is likely to run out, with a one-tap reorder link (can be switched off).',
-                '- Accounts: optional two-step sign-in with an authenticator app for customers; mandatory for all staff.',
+                '- Accounts: optional two-step sign-in with an authenticator app for customers; staff can turn it on from the admin panel.',
                 '- Delivery: free over PKR '.number_format((int) config('zovita.free_delivery_over')).', otherwise PKR '.number_format((int) config('zovita.delivery_fee')).'; major cities 1–3 business days, elsewhere 2–5.',
                 '- Returns: unopened, room-temperature items within 7 days; damaged/wrong items reported within 48 hours are replaced or refunded in full.',
                 '- Personal offers: automatic discounts based on browsing and purchase history, applied in the bag (no codes).',

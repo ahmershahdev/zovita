@@ -22,8 +22,8 @@ class DatabaseSeeder extends Seeder
             'address' => 'Block 5, Clifton',
         ]);
 
-        // Staff accounts for the admin panel (sign in at /admin/login; each sets up two-step sign-in
-        // with an authenticator app the first time). Change these passwords before going live:
+        // Staff accounts for the admin panel (sign in at /admin/login with the password; each can turn on
+        // two-step sign-in with an authenticator app from My security). Change these passwords before going live:
         // `php artisan user:admin <email> --role=owner|pharmacist|support` or `--revoke`.
         $staff = [
             ['admin@zovita.com', 'Zovita Admin', 'Admin@1234', 'admin', StaffRole::Owner],

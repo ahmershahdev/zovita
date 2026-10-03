@@ -5,8 +5,10 @@ import Icon from '@/Components/ui/Icon';
 import AdminLayout, { PageGuide, Panel, StatusPill } from '@/Layouts/AdminLayout';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
+import useT from '@/hooks/useT';
 
 export default function Dashboard({ days, ranges, kpis, series, topProducts, byDepartment, statuses, funnel, offers, experiments, attention, recentOrders, customers, catalog }) {
+    const t = useT();
     const [metric, setMetric] = useState('revenue');
     const [table, setTable] = useState(false);
     const permissions = usePage().props.auth.user?.permissions ?? [];
@@ -121,7 +123,7 @@ export default function Dashboard({ days, ranges, kpis, series, topProducts, byD
                     <BarList items={statuses} empty="No orders in this range yet." />
                 </Panel>
 
-                <Panel title="Personal offers" description={`${money(offers.total)} discounted automatically`} className="xl:col-span-1" help="The shop gives small automatic discounts to customers (for example on a product they keep looking at, or to loyal customers). This shows how many were given and how many were used. You don’t need to do anything here.">
+                <Panel title="Personal offers" description={t(':amount discounted automatically', { amount: money(offers.total) })} className="xl:col-span-1" help="The shop gives small automatic discounts to customers (for example on a product they keep looking at, or to loyal customers). This shows how many were given and how many were used. You don’t need to do anything here.">
                     {offers.byKind.length ? (
                         <BarList items={offers.byKind.map((o) => ({ label: o.label, value: o.issued, hint: `${o.redeemed} redeemed (${o.issued ? Math.round((o.redeemed / o.issued) * 100) : 0}%)` }))} />
                     ) : (

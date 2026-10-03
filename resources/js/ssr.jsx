@@ -4,6 +4,7 @@ import { renderToString } from 'react-dom/server';
 import { route } from 'ziggy-js';
 import StoreLayout from '@/Layouts/StoreLayout';
 import { Ziggy } from './ziggy';
+import { setActiveLocale } from '@/hooks/useT';
 
 /**
  * Server-side rendering (php artisan inertia:start-ssr, see deploy/supervisor.conf). Crawlers and
@@ -27,6 +28,7 @@ createServer((page) =>
             return module;
         },
         setup: ({ App, props }) => {
+            setActiveLocale(page.props.locale?.code);
             // Same base URL the browser's @routes uses (this request's app URL), not the one
             // ziggy.js was generated with, so server and client links match exactly.
             const base = new URL(page.props.app?.url ?? Ziggy.url);

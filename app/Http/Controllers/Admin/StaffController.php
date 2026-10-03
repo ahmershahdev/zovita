@@ -57,7 +57,7 @@ class StaffController extends Controller
         $user->setStaffRole($role);
         ActivityLog::record('admin.staff.added', "Made {$user->email} a {$role->label()}", $request->user(), ['user_id' => $user->id]);
 
-        return back()->with('success', "{$user->name} is now a {$role->label()}. They sign in at /admin/login with their password and a code e-mailed to them.");
+        return back()->with('success', "{$user->name} is now a {$role->label()}. They sign in at /admin/login with their password and can turn on two-step sign-in from My security.");
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -87,7 +87,7 @@ class StaffController extends Controller
         });
     }
 
-    /** Lost phone: the next staff sign-in asks them to set up two-step sign-in again. */
+    /** Lost phone: removes their authenticator so they can sign in with the password and set up a new one. */
     public function resetTwoFactor(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->staffRole(), 404);
@@ -98,7 +98,7 @@ class StaffController extends Controller
         DB::table('sessions')->where('user_id', $user->id)->delete();
         ActivityLog::record('admin.staff.2fa_reset', "Reset two-step sign-in for {$user->email}", $request->user(), ['user_id' => $user->id]);
 
-        return back()->with('success', "{$user->name} will get e-mailed sign-in codes until they set up an authenticator app again.");
+        return back()->with('success', "{$user->name} can sign in with their password and set up a new authenticator app.");
     }
 
     private function guardLastOwner(User $user, ?StaffRole $next, callable $change): RedirectResponse

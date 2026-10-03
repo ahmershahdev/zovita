@@ -41,37 +41,37 @@ class EmailAutomationTest extends TestCase
         return $user->fresh();
     }
 
-    public function test_staff_without_an_app_sign_in_with_an_emailed_code(): void
+    public function test_staff_without_an_app_sign_in_with_their_password_alone(): void
     {
         $staff = $this->staff();
-        $this->post(route('admin.login'), ['email' => 'owner@zovita.com', 'password' => 'Secret@1234'])->assertRedirect(route('admin.two-factor.challenge'));
-        $this->assertGuest();
-        $this->get(route('admin.dashboard'))->assertNotFound(); // password alone opens nothing
-
-        $props = $this->get(route('admin.two-factor.challenge'))->assertOk()->viewData('page')['props'];
-        $this->assertSame('email', $props['method']);
-        $this->assertStringStartsWith('o', $props['email']);
-        $this->assertStringNotContainsString('owner@', $props['email']); // masked
-
-        $code = $this->lastCode();
-        $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
-        $this->assertDatabaseMissing('login_codes', ['code_hash' => $code]); // stored hashed only
-
-        $this->post(route('admin.two-factor.verify'), ['code' => $code === '000000' ? '111111' : '000000'])->assertSessionHasErrors('code');
-        $this->post(route('admin.two-factor.verify'), ['code' => $code])->assertRedirect(route('admin.dashboard'));
+        $this->post(route('admin.login'), ['email' => 'owner@zovita.com', 'password' => 'Secret@1234'])->assertRedirect(route('admin.dashboard'));
         $this->assertAuthenticatedAs($staff);
         $this->get(route('admin.dashboard'))->assertOk();
+        Mail::assertNotSent(NoticeMail::class, fn ($m) => $m->code !== null);
+
+        // The panel nudges them to turn on two-step sign-in.
+        $this->assertFalse($this->get(route('admin.security'))->viewData('page')['props']['twoFactor']['enabled']);
+    }
+
+    public function test_a_wrong_staff_password_still_opens_nothing(): void
+    {
+        $this->staff();
+        $this->post(route('admin.login'), ['email' => 'owner@zovita.com', 'password' => 'Wrong@1234'])->assertSessionHasErrors('email');
+        $this->assertGuest();
+        $this->get(route('admin.dashboard'))->assertNotFound();
     }
 
     public function test_emailed_codes_expire_after_ten_minutes_and_work_once(): void
     {
-        $staff = $this->staff();
-        $this->post(route('admin.login'), ['email' => 'owner@zovita.com', 'password' => 'Secret@1234']);
+        $customer = User::factory()->create(['email' => 'ayesha@example.com']);
+        $codes = app(LoginCodes::class);
+        $codes->send($customer);
         $code = $this->lastCode();
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
+        $this->assertDatabaseMissing('login_codes', ['code_hash' => $code]); // stored hashed only
 
         $this->travel(11)->minutes();
-        $this->post(route('admin.two-factor.verify'), ['code' => $code])->assertNotFound(); // pending sign-in expired too
-        $this->assertFalse(app(LoginCodes::class)->verify($staff, $code));
+        $this->assertFalse($codes->verify($customer, $code));
     }
 
     public function test_a_code_is_single_use_and_resend_replaces_it(): void

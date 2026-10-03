@@ -10,8 +10,10 @@ import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 import { money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
 import { RecaptchaNotice } from '@/Components/forms/RecaptchaCheckbox';
+import useT from '@/hooks/useT';
 
 export default function CheckoutCreate({ cart, cities, defaults, checkoutToken, payments }) {
+    const t = useT();
     const getToken = useRecaptchaV3('checkout');
     const form = useForm({ ...defaults, postal_code: '', notes: '', prescription: null, recaptcha_token: '', checkout_token: checkoutToken, payment_method: 'cod', interactions_ack: false });
     const { data, setData, errors, processing } = form;
@@ -91,7 +93,7 @@ export default function CheckoutCreate({ cart, cities, defaults, checkoutToken, 
                                 checked={data.payment_method === 'cod'}
                                 onSelect={() => setData('payment_method', 'cod')}
                                 title="Cash on delivery"
-                                body={`Pay ${money(cart.total)} when your order arrives.`}
+                                body={t('Pay :amount when your order arrives.', { amount: money(cart.total) })}
                                 icon="truck"
                             />
                             {payments?.card && (
@@ -99,7 +101,7 @@ export default function CheckoutCreate({ cart, cities, defaults, checkoutToken, 
                                     checked={data.payment_method === 'card'}
                                     onSelect={() => setData('payment_method', 'card')}
                                     title="Debit or credit card"
-                                    body={`Pay ${money(cart.total)} now on a secure payment page. Your items are held for ${payments.expires_minutes} minutes while you pay.`}
+                                    body={t('Pay :amount now on a secure payment page. Your items are held for :minutes minutes while you pay.', { amount: money(cart.total), minutes: payments.expires_minutes })}
                                     icon="lock"
                                     note={payments.sandbox ? 'Test mode: no real card is charged.' : null}
                                 />
@@ -138,7 +140,7 @@ export default function CheckoutCreate({ cart, cities, defaults, checkoutToken, 
                         )}
                         <CartSummary cart={cart}>
                             <Button type="submit" size="lg" loading={processing} className="mt-6 w-full" icon={<Icon name="check" size={18} />}>
-                                {data.payment_method === 'card' ? `Continue to payment · ${money(cart.total)}` : `Place order · ${money(cart.total)}`}
+                                {data.payment_method === 'card' ? t('Continue to payment · :amount', { amount: money(cart.total) }) : t('Place order · :amount', { amount: money(cart.total) })}
                             </Button>
                             <p className="mt-4 text-center text-xs text-ink-mute">
                                 By placing your order you agree to our{' '}

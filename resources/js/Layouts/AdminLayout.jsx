@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import Toasts from '@/Components/layout/Toasts';
 import Icon from '@/Components/ui/Icon';
+import LanguageSwitch, { LocaleSync } from '@/Components/ui/LanguageSwitch';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import { cn } from '@/lib/cn';
 
@@ -27,13 +28,18 @@ export default function AdminLayout({ title, actions, children }) {
             <Head>
                 <meta head-key="robots" name="robots" content="noindex,nofollow" />
             </Head>
+            {/* Same language layer as the store: <html lang/dir> and the Urdu dictionary. */}
+            <LocaleSync />
 
             <aside className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur lg:flex lg:h-svh lg:flex-col lg:border-b-0 lg:border-r lg:p-5">
                 <div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-2 lg:py-0">
                     <Link href={route('admin.dashboard')} className="font-display text-2xl">
                         Zovita<span className="text-teal">+</span> <span className="eyebrow align-middle text-ink-mute">Admin</span>
                     </Link>
-                    <ThemeToggle className="lg:hidden" />
+                    <div className="flex items-center gap-1 lg:hidden">
+                        <LanguageSwitch />
+                        <ThemeToggle />
+                    </div>
                 </div>
 
                 <nav aria-label="Admin" className="scrollbar-none flex gap-1 overflow-x-auto px-3 pb-3 lg:mt-10 lg:flex-col lg:overflow-visible lg:px-0">
@@ -59,7 +65,10 @@ export default function AdminLayout({ title, actions, children }) {
                 </nav>
 
                 <div className="mt-auto hidden space-y-3 lg:block">
-                    <ThemeToggle />
+                    <div className="flex items-center gap-1">
+                        <ThemeToggle />
+                        <LanguageSwitch />
+                    </div>
                     <Link href={route('home')} className="flex items-center gap-2 text-sm text-ink-mute hover:text-ink">
                         <Icon name="arrowLeft" size={15} /> Back to store
                     </Link>

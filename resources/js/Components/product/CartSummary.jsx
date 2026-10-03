@@ -27,7 +27,7 @@ export default function CartSummary({ cart, children }) {
 
             <dl className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                    <dt className="text-ink-mute">Subtotal ({cart.count} items)</dt>
+                    <dt className="text-ink-mute">{t('Subtotal (:count items)', { count: cart.count })}</dt>
                     <dd>{money(cart.subtotal, { precise: true })}</dd>
                 </div>
                 {cart.savings > 0 && (

@@ -25,7 +25,7 @@ return [
     | servers share one budget per client (null = the default store above).
     */
 
-    'limiter' => env('CACHE_LIMITER_STORE'),
+    'limiter' => env('CACHE_LIMITER_STORE') ?: null,
 
     /*
     |--------------------------------------------------------------------------

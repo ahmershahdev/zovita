@@ -70,7 +70,7 @@ class TwoFactorController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate(['password' => ['required', 'current_password']]);
-        // Staff can't switch it off: it's mandatory for anyone with admin access.
+        // Staff manage theirs from the admin panel (My security), which asks for a current app code.
         abort_if($request->user()->staffRole() !== null, 403);
         $this->twoFactor->disable($request->user());
 

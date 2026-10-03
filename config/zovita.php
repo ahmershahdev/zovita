@@ -85,7 +85,7 @@ return [
         'driver' => env('MALWARE_SCANNER', 'none'),
         'host' => env('CLAMAV_HOST', '127.0.0.1'),
         'port' => (int) env('CLAMAV_PORT', 3310),
-        'socket' => env('CLAMAV_SOCKET'),
+        'socket' => env('CLAMAV_SOCKET') ?: null,
         'timeout' => (float) env('CLAMAV_TIMEOUT', 10),
         'fail_open' => (bool) env('MALWARE_SCAN_FAIL_OPEN', false),
     ],
@@ -100,7 +100,7 @@ return [
     */
 
     'bans' => [
-        'store' => env('BAN_CACHE_STORE'),
+        'store' => env('BAN_CACHE_STORE') ?: null,
         'ttl' => (int) env('BAN_CACHE_TTL', 300),
     ],
 

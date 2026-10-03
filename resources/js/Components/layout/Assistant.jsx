@@ -106,10 +106,10 @@ export default function Assistant() {
                 aria-expanded={open}
                 aria-controls="zv-assistant"
                 aria-label={open ? 'Close the assistant' : 'Open the Zovita assistant'}
-                className="group fixed bottom-5 left-5 z-[90] flex h-14 items-center gap-3 rounded-full bg-night pl-2 pr-5 text-snow shadow-[0_18px_40px_-14px_rgb(0_0_0/0.55)] transition-transform duration-500 ease-[var(--ease-expo)] hover:-translate-y-0.5 md:bottom-8 md:left-8 print:hidden"
+                className="group fixed bottom-4 left-4 z-[90] flex h-12 items-center gap-3 rounded-full bg-night p-1.5 text-snow sm:h-14 sm:pl-2 sm:pr-5 shadow-[0_18px_40px_-14px_rgb(0_0_0/0.55)] transition-transform duration-500 ease-[var(--ease-expo)] hover:-translate-y-0.5 md:bottom-8 md:left-8 print:hidden"
                 data-cursor-magnetic
             >
-                <span className="relative grid size-10 place-items-center rounded-full bg-mint text-night">
+                <span className="relative grid size-9 place-items-center rounded-full bg-mint text-night sm:size-10">
                     <Icon name={open ? 'close' : 'sparkle'} size={18} className="transition-transform duration-500 group-hover:rotate-90" />
                     {!open && personal?.count > 0 && <span className="absolute -right-0.5 -top-0.5 size-3 rounded-full bg-coral ring-2 ring-night" />}
                 </span>
@@ -124,10 +124,10 @@ export default function Assistant() {
                     aria-label="Zovita assistant"
                     tabIndex={-1}
                     data-lenis-prevent
-                    className="fixed inset-x-3 bottom-24 z-[95] flex max-h-[min(40rem,calc(100svh-8rem))] flex-col overflow-hidden rounded-[2rem] border border-line bg-paper shadow-[0_40px_90px_-30px_rgb(0_0_0/0.55)] outline-none sm:inset-x-auto sm:left-5 sm:w-[24rem] md:bottom-28 md:left-8"
+                    className="fixed inset-x-3 bottom-20 z-[95] flex max-h-[min(40rem,calc(100svh-8rem))] flex-col overflow-hidden rounded-[2rem] border border-line bg-paper shadow-[0_40px_90px_-30px_rgb(0_0_0/0.55)] outline-none sm:inset-x-auto sm:left-5 sm:w-[24rem] md:bottom-28 md:left-8"
                 >
                     <header className="flex items-center gap-3 bg-night px-5 py-4 text-snow">
-                        <span className="relative grid size-10 place-items-center rounded-full bg-mint text-night">
+                        <span className="relative grid size-9 place-items-center rounded-full bg-mint text-night sm:size-10">
                             <Icon name="sparkle" size={18} />
                             <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-teal ring-2 ring-night" />
                         </span>

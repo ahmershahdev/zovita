@@ -4,9 +4,11 @@ import Field from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import AdminLayout, { PageGuide, Panel, StatusPill } from '@/Layouts/AdminLayout';
 import { date } from '@/lib/format';
+import useT from '@/hooks/useT';
 
-/** A staff member's own sign-in security: e-mailed codes by default, an authenticator app once set up. */
+/** A staff member's own sign-in security: password only by default, plus an authenticator app once set up. */
 export default function Security({ role, twoFactor, email, recoveryCodes }) {
+    const t = useT();
     const confirm = useForm({ code: '' });
     const regen = useForm({ code: '' });
     const off = useForm({ code: '' });
@@ -16,9 +18,9 @@ export default function Security({ role, twoFactor, email, recoveryCodes }) {
             <PageGuide
                 id="security"
                 steps={[
-                    'Every admin sign-in needs your password plus a second code. Nobody gets in with a password alone.',
-                    `Until you set up an authenticator app, that code is e-mailed to ${email} and expires after 10 minutes.`,
-                    'An authenticator app (Google Authenticator, Microsoft Authenticator, 1Password) is faster and works without e-mail. Set it up below.',
+                    'Right now your password alone signs you in. Turn on two-step sign-in below so a stolen password is not enough.',
+                    t('Once it is on, every admin sign-in for :email asks for your password plus a 6-digit code from the app.', { email }),
+                    'Use any authenticator app (Google Authenticator, Microsoft Authenticator, 1Password). Setup takes a minute.',
                     'Keep the recovery codes somewhere safe: each signs you in once if you lose your phone.',
                 ]}
             />
@@ -36,15 +38,15 @@ export default function Security({ role, twoFactor, email, recoveryCodes }) {
                 </section>
             )}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <Panel title="Second sign-in step" help="Required for everyone with admin access.">
+                <Panel title="Two-step sign-in" help="Strongly recommended for everyone with admin access.">
                     <p className="flex flex-wrap items-center gap-2 text-sm">
-                        <StatusPill tone="good">{twoFactor.enabled ? 'Authenticator app' : 'E-mailed codes'}</StatusPill>
+                        <StatusPill tone={twoFactor.enabled ? 'good' : 'warn'}>{twoFactor.enabled ? 'On — authenticator app' : 'Off — password only'}</StatusPill>
                         {twoFactor.enabled && twoFactor.since && <span className="text-ink-mute">since {date(twoFactor.since)}</span>}
                     </p>
 
                     {!twoFactor.enabled && !twoFactor.setup && (
                         <div className="mt-5">
-                            <p className="text-sm text-ink-mute">Codes currently go to {email}.</p>
+                            <p className="text-sm text-ink-mute">Anyone with your password can open the admin panel until you set this up.</p>
                             <Button className="mt-4" onClick={() => router.post(route('admin.security.authenticator.start'), {}, { preserveScroll: true })} icon={<Icon name="shield" size={16} />}>
                                 Set up an authenticator app
                             </Button>
@@ -106,7 +108,7 @@ export default function Security({ role, twoFactor, email, recoveryCodes }) {
                                 className="space-y-3"
                                 noValidate
                             >
-                                <Field label="App code (to switch back to e-mailed codes)" inputMode="numeric" maxLength={7} autoComplete="one-time-code" value={off.data.code} onChange={(e) => off.setData('code', e.target.value)} error={off.errors.disable_code || off.errors.code} />
+                                <Field label="App code (to turn two-step sign-in off)" inputMode="numeric" maxLength={7} autoComplete="one-time-code" value={off.data.code} onChange={(e) => off.setData('code', e.target.value)} error={off.errors.disable_code || off.errors.code} />
                                 <Button type="submit" variant="danger" size="sm" loading={off.processing}>
                                     Remove authenticator app
                                 </Button>

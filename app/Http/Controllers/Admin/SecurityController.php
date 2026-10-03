@@ -11,9 +11,9 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * A staff member's own sign-in security. Until they set up an authenticator app here, every staff
- * sign-in needs a 6-digit code e-mailed to them; after that it needs the app's code (recovery codes
- * cover a lost phone). Switching back to e-mail codes needs a current app code.
+ * A staff member's own sign-in security. Until they set up an authenticator app here, their
+ * password alone signs them in; after that every sign-in also needs the app's code (recovery codes
+ * cover a lost phone). Turning the app off again needs a current app code.
  */
 class SecurityController extends Controller
 {
@@ -73,7 +73,7 @@ class SecurityController extends Controller
         return back();
     }
 
-    /** Back to e-mailed codes (e.g. replacing a phone): needs a current authenticator code. */
+    /** Back to password-only sign-in (e.g. replacing a phone): needs a current authenticator code. */
     public function disable(Request $request, TwoFactor $twoFactor): RedirectResponse
     {
         $request->validate(['code' => ['required', 'string', 'max:20']]);
@@ -82,7 +82,7 @@ class SecurityController extends Controller
         }
         $twoFactor->disable($request->user());
 
-        return back()->with('success', 'Authenticator app removed. Your next sign-ins use a code sent to your e-mail.');
+        return back()->with('success', 'Authenticator app removed. Two-step sign-in is off until you set it up again.');
     }
 
     public function regenerate(Request $request, TwoFactor $twoFactor): RedirectResponse

@@ -12,6 +12,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import StoreLayout from '@/Layouts/StoreLayout';
 import { installPrefetch } from '@/lib/prefetch';
+import { setActiveLocale } from '@/hooks/useT';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Zovita';
 const pages = import.meta.glob('./Pages/**/*.jsx');
@@ -30,6 +31,7 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props }) {
+        setActiveLocale(props.initialPage.props.locale?.code);
         // Server-rendered HTML (INERTIA_SSR_ENABLED) is hydrated; otherwise render from scratch.
         if (el.hasChildNodes()) {
             hydrateRoot(el, <App {...props} />);

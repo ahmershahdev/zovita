@@ -22,6 +22,8 @@ class SecurityTest extends TestCase
         $this->assertStringNotContainsString("'unsafe-eval'", $csp);
         $this->assertStringContainsString("object-src 'none'", $csp);
         $this->assertStringContainsString("frame-ancestors 'self'", $csp);
+        // The reCAPTCHA widget fetches from google.com; without it the checkbox never appears.
+        $this->assertMatchesRegularExpression('#connect-src [^;]*https://www\.google\.com/recaptcha/#', $csp);
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('Cross-Origin-Opener-Policy', 'same-origin');
     }
