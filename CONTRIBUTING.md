@@ -27,7 +27,7 @@ The repository has a single branch, `main`. Commit and push to it directly; ther
 
 | Ruleset | What it does |
 | --- | --- |
-| `main · integrity` | `main` can't be deleted or force-pushed |
+| `main · integrity` | `main` can't be deleted or force-pushed, and every commit must be signed (GPG key registered on GitHub) |
 | `main · linear history` | no merge commits on `main` (rebase instead: `git pull --rebase`) |
 | `single branch · no other branches` | no other branch can be created on GitHub |
 | `release tags` | `v*` tags can't be moved or deleted |
