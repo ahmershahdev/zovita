@@ -19,7 +19,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 <img src=".github/assets/home.jpg" alt="Zovita+ home page with a 3D pill hero" width="100%">
 
-**Live:** [zovita.ahmershah.dev](https://zovita.ahmershah.dev)
+**Run it locally in about five minutes:** [Getting started](#getting-started) · no API keys needed
 
 </div>
 
@@ -103,7 +103,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
   | E-mail | When |
   |---|---|
   | Welcome + **confirm your e-mail** | Sign-up, and after changing the e-mail address (signed link, **expires in 10 minutes**, resend button on the account page) |
-  | **Sign-in code** | E-mail-code sign-in and staff second step (6 digits from a CSPRNG, stored only as an HMAC under a unique index, 10 minutes, single use, 5 tries, one per minute) |
+  | **Sign-in code** | Passwordless "e-mail me a code" sign-in and customer two-step sign-in (6 digits from a CSPRNG, stored only as an HMAC under a unique index, 10 minutes, single use, 5 tries, one per minute) |
   | **Password reset** | "Forgot password?" (64 random characters, stored hashed, single use, **expires in 10 minutes**) |
   | **New sign-in alert** | A sign-in from an IP not seen on the account in 90 days |
   | Order confirmed / **status updates** / **refund issued** | Checkout (COD) or payment webhook (card), every status change, every refund |
@@ -151,7 +151,9 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ### Languages
 - **English and اردو (Urdu)**: a full right-to-left layout and Noto Nastaliq Urdu.
-- A 621-entry dictionary, switched instantly with no reload. `hreflang` alternates are in the sitemap and `<head>`.
+- A 1,460-entry dictionary covering the storefront, policies, FAQ, checkout, the admin panel and error pages, switched instantly with no reload; live values (counts, prices, names) go through placeholders, and dates use Urdu month names.
+- Every font stack falls back to Nastaliq, headlines get Nastaliq-sized line height, and catalogue data (product names, manufacturer descriptions) stays as published.
+- `hreflang` alternates are in the sitemap and `<head>`.
 
 ### Speed
 - **Server-side rendering** (Inertia SSR, `npm run build:ssr` + `php artisan inertia:start-ssr`): every storefront page arrives as full HTML and hydrates without a mismatch. The head (title, meta, JSON-LD) stays server-rendered by Blade, so there are no duplicate tags.
@@ -339,7 +341,7 @@ Also: `experiment_events` and `experiment_assignments` (A/B), `webhook_events` (
 | **Enumeration** | Password reset, login and order tracking return identical responses whether or not the account or order exists. |
 | **Uploads** | MIME and extension allow-list, size cap, UUID file names, private disk, streamed to admins only. |
 | **Abuse by banned users** | Temporary, permanent and deep bans matched on canonical email, phone, device cookie, browser fingerprint, IP and network. |
-| **Admin exposure** | 404 for non-staff, separate login, **mandatory second step** (e-mailed 10-minute single-use code, or replay-proof TOTP with hashed single-use recovery codes; five wrong codes restart the sign-in), **role permissions** on every route, idle timeout, every admin action written to the activity log. |
+| **Admin exposure** | 404 for non-staff, separate login, **optional authenticator-app second step** each staff member turns on from My security (replay-proof TOTP, hashed single-use recovery codes; five wrong codes restart the sign-in), **role permissions** on every route, idle timeout, every admin action written to the activity log. |
 | **Payments** | Amounts computed on the server; webhooks verified with HMAC-SHA256 (`t=…,v1=…`, constant-time compare, 5-minute replay window); every event id stored once; amount and currency must match; order and payment rows locked for every state change; idempotency keys on gateway calls; refunds capped at what was captured. |
 | **Malicious uploads** | Prescriptions and avatars are streamed to **ClamAV** (`clamd` INSTREAM over TCP or a Unix socket) before they are stored; an unreachable scanner refuses the upload unless explicitly configured to fail open. |
 | **Multi-server abuse controls** | Rate-limit counters (`CACHE_LIMITER_STORE`) and ban look-ups (`BAN_CACHE_STORE`) live in a shared store (**Redis** in production); issuing or lifting a ban bumps a version key so every server stops trusting cached answers at once, and cached hits are re-checked so an expired ban is never enforced. |
@@ -355,9 +357,9 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
   - Site-wide: `Pharmacy`/`OnlineStore` and `WebSite` with `SearchAction`.
   - Per page: `Product` (offers, availability, brand), `BreadcrumbList`, `FAQPage`, `ItemList` and `ContactPage`.
 - **One `<h1>` per page** with a logical heading outline.
-- **[`/sitemap.xml`](https://zovita.ahmershah.dev/sitemap.xml)** lists every product, department, category, brand and page, with `lastmod` and language alternates.
-- **[`/robots.txt`](https://zovita.ahmershah.dev/robots.txt)** allows search engines and named AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended…) and keeps them out of the bag, checkout, account and admin areas.
-- **[`/llms.txt`](https://zovita.ahmershah.dev/llms.txt)** is a concise guide to the site for AI agents. **[`/llms-full.txt`](https://zovita.ahmershah.dev/llms-full.txt)** adds the full FAQ, policies, departments and how ordering works.
+- **`/sitemap.xml`** lists every product, department, category, brand and page, with `lastmod` and language alternates.
+- **`/robots.txt`** allows search engines and named AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended…) and keeps them out of the bag, checkout, account and admin areas.
+- **`/llms.txt`** is a concise guide to the site for AI agents. **`/llms-full.txt`** adds the full FAQ, policies, departments and how ordering works.
 - Private pages (bag, checkout, account, auth) are `noindex`.
 
 ## Testing & results
@@ -382,21 +384,58 @@ node tests/load/run.mjs abuse http://localhost/zovita
 
 ## Getting started
 
-**Requirements:** PHP 8.2+ (`pdo_mysql`, `mbstring`, `gd`, `fileinfo`), Composer, Node 20+ and MySQL/MariaDB. XAMPP works.
+### 1. Requirements
+
+| Tool | Version | Notes |
+| --- | --- | --- |
+| PHP | 8.2+ | extensions `pdo_mysql`, `mbstring`, `gd` (with WebP), `fileinfo` |
+| Composer | 2.x | |
+| Node.js | 20+ (22 used in CI) | npm comes with it |
+| MySQL / MariaDB | 8.0+ / 10.6+ | XAMPP's MariaDB works |
+
+### 2. Install
 
 ```bash
-git clone https://github.com/ahmershahdev/zovita.git && cd zovita
-composer install && npm install
-cp .env.example .env && php artisan key:generate
-
-# create an empty database called "zovita", then:
-php artisan migrate --seed          # catalogue, demo customer, admin account
-php artisan storage:link
-php artisan catalog:cache-images    # download product images as responsive WebP
-
-npm run build                       # or `npm run dev` for hot reload
-php artisan serve                   # → http://127.0.0.1:8000
+git clone https://github.com/ahmershahdev/zovita.git
+cd zovita
+composer install
+npm install
+cp .env.example .env          # Windows PowerShell: copy .env.example .env
+php artisan key:generate
 ```
+
+### 3. Database
+
+Create an empty database called `zovita` (utf8mb4), e.g. in phpMyAdmin or:
+
+```bash
+mysql -u root -e "CREATE DATABASE zovita CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+```
+
+Set `DB_USERNAME` / `DB_PASSWORD` in `.env` if yours aren't `root` with no password, then:
+
+```bash
+php artisan migrate --seed       # 1,186 products, demo customer, three staff accounts
+php artisan storage:link         # public/storage → storage/app/public (product images, avatars)
+php artisan catalog:cache-images # downloads product photos as WebP (a few minutes; products without one stay hidden)
+```
+
+### 4. Build and run
+
+Choose one:
+
+**A. Built-in server**
+
+```bash
+npm run build
+php artisan serve                # http://127.0.0.1:8000  (APP_URL=http://127.0.0.1:8000)
+```
+
+Use `npm run dev` instead of `npm run build` for hot reload while you work on the frontend.
+
+**B. XAMPP / Apache**: clone into `htdocs/zovita`, set `APP_URL=http://localhost/zovita`, run `npm run build`, and open http://localhost/zovita. The root `.htaccess` routes requests into `public/`. Don't run `php artisan route:cache` under a subfolder install (the prefix breaks compiled routes); it's fine when the document root is `public/`, as in production.
+
+### 5. Sign in
 
 | Account | Sign in at | Email | Password |
 |---|---|---|---|
@@ -405,20 +444,40 @@ php artisan serve                   # → http://127.0.0.1:8000
 | Support | `/admin/login` | `support@zovita.com` | `Support@1234` |
 | Demo customer | `/login` | `demo@zovita.pk` | `password` |
 
-Staff sign in with just their e-mail and password, so the seeded demo accounts work out of the box. After signing in, open **My security** in the panel to turn on two-step sign-in with an authenticator app; from then on that account also needs the app's code.
+Staff sign in with just their e-mail and password, so the seeded accounts work out of the box. After signing in, open **My security** in the panel to turn on two-step sign-in with an authenticator app; from then on that account also needs the app's code.
 
 > **Change the staff passwords before going live.** Use `php artisan user:admin you@example.com --role=owner` to promote your own account, then `php artisan user:admin admin@zovita.com --revoke` (or delete it).
 
-**XAMPP:** clone into `htdocs/zovita` and set `APP_URL=http://localhost/zovita`. The root `.htaccess` routes requests into `public/`. Don't run `php artisan route:cache` under a subfolder install: the subfolder prefix breaks the compiled routes. It works normally when the document root is `public/`, as in production.
+### 6. Optional services
+
+Everything works locally without third-party keys: e-mails go to `storage/logs/laravel.log`, reCAPTCHA is off while its keys are blank, card payments use the built-in sandbox gateway, and uploads skip virus scanning.
+
+| To enable | Set in `.env` |
+| --- | --- |
+| Real e-mail | `MAIL_MAILER=resend`, `RESEND_API_KEY`, and a `MAIL_FROM_ADDRESS` on a domain verified at resend.com/domains |
+| reCAPTCHA | v3 and v2 site + secret keys; add `localhost` (and your domain) to each key's allowed domains in the reCAPTCHA admin console |
+| Stripe | `PAYMENTS_DRIVER=stripe`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` (see [Environment](#environment)) |
+| Background work | `php artisan schedule:work` (prescription auto-accept, payment expiry, refill reminders); with `QUEUE_CONNECTION=database`, also `php artisan queue:work` |
+
+### Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| Blank page or a Vite manifest error | Run `npm run build` (or keep `npm run dev` running). |
+| Shop shows no products | Run `php artisan catalog:cache-images`, then `php artisan cache:clear`; products without a photo are hidden. |
+| E-mails never arrive | `storage/logs/laravel.log` shows the Resend error; usually the from-domain isn't verified. |
+| reCAPTCHA missing, or "Invalid domain for site key" | Add the host you're browsing on to the key's domain list, or leave the keys blank locally. |
+| Images 404 under XAMPP | Re-run `php artisan storage:link` and check `APP_URL` matches the address bar. |
+| Changed `.env` but nothing happens | `php artisan config:clear` |
 
 ### Environment
 
 | Key | Purpose |
 | --- | --- |
-| `APP_URL`, `ZOVITA_SITE_URL` | Local URL and the public canonical URL used in sitemaps, canonicals and llms files (`https://zovita.ahmershah.dev`). |
-| `MAIL_MAILER=resend`, `RESEND_API_KEY`, `MAIL_FROM_ADDRESS` | Email through Resend (`log` writes to `storage/logs`). |
+| `APP_URL`, `ZOVITA_SITE_URL` | Local URL, and the public canonical URL used in sitemaps, canonicals and the llms files (set it to your own domain when you deploy). |
+| `MAIL_MAILER=resend`, `RESEND_API_KEY`, `MAIL_FROM_ADDRESS` | Email through Resend (`log` writes to `storage/logs`). The from-address must be on a domain verified in Resend, or every e-mail is rejected. |
 | `RECAPTCHA_V3_SITE_KEY` / `_SECRET_KEY`, `RECAPTCHA_V3_MIN_SCORE` | Invisible reCAPTCHA. |
-| `RECAPTCHA_V2_SITE_KEY` / `_SECRET_KEY` | Checkbox reCAPTCHA (`.env.example` ships Google's always-pass test keys). |
+| `RECAPTCHA_V2_SITE_KEY` / `_SECRET_KEY` | Checkbox reCAPTCHA. Leave either version's keys blank and that version is simply switched off. |
 | `RECAPTCHA_ENABLED` | `false` disables both (used by the e2e server). |
 | `RATE_LIMIT_ALLOWLIST` | Comma-separated IPs that skip the site-wide budget (health checks, load tests). |
 | `ZOVITA_SUPPORT_PHONE`, `ZOVITA_SUPPORT_EMAIL`, `ZOVITA_ADMIN_EMAIL` | Contact details and where team notifications go. |
