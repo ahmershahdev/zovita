@@ -75,7 +75,7 @@ export default function About({ stats }) {
                         </>
                     }
                 />
-                <div className="mt-14 grid gap-5 md:grid-cols-2" data-stagger>
+                <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2" data-stagger>
                     {values.map(([icon, title, body], i) => (
                         <article key={title} className="flex flex-col justify-between gap-12 rounded-4xl bg-card p-8 md:p-10">
                             <div className="flex items-center justify-between">

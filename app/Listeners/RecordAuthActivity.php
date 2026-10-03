@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Models\User;
+use App\Services\Mail\AccountNotices;
 use App\Services\Security\ActivityLog;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -31,5 +32,6 @@ class RecordAuthActivity
         }
         ActivityLog::record('auth.login', 'Signed in', $user);
         $user->forceFill(['last_login_ip' => request()->ip(), 'last_login_at' => now()])->saveQuietly();
+        app(AccountNotices::class)->signIn($user); // e-mail alert for a sign-in from a new place
     }
 }

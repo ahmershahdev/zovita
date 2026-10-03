@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useRef } from 'react';
 import CartSummary from '@/Components/product/CartSummary';
+import InteractionWarnings from '@/Components/product/InteractionWarnings';
 import ProductImage from '@/Components/product/ProductImage';
 import QuantityStepper from '@/Components/product/QuantityStepper';
 import Badge from '@/Components/ui/Badge';
@@ -10,6 +11,7 @@ import Icon from '@/Components/ui/Icon';
 import { collapse, photoIn, transfer } from '@/lib/fly';
 import { money } from '@/lib/format';
 import Breadcrumbs from '@/Components/ui/Breadcrumbs';
+import useT from '@/hooks/useT';
 
 export default function CartIndex({ cart, alternatives = {} }) {
     const update = (line, quantity) =>
@@ -52,12 +54,15 @@ export default function CartIndex({ cart, alternatives = {} }) {
                     />
                 </div>
             ) : (
-                <div className="mt-12 grid gap-10 lg:grid-cols-12">
-                    <ul className="divide-y divide-line border-y border-line lg:col-span-8">
+                <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12">
+                    <div className="min-w-0 space-y-8 lg:col-span-8">
+                    <InteractionWarnings warnings={cart.warnings} />
+                    <ul className="divide-y divide-line border-y border-line">
                         {cart.lines.map((line) => (
                             <BagLine key={line.id} line={line} alternatives={alternatives[line.id]} onUpdate={update} onRemove={remove} onSave={saveForLater} />
                         ))}
                     </ul>
+                    </div>
 
                     <aside className="lg:col-span-4">
                         <div className="lg:sticky lg:top-24">
@@ -117,6 +122,7 @@ function Substitutes({ line, options }) {
 }
 
 function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
+    const t = useT();
     const row = useRef(null);
 
     return (
@@ -132,7 +138,7 @@ function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
                             {line.name}
                         </Link>
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-mute">
-                            {money(line.current_price, { precise: true })} each
+                            {t(':price each', { price: money(line.current_price, { precise: true }) })}
                             {line.requires_prescription && <Badge tone="ink">Rx</Badge>}
                             {!line.in_stock && <Badge tone="coral">Out of stock</Badge>}
                         </div>
@@ -151,7 +157,7 @@ function BagLine({ line, alternatives, onUpdate, onRemove, onSave }) {
                             type="button"
                             onClick={() => onRemove(line, row.current)}
                             className="grid size-9 place-items-center rounded-full text-ink-mute transition hover:bg-coral hover:text-white"
-                            aria-label={`Remove ${line.name}`}
+                            aria-label={t('Remove :name', { name: line.name })}
                         >
                             <Icon name="close" size={16} />
                         </button>

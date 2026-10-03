@@ -5,7 +5,7 @@
 # Zovita+
 
 **Care, delivered with calm.**
-An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symptom body map, a guided assistant, a store that adapts to each shopper, pharmacist-reviewed prescriptions, English and Urdu, and cash on delivery.
+An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symptom body map, a guided assistant, a store that adapts to each shopper, drug-interaction warnings, refill reminders, pharmacist-reviewed prescriptions, English and Urdu, and card payments or cash on delivery. Staff work in a role-based admin panel with optional authenticator-app two-step sign-in.
 
 [![CI](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmershahdev/zovita/actions/workflows/ci.yml)
 ![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-0b1b33?logo=php&logoColor=white)
@@ -65,6 +65,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
   - Stable crc32 bucketing per visitor.
   - De-duplicated exposure and conversion events.
   - Results are shown in the admin panel.
+  - **Variants stick through sign-in**: the variant a guest saw is stored and carried into their account, unless the account already has one (another device), so nobody switches buckets or is counted twice.
 
 ### Guided assistant
 - A chat panel with **no free-text box**. The shopper picks from preset questions, so there are no prompt injections, no hallucinated medical advice and no PII typed into a bot.
@@ -72,11 +73,21 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ### Ordering
 - Session bag with prices re-read from the database, a free-delivery threshold and per-order caps.
+- **Drug-interaction warnings** in the bag and at checkout, built from the active ingredients stored on every product (`generics`):
+  - Ingredients are matched to drug classes (NSAIDs, blood thinners, SSRIs, nitrates, macrolides/azoles, statins, minerals and more) by tolerant patterns, so the catalogue's own spellings ("Domeperidone Maleate") still match.
+  - 24 conservative, well-established rules in `resources/content/interactions.json`: two paracetamol products, blood thinner + NSAID, sildenafil + nitrate, SSRI + tramadol, quinolone + antacid/iron, domperidone + clarithromycin and others, each with what to do.
+  - Creams, shampoos, eye drops and other topical forms are ignored, so a ketoconazole shampoo never warns about a statin.
+  - A **serious** warning must be acknowledged before the order goes through; the warnings are stored on the order for the pharmacist.
+- **Card payments** alongside cash on delivery (Stripe Checkout in production, a built-in sandbox gateway locally):
+  - The order is created "awaiting payment" with its stock reserved for 30 minutes; only a **signed, fresh, never-seen-before webhook** with the right amount and currency marks it paid. The return page never does.
+  - Unpaid orders are cancelled and restocked by `payments:expire`, with their offers released. Money that arrives after that is **refunded automatically**.
+  - Owners refund part or all of an order from the admin panel; refunds can never exceed what was captured, and cancelling a paid order refunds the card.
 - **Cash-on-delivery checkout:**
   - Stock is decremented under `SELECT … FOR UPDATE` row locks, so two shoppers can never buy the last unit twice.
   - A per-checkout idempotency token stops double submits.
 - Prescription upload is required when the bag has Rx medicine. Files are private and never web-accessible.
 - Order tracking by number plus email, and order history for customers.
+- **Refill reminders** for medicines bought again and again: the "buys it regularly" signal picks candidates, the customer's real order dates give the rhythm (median gap, 7–120 days), and an e-mail goes out 3 days before they run out, **once per purchase cycle**, with a signed one-tap "put it back in my bag" link. Customers see "Refills due" on their account and can switch the e-mails off.
 
 ### Accounts
 - Register, sign in and password reset.
@@ -85,11 +96,23 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
   - Address with an **OpenStreetMap picker**: drag the pin, search an address or use your location.
 - Every account gets a **readable random username** (e.g. `calm-heron-4821`). Only an admin can change it.
 - Recent sign-ins (device, browser, approximate place) on the security tab.
+- Optional **two-step sign-in** with any authenticator app (TOTP, RFC 6238), eight single-use recovery codes, and replay protection: a code can't be used twice.
+- **Passwordless "e-mail me a code" sign-in**: a 6-digit code that works once and expires in 10 minutes; the screen looks the same whether or not the address has an account (no enumeration), and accounts with an authenticator still need its code afterwards.
+- **E-mail automation** (all on one branded template, sent through Resend):
+
+  | E-mail | When |
+  |---|---|
+  | Welcome + **confirm your e-mail** | Sign-up, and after changing the e-mail address (signed link, **expires in 10 minutes**, resend button on the account page) |
+  | **Sign-in code** | E-mail-code sign-in and staff second step (6 digits from a CSPRNG, stored only as an HMAC under a unique index, 10 minutes, single use, 5 tries, one per minute) |
+  | **Password reset** | "Forgot password?" (64 random characters, stored hashed, single use, **expires in 10 minutes**) |
+  | **New sign-in alert** | A sign-in from an IP not seen on the account in 90 days |
+  | Order confirmed / **status updates** / **refund issued** | Checkout (COD) or payment webhook (card), every status change, every refund |
+  | Prescription received / decision, refill reminders | As before |
 - Guest wishlist and activity merge into the account on sign-in.
 
 ### Admin panel (`/admin`, separate staff login)
 - **Hidden and gated:**
-  - Its own sign-in at `/admin/login`.
+  - Its own sign-in at `/admin/login` with e-mail and password. Once a staff member turns on an authenticator app from **My security** in the panel, every later sign-in also asks for its 6-digit code (recovery codes cover a lost phone). A session that didn't come through the staff sign-in (a customer session, a remember-me cookie) is refused.
   - Every admin URL returns **404** to anyone who isn't staff.
   - Sessions sign out after 30 minutes idle.
   - Staff login is throttled for 15 minutes after failures.
@@ -115,13 +138,23 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
   - Email matching is canonical: Gmail dots and `+aliases` are folded, so `j.o.h.n+1@gmail.com` = `john@gmail.com`.
   - A banned person who signs in sees a calm "account suspended" page with the reason and end date.
-- Orders (status workflow) and products (stock and price at a glance).
+- Orders (status workflow, card payment and refunds) and products (stock and price at a glance).
+- **Staff roles**, enforced on every admin route and reflected in the sidebar:
+
+  | Role | Can |
+  |---|---|
+  | **Owner** | Everything, including refunds, bans and managing staff |
+  | **Pharmacist** | Prescriptions, stock and prices, moving orders along |
+  | **Support** | Orders, customer profiles and usernames (no refunds, no bans) |
+
+  The owner adds staff by e-mail, changes roles, removes access and resets a lost phone's two-step sign-in. The last owner can never be demoted.
 
 ### Languages
 - **English and اردو (Urdu)**: a full right-to-left layout and Noto Nastaliq Urdu.
-- A 550-entry dictionary, switched instantly with no reload. `hreflang` alternates are in the sitemap and `<head>`.
+- A 621-entry dictionary, switched instantly with no reload. `hreflang` alternates are in the sitemap and `<head>`.
 
 ### Speed
+- **Server-side rendering** (Inertia SSR, `npm run build:ssr` + `php artisan inertia:start-ssr`): every storefront page arrives as full HTML and hydrates without a mismatch. The head (title, meta, JSON-LD) stays server-rendered by Blade, so there are no duplicate tags.
 - Inertia SPA: no full page reloads.
 - Hovering a link **prefetches** its data and warms its JS chunk.
 - Long-lived immutable caching for hashed assets, plus Brotli and gzip.
@@ -163,9 +196,9 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 ## Data model
 
-17 domain tables and 22 foreign keys, grouped into catalogue, commerce, customers, personalisation, security and inbox. Every column is shown, generated from the live MySQL schema.
+22 domain tables and 27 foreign keys, grouped into catalogue, orders and payments, customers and staff, personalisation (refills and A/B included), security and inbox. Every column is shown, generated from the live MySQL schema.
 
-<img src=".github/assets/erd.png" alt="Zovita+ entity relationship diagram: all 17 domain tables with their columns, keys and foreign-key relationships" width="100%">
+<img src=".github/assets/erd.png" alt="Zovita+ entity relationship diagram: all 22 domain tables with their columns, keys and foreign-key relationships" width="100%">
 
 <details>
 <summary><b>Simplified relationship view (Mermaid)</b></summary>
@@ -191,12 +224,19 @@ erDiagram
     PRODUCTS ||--o{ OFFERS : "discounted by"
     ORDERS ||--o{ OFFERS : redeems
     BANS ||--|{ BAN_IDENTIFIERS : blocks
+    ORDERS ||--o{ PAYMENTS : "paid by"
+    PAYMENTS ||--o{ REFUNDS : "refunded by"
+    USERS ||--o{ REFILL_REMINDERS : "reminded about"
+    PRODUCTS ||--o{ REFILL_REMINDERS : "refill of"
 
     USERS {
         bigint id PK
         string username UK "random, admin-editable"
         string email UK
         bool is_admin
+        string role "owner / pharmacist / support"
+        text two_factor_secret "encrypted"
+        bool refill_reminders
         string phone
         string address
         decimal lat
@@ -220,6 +260,26 @@ erDiagram
         string status
         decimal offer_discount
         decimal total
+        string payment_status "unpaid / pending / paid / refunded"
+        json interaction_warnings
+    }
+    PAYMENTS {
+        bigint id PK
+        string reference UK "gateway session"
+        string status
+        decimal amount
+        decimal refunded_amount
+    }
+    REFUNDS {
+        bigint id PK
+        decimal amount
+        string reason
+    }
+    REFILL_REMINDERS {
+        datetime last_purchased_at "unique per cycle"
+        datetime due_at
+        int interval_days
+        timestamp sent_at
     }
     PRESCRIPTIONS {
         bigint id PK
@@ -263,7 +323,7 @@ erDiagram
 
 </details>
 
-Also: `experiment_events` (A/B exposures and conversions), `contact_messages`, `newsletter_subscribers`, plus Laravel's `sessions`, `cache` and `jobs`.
+Also: `experiment_events` and `experiment_assignments` (A/B), `webhook_events` (each gateway event applied once), `contact_messages`, `newsletter_subscribers`, plus Laravel's `sessions`, `cache` and `jobs`.
 
 ## Security
 
@@ -279,7 +339,10 @@ Also: `experiment_events` (A/B exposures and conversions), `contact_messages`, `
 | **Enumeration** | Password reset, login and order tracking return identical responses whether or not the account or order exists. |
 | **Uploads** | MIME and extension allow-list, size cap, UUID file names, private disk, streamed to admins only. |
 | **Abuse by banned users** | Temporary, permanent and deep bans matched on canonical email, phone, device cookie, browser fingerprint, IP and network. |
-| **Admin exposure** | 404 for non-staff, separate login, idle timeout, every admin action written to the activity log. |
+| **Admin exposure** | 404 for non-staff, separate login, **mandatory second step** (e-mailed 10-minute single-use code, or replay-proof TOTP with hashed single-use recovery codes; five wrong codes restart the sign-in), **role permissions** on every route, idle timeout, every admin action written to the activity log. |
+| **Payments** | Amounts computed on the server; webhooks verified with HMAC-SHA256 (`t=…,v1=…`, constant-time compare, 5-minute replay window); every event id stored once; amount and currency must match; order and payment rows locked for every state change; idempotency keys on gateway calls; refunds capped at what was captured. |
+| **Malicious uploads** | Prescriptions and avatars are streamed to **ClamAV** (`clamd` INSTREAM over TCP or a Unix socket) before they are stored; an unreachable scanner refuses the upload unless explicitly configured to fail open. |
+| **Multi-server abuse controls** | Rate-limit counters (`CACHE_LIMITER_STORE`) and ban look-ups (`BAN_CACHE_STORE`) live in a shared store (**Redis** in production); issuing or lifting a ban bumps a version key so every server stops trusting cached answers at once, and cached hits are re-checked so an expired ban is never enforced. |
 
 **Scaling.** The app is stateless (sessions, cache and queue in the database, or Redis in production), so it runs behind any load balancer. `deploy/nginx.conf` ships an upstream with health checks, edge rate limiting and static caching. `deploy/supervisor.conf` runs queue workers and the scheduler. `TrustProxies` is configured so client IPs survive the balancer.
 
@@ -301,10 +364,12 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 | Suite | What it covers | Result |
 |---|---|---|
-| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B, admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs | **96 passed** (673 assertions) |
-| **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review, admin pages on a phone | **51 passed** |
+| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **145 passed** (973 assertions) |
+| **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review with two-step sign-in, admin pages on a phone, interaction warning + acknowledgement, card payment through the sandbox gateway, retrying a cancelled payment, staff pages | **56 passed** |
 | **Lighthouse 13** | Home, shop, product, body map, FAQ, contact, policies, login, register, prescription, about | **Accessibility 100 · Best Practices 100 · SEO 100** (bag/checkout are `noindex` by design) |
 | **Load** (`node tests/load/run.mjs capacity`) | On a single XAMPP dev box (database sessions): shop and product pages about 32 req/s at p50 about 700 ms; FAQ about 55 req/s; static images about 830 req/s at 11 ms | No errors |
+| **Responsive sweep** | Every storefront, account, checkout, payment and admin page at 320, 375, 414, 768, 1024, 1280 and 1920 px (259 page × width combinations) | **No sideways scroll** |
+| **SSR hydration** | 15 storefront pages, desktop and phone, rendered by the SSR server and hydrated in Chrome | **No hydration errors** |
 | **Abuse** (`node tests/load/run.mjs abuse`) | 25 connections flooding `/shop` from one client for 20 s | 293 served, then **429 for the rest**, with no 5xx |
 
 ```bash
@@ -335,10 +400,14 @@ php artisan serve                   # → http://127.0.0.1:8000
 
 | Account | Sign in at | Email | Password |
 |---|---|---|---|
-| Admin | `/admin/login` | `admin@zovita.com` | `Admin@1234` |
+| Owner (admin) | `/admin/login` | `admin@zovita.com` | `Admin@1234` |
+| Pharmacist | `/admin/login` | `pharmacist@zovita.com` | `Pharma@1234` |
+| Support | `/admin/login` | `support@zovita.com` | `Support@1234` |
 | Demo customer | `/login` | `demo@zovita.pk` | `password` |
 
-> **Change the admin password before going live.** Use `php artisan user:admin you@example.com` to promote your own account, then `php artisan user:admin admin@zovita.com --revoke` (or delete it).
+Staff sign in with just their e-mail and password, so the seeded demo accounts work out of the box. After signing in, open **My security** in the panel to turn on two-step sign-in with an authenticator app; from then on that account also needs the app's code.
+
+> **Change the staff passwords before going live.** Use `php artisan user:admin you@example.com --role=owner` to promote your own account, then `php artisan user:admin admin@zovita.com --revoke` (or delete it).
 
 **XAMPP:** clone into `htdocs/zovita` and set `APP_URL=http://localhost/zovita`. The root `.htaccess` routes requests into `public/`. Don't run `php artisan route:cache` under a subfolder install: the subfolder prefix breaks the compiled routes. It works normally when the document root is `public/`, as in production.
 
@@ -355,12 +424,21 @@ php artisan serve                   # → http://127.0.0.1:8000
 | `ZOVITA_SUPPORT_PHONE`, `ZOVITA_SUPPORT_EMAIL`, `ZOVITA_ADMIN_EMAIL` | Contact details and where team notifications go. |
 | `ZOVITA_DELIVERY_FEE`, `ZOVITA_FREE_DELIVERY_OVER` | Delivery pricing. |
 | `QUEUE_CONNECTION` | `sync` locally; `database` or `redis` with workers in production. |
+| `PASSWORD_RESET_EXPIRE` | Minutes a password-reset link lives (default 10). |
+| `PAYMENTS_DRIVER`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`, `PAYMENTS_EXPIRES_MINUTES` | `sandbox` (local test gateway, refused in production), `stripe` or `none`. Stripe webhook: `POST /webhooks/payments/stripe` with `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_failed`, `charge.refunded`. |
+| `MALWARE_SCANNER`, `CLAMAV_SOCKET` / `CLAMAV_HOST` / `CLAMAV_PORT`, `MALWARE_SCAN_FAIL_OPEN` | `clamav` streams uploads to clamd; `none` locally. |
+| `CACHE_LIMITER_STORE`, `BAN_CACHE_STORE` | Shared store for throttle counters and ban look-ups (`redis` with several servers). |
+| `INERTIA_SSR_ENABLED`, `INERTIA_SSR_URL` | Server-side rendering (off by default; on in `deploy/.env.production.example`). |
 
 ### Useful commands
 
 ```bash
 php artisan prescriptions:auto-approve   # accept prescriptions pending > 24 h (scheduled every 10 min)
-php artisan user:admin <email> [--revoke] # grant or remove staff access
+php artisan payments:expire              # cancel + restock unpaid card orders (scheduled every 5 min)
+php artisan refills:remind               # refill reminder e-mails (scheduled daily 09:00 PKT)
+php artisan user:admin <email> --role=owner|pharmacist|support [--revoke] [--reset-2fa]
+npm run build:ssr                        # ziggy routes + client build + SSR bundle (bootstrap/ssr)
+php artisan inertia:start-ssr            # run the SSR server
 php artisan catalog:import               # upsert the catalogue from database/data/catalog.json
 php artisan catalog:cache-images         # download missing images, replace placeholders (--force rebuilds all)
 node tools/bodymap/build-body.mjs        # rebuild the 3D body mesh
@@ -371,33 +449,37 @@ node tools/bodymap/build-body.mjs        # rebuild the 3D body mesh
 
 1. Document root → `public/`. Use `deploy/nginx.conf` (upstream pool, `limit_req`/`limit_conn`, Brotli/gzip, immutable asset caching) or Apache with `public/.htaccess`.
 2. Copy `deploy/.env.production.example` to `.env`: `APP_ENV=production`, `APP_DEBUG=false`, HTTPS, Redis for cache, sessions and queue.
-3. `composer install --no-dev -o && npm ci && npm run build && php artisan migrate --force && php artisan optimize`
-4. Run `deploy/supervisor.conf` (queue workers) and a cron entry for `php artisan schedule:run` every minute (it runs the 24 h prescription auto-accept).
-5. Behind a load balancer, set the trusted proxy range so rate limits and bans see real client IPs.
+3. `composer install --no-dev -o && npm ci && npm run build:ssr && php artisan migrate --force && php artisan optimize`
+4. Run `deploy/supervisor.conf` (queue workers, the scheduler and the SSR server). The scheduler runs the 24 h prescription auto-accept, card-payment expiry and refill reminders.
+5. Run ClamAV's `clamd` and point `CLAMAV_SOCKET` at it; set the Stripe keys and add the webhook endpoint.
+6. Behind a load balancer, set the trusted proxy range so rate limits and bans see real client IPs, and keep `CACHE_LIMITER_STORE` / `BAN_CACHE_STORE` on Redis.
 
 ## Architecture
 
 ```
 app/
-├─ Actions/              PlaceOrder (locks + offers), StorePrescription, ReviewPrescription
-├─ Console/Commands/     catalog:*, prescriptions:auto-approve, user:admin
+├─ Actions/              PlaceOrder (locks, offers, interaction check), StorePrescription, ReviewPrescription
+├─ Console/Commands/     catalog:*, prescriptions:auto-approve, payments:expire, refills:remind, user:admin
+├─ Enums/                OrderStatus, PrescriptionStatus, StaffRole (permissions per role)
 ├─ Http/
 │  ├─ Controllers/       Storefront/ · Pages/ · Auth/ · Account/ · Admin/   (thin)
-│  ├─ Middleware/        RequestGuard, SecurityHeaders (nonce CSP), EnsureAdmin,
+│  ├─ Middleware/        RequestGuard, SecurityHeaders (nonce CSP), EnsureAdmin (staff session + optional two-step), EnsureStaffCan,
 │  │                     EnsureNotBanned, SetLocale, HandleInertiaRequests
 │  └─ Requests/          validation, reCAPTCHA and ban checks, grouped by area
 ├─ Listeners/            sign-in activity, guest → account merge
 ├─ Models/               Product, Order, Prescription, Offer, Ban, UserActivity, …
 ├─ Services/
-│  ├─ Personalization/   Visitor, Interactions, OfferEngine, Pricing, Recommender
+│  ├─ Payments/          PaymentService (webhooks, expiry, refunds), StripeGateway, SandboxGateway
+│  ├─ Personalization/   Visitor, Interactions, OfferEngine, Pricing, Recommender, Refills
 │  ├─ Assistant/         preset intents → personal answers
 │  ├─ Experiments/       A/B bucketing + events
-│  ├─ Security/          BanGuard, ActivityLog
-│  └─ Cart · Catalog · Mail · Wishlist
+│  ├─ Security/          BanGuard (shared cache), ActivityLog, TwoFactor, LoginCodes, PendingLogin, MalwareScanner
+│  └─ Cart · Catalog (InteractionChecker) · Mail (AccountNotices) · Wishlist
 └─ Support/              Seo, CatalogCache, Username, UserAgent, Content
 resources/
-├─ content/              FAQ + policies (shared by pages, JSON-LD and llms-full.txt)
+├─ content/              FAQ + policies (pages, JSON-LD, llms-full.txt), interactions.json (drug rules)
 ├─ js/
+│  ├─ ssr.jsx            server-side rendering entry (body only; Blade owns the head)
 │  ├─ Pages/             one Inertia page per file (Admin/ included)
 │  ├─ Components/        layout/ · ui/ · product/ · motion/ · three/ · forms/ · admin/
 │  ├─ Layouts/           StoreLayout (persistent), AdminLayout
@@ -410,30 +492,26 @@ deploy/                  nginx, supervisor, production env template
 
 ## Roadmap
 
-**Features**
-- Online payments (card and wallets) alongside cash on delivery, with webhooks and refunds.
-- Refill reminders and subscriptions for chronic medicines, built on the replenishment signal that already exists.
-- Live order tracking with rider location; SMS/WhatsApp order updates.
-- Pharmacist chat handoff from the assistant for questions outside the presets.
-- Drug-interaction warnings in the bag (from `generics`) and dosage calculators for children.
+**Shipped in the last release**
+- ✅ Two-step sign-in (TOTP, or e-mailed codes), opt-in for staff from My security, plus staff roles (owner, pharmacist, support).
+- ✅ E-mail automation: sign-in codes, passwordless sign-in, e-mail confirmation, new-sign-in alerts, order status and refund e-mails, 10-minute password resets.
+- ✅ Card payments alongside cash on delivery, with signed webhooks, automatic expiry and refunds.
+- ✅ Refill reminders built on the "buys it regularly" signal.
+- ✅ Drug-interaction warnings in the bag from the stored active ingredients.
+- ✅ Inertia SSR, Redis-ready rate limits and bans, ClamAV scanning on uploads.
+- ✅ A/B variants that survive sign-in.
+
+**Next ideas**
+- JazzCash / Easypaisa wallets next to Stripe, and Apple / Google Pay.
+- Passkeys (WebAuthn) as a second factor, and per-device "trusted for 30 days".
+- Live order tracking with rider location; SMS/WhatsApp order and refill updates.
+- Pharmacist chat handoff from the assistant; dosage calculators for children.
 - Reviews and Q&A with verified-purchase badges; back-in-stock alerts.
 - An installable PWA with offline bag and push notifications.
-- Admin: CSV export, bulk stock and price edits, staff roles (pharmacist / support / owner) and an audit trail viewer.
-
-**Security**
-- Two-factor sign-in (TOTP / passkeys), mandatory for staff.
-- Redis-backed rate limiting and bans shared across servers; a WAF or Cloudflare in front for volumetric DDoS.
-- Malware scanning (ClamAV) on prescription uploads.
-- Field-level encryption for phone and address at rest; a data-retention job for old prescriptions.
-- Content-Security-Policy reporting endpoint and Subresource Integrity on third-party scripts.
-- Dependency and secret scanning in CI (Dependabot is on; add `composer audit`, `npm audit` and gitleaks gates).
-
-**SEO**
-- Programmatic pages for active ingredients ("Paracetamol: all brands and prices") and conditions.
-- `MedicalWebPage`/`Drug` schema with pharmacist review dates; author pages for E-E-A-T.
-- Image sitemap and `Product` review markup once reviews exist.
-- Urdu-specific URLs (`/ur/...`) instead of a cookie switch, for separate indexing.
-- Core Web Vitals monitoring in production (RUM) and a Lighthouse CI budget on pull requests.
+- Admin: CSV export, bulk stock and price edits, an audit-trail viewer.
+- Field-level encryption for phone and address; a retention job for old prescriptions.
+- CSP reporting endpoint and Subresource Integrity on third-party scripts; `composer audit`, `npm audit` and gitleaks gates in CI.
+- Programmatic pages for active ingredients ("Paracetamol: all brands and prices"), `Drug` schema with review dates, image sitemap, `/ur/...` URLs, RUM Core Web Vitals and a Lighthouse CI budget.
 
 ## Contributing
 

@@ -22,6 +22,9 @@ class SecurityHeaders
 
     private const RECAPTCHA_FRAMES = 'https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/';
 
+    /** reCAPTCHA's widget also fetches from these (e.g. /recaptcha/api2/clr); blocking them hid the checkbox. */
+    private const RECAPTCHA_CONNECT = 'https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/';
+
     private const MAP_FRAMES = 'https://www.openstreetmap.org';
 
     public function handle(Request $request, Closure $next): Response
@@ -55,7 +58,7 @@ class SecurityHeaders
                 "style-src 'self' 'unsafe-inline'",
                 "img-src 'self' data: blob: https://tile.openstreetmap.org",
                 "font-src 'self' data:",
-                "connect-src 'self' https://nominatim.openstreetmap.org",
+                "connect-src 'self' https://nominatim.openstreetmap.org ".self::RECAPTCHA_CONNECT,
                 'frame-src '.self::RECAPTCHA_FRAMES.' '.self::MAP_FRAMES,
                 "worker-src 'self' blob:",
                 "media-src 'self'",

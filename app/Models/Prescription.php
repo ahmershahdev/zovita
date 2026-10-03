@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class Prescription extends Model
 {
-    protected $fillable = ['user_id', 'reference', 'name', 'email', 'phone', 'file_path', 'original_name', 'notes', 'status', 'reviewed_by', 'reviewed_at', 'review_note', 'auto_approved'];
+    protected $fillable = ['user_id', 'reference', 'name', 'email', 'phone', 'file_path', 'original_name', 'scan_status', 'notes', 'status', 'reviewed_by', 'reviewed_at', 'review_note', 'auto_approved'];
 
     /** Undecided prescriptions are approved automatically after this many hours. */
     public const AUTO_APPROVE_HOURS = 24;

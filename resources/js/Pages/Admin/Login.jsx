@@ -7,6 +7,7 @@ import Icon from '@/Components/ui/Icon';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import { useRecaptchaV3 } from '@/hooks/useRecaptcha';
 import { fingerprint } from '@/lib/fingerprint';
+import { LocaleSync } from '@/Components/ui/LanguageSwitch';
 
 /** Staff sign-in. Deliberately plain: no store navigation, not linked from the site, noindex. */
 export default function AdminLogin() {
@@ -62,4 +63,9 @@ export default function AdminLogin() {
     );
 }
 
-AdminLogin.layout = (page) => page;
+AdminLogin.layout = (page) => (
+    <>
+        <LocaleSync />
+        {page}
+    </>
+);

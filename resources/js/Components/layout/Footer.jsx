@@ -295,7 +295,7 @@ export default function Footer() {
 
                 <Wordmark />
 
-                <p className="border-t border-snow/15 py-7 text-center text-sm text-snow/55">
+                <p className="border-t border-snow/15 pb-20 pt-7 text-center text-sm text-snow/55 sm:py-7">
                     © {year} Zovita. Designed &amp; built by{' '}
                     <a href={author.website} target="_blank" rel="noopener noreferrer" className="text-snow underline decoration-snow/30 underline-offset-4 transition-colors hover:text-mint hover:decoration-mint">
                         {author.name}

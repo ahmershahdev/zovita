@@ -52,7 +52,7 @@ export default function ScrollToTop() {
             tabIndex={visible ? 0 : -1}
             data-cursor-magnetic
             className={cn(
-                'group fixed bottom-5 right-5 z-40 grid size-16 place-items-center rounded-full text-ink transition-[opacity,transform] duration-700 ease-[var(--ease-expo)] md:bottom-8 md:right-8',
+                'group fixed bottom-4 right-4 z-40 grid size-12 place-items-center sm:size-16 rounded-full text-ink transition-[opacity,transform] duration-700 ease-[var(--ease-expo)] md:bottom-8 md:right-8',
                 visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 scale-75 opacity-0',
             )}
         >

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Checkout;
 
+use App\Rules\CleanFile;
 use App\Rules\Recaptcha;
+use App\Services\Payments\PaymentService;
 use App\Services\Security\ActivityLog;
 use App\Services\Security\BanGuard;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,9 +40,11 @@ class PlaceOrderRequest extends FormRequest
             'city' => ['required', Rule::in(config('zovita.cities'))],
             'postal_code' => ['nullable', 'digits_between:4,6'],
             'notes' => ['nullable', 'string', 'max:500'],
-            'prescription' => ['nullable', 'file', 'max:'.$rx['max_kb'], 'mimes:'.implode(',', $rx['mimes'])],
+            'prescription' => ['nullable', 'file', 'max:'.$rx['max_kb'], 'mimes:'.implode(',', $rx['mimes']), new CleanFile],
             'recaptcha_token' => [Recaptcha::v3('checkout')],
             'checkout_token' => ['nullable', 'uuid'],
+            'payment_method' => ['nullable', Rule::in(app(PaymentService::class)->enabled() ? ['cod', 'card'] : ['cod'])],
+            'interactions_ack' => ['nullable', 'boolean'],
         ];
     }
 

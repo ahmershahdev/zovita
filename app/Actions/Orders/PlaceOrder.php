@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Cart\CartService;
+use App\Services\Catalog\InteractionChecker;
 use App\Services\Experiments\Experiments;
 use App\Services\Mail\TransactionalMailer;
 use App\Services\Personalization\Interactions;
@@ -36,6 +37,10 @@ use Throwable;
  *  4. A per-checkout token (unique index) makes a double-click or network retry return the order
  *     that was already placed instead of creating a second one.
  *  5. Order numbers are random with a unique index; a collision simply retries.
+ *  6. Card orders are created "awaiting payment" with their stock reserved; PaymentService confirms
+ *     them from a verified webhook (then confirmed() runs) or expires and restocks them.
+ *  7. Drug-interaction warnings are recomputed from the locked products and stored on the order for
+ *     the pharmacist; a "major" one must have been acknowledged by the customer.
  * The loser of a race gets a normal validation error asking them to review the bag.
  */
 class PlaceOrder
@@ -46,10 +51,11 @@ class PlaceOrder
         private readonly TransactionalMailer $mailer,
         private readonly Visitor $visitor,
         private readonly Interactions $interactions,
+        private readonly InteractionChecker $interactionChecker,
     ) {}
 
     /**
-     * @param  array{name: string, email: string, phone: string, address: string, city: string, postal_code?: ?string, notes?: ?string}  $details
+     * @param  array{name: string, email: string, phone: string, address: string, city: string, postal_code?: ?string, notes?: ?string, payment_method?: string, interactions_ack?: bool}  $details
      */
     public function handle(array $details, ?User $user, ?UploadedFile $prescriptionFile = null, ?string $token = null): Order
     {
@@ -66,9 +72,11 @@ class PlaceOrder
         // Set inside the transaction; if it rolls back, the stored file is deleted again below.
         $prescription = null;
         $visitor = $this->visitor->key();
+        $card = ($details['payment_method'] ?? 'cod') === 'card';
+        $acknowledged = (bool) ($details['interactions_ack'] ?? false);
 
         try {
-            $order = DB::transaction(function () use ($items, $details, $user, $prescriptionFile, $token, $visitor, &$prescription) {
+            $order = DB::transaction(function () use ($items, $details, $user, $prescriptionFile, $token, $visitor, $card, $acknowledged, &$prescription) {
                 $products = Product::whereIn('id', array_keys($items))->orderBy('id')->lockForUpdate()->get()->keyBy('id');
 
                 $subtotal = 0;
@@ -101,6 +109,13 @@ class PlaceOrder
                     }
                 }
 
+                $warnings = $this->interactionChecker->check($products->values());
+                if (InteractionChecker::hasMajor($warnings) && ! $acknowledged) {
+                    throw ValidationException::withMessages([
+                        'interactions_ack' => 'Some medicines in your bag should not normally be taken together. Please read the warning and tick the box to continue.',
+                    ]);
+                }
+
                 if ($needsPrescription && ! $prescriptionFile) {
                     throw ValidationException::withMessages([
                         'prescription' => 'Your bag contains prescription medicine. Please attach a valid prescription.',
@@ -125,7 +140,11 @@ class PlaceOrder
                     'user_id' => $user?->id,
                     'prescription_id' => $prescription?->id,
                     'checkout_token' => $token,
-                    'status' => OrderStatus::Pending,
+                    'status' => $card ? OrderStatus::AwaitingPayment : OrderStatus::Pending,
+                    'visitor' => $visitor,
+                    'payment_status' => $card ? 'pending' : 'unpaid',
+                    'payment_expires_at' => $card ? now()->addMinutes((int) config('payments.expires_minutes', 30)) : null,
+                    'interaction_warnings' => $warnings ?: null,
                     'customer_name' => $details['name'],
                     'email' => $details['email'],
                     'phone' => $details['phone'],
@@ -133,7 +152,7 @@ class PlaceOrder
                     'city' => $details['city'],
                     'postal_code' => $details['postal_code'] ?? null,
                     'notes' => $details['notes'] ?? null,
-                    'payment_method' => 'cod',
+                    'payment_method' => $card ? 'card' : 'cod',
                     'subtotal' => round($subtotal, 2),
                     'savings' => round($subtotal - $payable, 2),
                     'offer_discount' => $personal['discount'],
@@ -160,15 +179,33 @@ class PlaceOrder
         }
 
         $this->cart->clear();
-        ActivityLog::record('order.placed', "Placed order {$order->number} (PKR ".number_format($order->total).')', $user, ['order' => $order->number]);
-        $this->interactions->purchased($items, $visitor, $user?->id);
         OfferEngine::forget($visitor);
-        app(Experiments::class)->trackAll('purchase', $visitor);
+        ActivityLog::record('order.placed', "Placed order {$order->number} (PKR ".number_format($order->total).', '.($card ? 'card' : 'cash on delivery').')', $user, ['order' => $order->number]);
 
-        $this->mailer->send($order->email, new OrderPlacedMail($order));
-        $this->mailer->toTeam(new OrderPlacedMail($order, forTeam: true));
+        // Cash on delivery is confirmed now; a card order only once its payment webhook arrives.
+        if (! $card) {
+            $this->confirmed($order);
+        }
 
         return $order;
+    }
+
+    /**
+     * Everything that should only happen for a real order: purchase signals for personalisation,
+     * A/B conversions and the e-mails. Runs once per order (COD at checkout, card when paid).
+     */
+    public function confirmed(Order $order): void
+    {
+        $order->loadMissing('items');
+        $quantities = $order->items->whereNotNull('product_id')->groupBy('product_id')->map->sum('quantity')->all();
+        $visitor = $order->visitor ?? ($order->user_id ? 'u:'.$order->user_id : null);
+        if ($visitor) {
+            $this->interactions->purchased($quantities, $visitor, $order->user_id);
+            OfferEngine::forget($visitor);
+            app(Experiments::class)->trackAll('purchase', $visitor);
+        }
+        $this->mailer->send($order->email, new OrderPlacedMail($order));
+        $this->mailer->toTeam(new OrderPlacedMail($order, forTeam: true));
     }
 
     private function createWithUniqueNumber(array $attributes): Order

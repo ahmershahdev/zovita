@@ -4,6 +4,7 @@ namespace App\Services\Experiments;
 
 use App\Models\ExperimentEvent;
 use App\Services\Personalization\Visitor;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Minimal A/B testing. Experiments are declared in config('zovita.experiments'); each visitor is
@@ -31,7 +32,57 @@ class Experiments
         }
         $visitor ??= $this->visitor->key();
 
+        // A variant already shown to this visitor wins over the hash (it may have been carried over
+        // from the guest they were before signing in — see mergeGuestInto()).
+        $stored = $this->stored($visitor)[$experiment] ?? null;
+        if ($stored && in_array($stored, $variants, true)) {
+            return $stored;
+        }
+
         return $variants[crc32($visitor.'|'.$experiment) % count($variants)];
+    }
+
+    /** @var array<string, array<string, string>> per-request cache of stored assignments */
+    private array $stored = [];
+
+    /** @return array<string, string> experiment → variant persisted for a visitor */
+    private function stored(string $visitor): array
+    {
+        return $this->stored[$visitor] ??= DB::table('experiment_assignments')->where('visitor', $visitor)->pluck('variant', 'experiment')->all();
+    }
+
+    /**
+     * Sign-in keeps the variant the shopper already saw as a guest. For each experiment the guest
+     * was exposed to: if the account has no variant of its own yet, it adopts the guest's and the
+     * guest's events move to the account; if the account already has one (another device), the
+     * account's wins and the guest's events stay where they were, so no one is counted twice.
+     */
+    public function mergeGuestInto(?string $guestKey, string $userKey): void
+    {
+        if (! $guestKey || $guestKey === $userKey) {
+            return;
+        }
+        $guest = DB::table('experiment_assignments')->where('visitor', $guestKey)->pluck('variant', 'experiment');
+        if ($guest->isEmpty()) {
+            return;
+        }
+
+        DB::transaction(function () use ($guest, $guestKey, $userKey) {
+            $user = DB::table('experiment_assignments')->where('visitor', $userKey)->lockForUpdate()->pluck('variant', 'experiment');
+            foreach ($guest as $experiment => $variant) {
+                $userHasEvents = ExperimentEvent::where('visitor', $userKey)->where('experiment', $experiment)->exists();
+                if ($user->has($experiment) || $userHasEvents) {
+                    continue;
+                }
+                DB::table('experiment_assignments')->insertOrIgnore(['visitor' => $userKey, 'experiment' => $experiment, 'variant' => $variant, 'created_at' => now()]);
+                foreach (ExperimentEvent::where('visitor', $guestKey)->where('experiment', $experiment)->get() as $event) {
+                    ExperimentEvent::insertOrIgnore(['experiment' => $experiment, 'variant' => $event->variant, 'event' => $event->event, 'visitor' => $userKey, 'created_at' => $event->created_at]);
+                }
+                ExperimentEvent::where('visitor', $guestKey)->where('experiment', $experiment)->delete();
+                DB::table('experiment_assignments')->where('visitor', $guestKey)->where('experiment', $experiment)->delete();
+            }
+        });
+        unset($this->stored[$guestKey], $this->stored[$userKey]);
     }
 
     /** @return array<string, string> every experiment → this visitor's variant */
@@ -50,6 +101,11 @@ class Experiments
             return;
         }
         try {
+            if ($event === 'exposure') {
+                // Remember what this visitor was shown, so it survives sign-in.
+                DB::table('experiment_assignments')->insertOrIgnore(['visitor' => $visitor, 'experiment' => $experiment, 'variant' => $variant, 'created_at' => now()]);
+                $this->stored[$visitor][$experiment] ??= $variant;
+            }
             ExperimentEvent::insertOrIgnore([
                 'experiment' => $experiment,
                 'variant' => $variant,

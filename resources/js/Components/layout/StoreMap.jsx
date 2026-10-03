@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import Icon from '@/Components/ui/Icon';
 import { cn } from '@/lib/cn';
+import useT from '@/hooks/useT';
 
 /**
  * Pharmacy location on an OpenStreetMap embed: no API key, no ad tracking, and allowed by the CSP
@@ -10,6 +11,7 @@ import { cn } from '@/lib/cn';
  * one-tap directions.
  */
 export default function StoreMap({ className }) {
+    const t = useT();
     const { app } = usePage().props;
     const store = app.store;
     const box = useRef(null);
@@ -35,7 +37,7 @@ export default function StoreMap({ className }) {
             <div className="relative h-[26rem] md:h-[32rem]">
                 {near && (
                     <iframe
-                        title={`Map showing Zovita at ${address}`}
+                        title={t('Map showing Zovita at :address', { address })}
                         src={src}
                         loading="lazy"
                         referrerPolicy="no-referrer"

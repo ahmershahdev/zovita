@@ -18,7 +18,8 @@ class ActivityLog
             $request = request();
             $user ??= $request->user();
             $device = $request->cookie('zv_vid');
-            $fp = $request->session()?->get('zv_fp');
+            // No session in the scheduler, queue workers or payment webhooks: still log the event.
+            $fp = $request->hasSession() ? $request->session()->get('zv_fp') : null;
 
             UserActivity::create([
                 'user_id' => $user?->id,

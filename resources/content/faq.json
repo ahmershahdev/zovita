@@ -72,12 +72,12 @@
     "items": [
       {
         "q": "How do I pay?",
-        "a": "All orders are cash on delivery. Please check that the parcel is sealed before paying, and pay only the amount on your invoice.",
+        "a": "Choose at checkout: pay by debit or credit card on a secure payment page, or pay cash on delivery. With cash, check that the parcel is sealed before paying and pay only the amount on your invoice. Card orders are held for 30 minutes while you pay; if the payment doesn’t go through, the order is cancelled and nothing is charged.",
         "popular": true
       },
       {
         "q": "Are prices final? Do they include tax?",
-        "a": "Prices are in PKR and include applicable taxes. What you see at checkout — items, discounts and delivery — is what you pay at the door."
+        "a": "Prices are in PKR and include applicable taxes. What you see at checkout — items, discounts and delivery — is exactly what you pay, by card or at the door."
       },
       {
         "q": "How do discounts work?",
@@ -114,6 +114,10 @@
       {
         "q": "What if my prescription cannot be verified?",
         "a": "We will call you first. If it still cannot be verified, the prescription items are cancelled and you are not charged for them; the rest of the order can still ship."
+      },
+      {
+        "q": "Why does my bag warn me about some medicines?",
+        "a": "We check the active ingredients of everything in your bag against well-known interactions — for example two products that both contain paracetamol, a blood thinner with an anti-inflammatory painkiller, or an antibiotic with an antacid. If two medicines shouldn’t normally be taken together you’ll see what to do, and for serious ones we ask you to confirm you’ve read it. Our pharmacist sees the same warning on your order. It’s an automatic check, not medical advice."
       }
     ]
   },
@@ -132,8 +136,8 @@
         "a": "Contact us within 48 hours with your order number and a photo. We replace the item or refund you in full, including delivery, and collect the item at no cost."
       },
       {
-        "q": "How do refunds work with cash on delivery?",
-        "a": "Approved refunds are sent by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) within 5–7 business days."
+        "q": "How do refunds work?",
+        "a": "If you paid by card, the refund goes back to the same card, usually within 5–10 business days depending on your bank. If you paid cash on delivery, approved refunds are sent by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) within 5–7 business days."
       },
       {
         "q": "Why can’t I return opened medicine?",
@@ -182,6 +186,14 @@
         "a": "Yes — choose “Save for later” on any item in your bag and it moves to your wishlist."
       },
       {
+        "q": "Can I turn on two-step sign-in?",
+        "a": "Yes. In Account → Security, choose “Turn on two-step sign-in” and scan the QR code with an authenticator app such as Google Authenticator or Microsoft Authenticator. You’ll then need a 6-digit code from the app as well as your password, and you get eight one-time recovery codes in case you lose your phone."
+      },
+      {
+        "q": "What are refill reminders?",
+        "a": "If you buy the same medicine regularly, we work out how often from your own orders and e-mail you a few days before it’s likely to run out, once per refill, with a one-tap link that puts it back in your bag. You’ll also see “Refills due” on your account. You can switch the e-mails off there at any time."
+      },
+      {
         "q": "How do I delete my account?",
         "a": "Email {email} from the address on your account and we will delete it. Records we are legally required to keep (such as invoices) are retained only for that purpose."
       }
@@ -198,7 +210,7 @@
       },
       {
         "q": "Do you store card details?",
-        "a": "No. Orders are paid in cash on delivery, so we never ask for or store card details."
+        "a": "No. Card payments are taken on our payment provider’s secure page, so your card number never reaches or is stored on Zovita’s servers. Cash on delivery is always available too."
       },
       {
         "q": "Why do some forms show a reCAPTCHA?",

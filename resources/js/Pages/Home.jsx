@@ -113,14 +113,8 @@ function Hero({ stats }) {
     return (
         <section ref={root} className="relative overflow-hidden">
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,var(--color-mint-soft)_0%,transparent_55%)]" />
-            <div data-hero-canvas className="pointer-events-none absolute inset-0 md:left-[30%]">
-                <LazyHeroScene
-                    fallback={<img src={`${app.url}/images/hero/hero.webp`} alt="" className="absolute right-0 top-1/2 w-[60%] -translate-y-1/2 object-contain opacity-90" />}
-                />
-            </div>
-
-            <div className="container-x relative flex min-h-[calc(100svh-7.5rem)] flex-col justify-between gap-12 pb-10 pt-14 md:pt-20">
-                <div>
+            <div className="container-x flex flex-col justify-between gap-6 pb-10 pt-10 md:static md:min-h-[calc(100svh-7.5rem)] md:gap-12 md:pt-20">
+                <div className="relative z-10">
                     <p data-hero-fade className="eyebrow mb-8 flex items-center gap-3 text-ink-mute">
                         <span className="size-2 animate-pulse rounded-full bg-teal" />
                         Online pharmacy · Since 2026
@@ -138,7 +132,15 @@ function Hero({ stats }) {
                     </h1>
                 </div>
 
-                <div className="grid gap-10 md:grid-cols-12 md:items-end">
+                {/* Phones: the 3D scene gets its own band between the headline and the copy, so the
+                    floating pills never sit on top of text. Wider screens: behind, to the right. */}
+                <div data-hero-canvas className="pointer-events-none relative -mx-4 h-[34svh] max-h-80 md:absolute md:inset-0 md:left-[30%] md:mx-0 md:h-auto md:max-h-none">
+                    <LazyHeroScene
+                        fallback={<img src={`${app.url}/images/hero/hero.webp`} alt="" className="absolute left-1/2 top-1/2 w-[70%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-90 md:left-auto md:right-0 md:w-[60%] md:translate-x-0" />}
+                    />
+                </div>
+
+                <div className="relative z-10 grid gap-8 md:grid-cols-12 md:items-end md:gap-10">
                     <div className="md:col-span-5">
                         <p data-hero-fade className="max-w-md text-lg leading-relaxed text-ink-soft">
                             {t(":products+ authentic medicines, syrups and supplements from :brands trusted brands — checked by a pharmacist, paid on delivery.", { products: stats.products, brands: stats.brands })}
@@ -155,7 +157,7 @@ function Hero({ stats }) {
                             <button className="h-11 rounded-full bg-ink px-5 text-sm text-paper transition hover:bg-teal">Search</button>
                         </form>
                     </div>
-                    <div data-hero-fade className="flex flex-wrap items-center gap-3 md:col-span-7 md:justify-end">
+                    <div data-hero-fade className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center md:col-span-7 md:justify-end [&_a]:w-full [&_a]:justify-center sm:[&_a]:w-auto">
                         <Magnetic>
                             {heroCta === 'symptom' ? (
                                 <Button href={route('body-map')} onClick={() => track('hero_cta', 'click')} size="lg" icon={<Icon name="body" size={18} />}>
@@ -224,14 +226,14 @@ function Departments({ departments }) {
                         <Link
                             href={route('shop.department', d.slug)}
                             onPointerEnter={() => setActive(d)}
-                            className="group grid grid-cols-12 items-center gap-4 py-6 transition-colors duration-500 md:py-8"
+                            className="group grid grid-cols-[2rem_1fr_auto] items-center gap-x-3 gap-y-2 py-5 transition-colors duration-500 md:grid-cols-12 md:gap-4 md:py-8"
                         >
-                            <span className="col-span-2 font-mono text-sm text-ink-mute md:col-span-1">{pad(i + 1)}</span>
-                            <span className="col-span-10 font-display text-4xl transition-transform duration-700 ease-[var(--ease-expo)] group-hover:translate-x-4 group-hover:italic md:col-span-6 md:text-6xl">
+                            <span className="font-mono text-sm text-ink-mute md:col-span-1">{pad(i + 1)}</span>
+                            <span className="col-span-2 font-display text-3xl transition-transform duration-700 ease-[var(--ease-expo)] group-hover:translate-x-4 group-hover:italic sm:text-4xl md:col-span-6 md:text-6xl">
                                 {d.name}
                             </span>
-                            <span className="col-span-8 col-start-3 text-sm text-ink-mute md:col-span-3 md:col-start-auto">{d.blurb}</span>
-                            <span className="col-span-2 flex items-center justify-end gap-3 md:col-span-2">
+                            <span className="col-start-2 text-sm text-ink-mute md:col-span-3 md:col-start-auto">{d.blurb}</span>
+                            <span className="flex items-center justify-end gap-3 md:col-span-2">
                                 <span className="hidden font-mono text-sm md:inline">{d.count}</span>
                                 <span className="grid size-11 place-items-center rounded-full border border-line-strong transition duration-500 group-hover:rotate-[-45deg] group-hover:bg-ink group-hover:text-paper">
                                     <Icon name="arrow" size={18} />
@@ -271,17 +273,17 @@ function Conditions({ conditions }) {
                         </>
                     }
                 />
-                <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-9" data-stagger>
+                <div className="mt-10 grid grid-cols-3 gap-2.5 sm:gap-4 md:mt-14 lg:grid-cols-9" data-stagger>
                     {conditions.map((c) => (
                         <Link
                             key={c.label}
                             href={c.href}
-                            className="group relative flex flex-col items-center gap-4 rounded-4xl bg-card p-5 text-center transition duration-500 hover:-translate-y-1.5 hover:bg-ink hover:text-paper lg:col-span-1"
+                            className="group relative flex flex-col items-center gap-2 rounded-3xl bg-card p-2.5 text-center sm:gap-4 sm:rounded-4xl sm:p-5 transition duration-500 hover:-translate-y-1.5 hover:bg-ink hover:text-paper lg:col-span-1"
                         >
-                            <span className="grid aspect-square w-full place-items-center overflow-hidden rounded-3xl bg-paper transition group-hover:bg-ink-soft">
+                            <span className="grid aspect-square w-full place-items-center overflow-hidden rounded-2xl bg-paper sm:rounded-3xl transition group-hover:bg-ink-soft">
                                 <img src={c.image} alt="" loading="lazy" className="w-3/4 object-contain transition duration-700 group-hover:scale-110" />
                             </span>
-                            <span className="text-sm font-medium">{c.label}</span>
+                            <span className="text-xs font-medium leading-snug sm:text-sm">{c.label}</span>
                         </Link>
                     ))}
                 </div>
@@ -494,7 +496,7 @@ function CatalogChart({ departments }) {
             </figcaption>
             <ul className="mt-8 space-y-2">
                 {departments.map((d) => {
-                    const share = Math.round((d.count / total) * 100);
+                    const share = total ? Math.round((d.count / total) * 100) : 0;
                     return (
                         <li key={d.slug}>
                             <Link

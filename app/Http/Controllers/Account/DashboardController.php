@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Prescription;
+use App\Models\RefillReminder;
+use App\Services\Personalization\Refills;
+use App\Services\Security\TwoFactor;
 use App\Support\UserAgent;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +15,7 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, Refills $refills, TwoFactor $twoFactor): Response
     {
         $user = $request->user();
 
@@ -20,6 +23,7 @@ class DashboardController extends Controller
             'profile' => $user->only('name', 'username', 'email', 'phone', 'city', 'address', 'lat', 'lng') + [
                 'avatar' => $user->avatarUrl(),
                 'member_since' => $user->created_at->toIso8601String(),
+                'email_verified' => $user->hasVerifiedEmail(),
             ],
             // Recent sign-ins, so customers can spot access they don't recognise.
             'signins' => $user->activities()->whereIn('type', ['auth.login', 'auth.failed'])->latest('created_at')->limit(6)->get()
@@ -45,6 +49,12 @@ class DashboardController extends Controller
                 'spent' => (float) $user->orders()->where('status', '!=', 'cancelled')->sum('total'),
                 'wishlist' => $user->wishlist()->count(),
             ],
+            'refills' => [
+                'enabled' => (bool) $user->refill_reminders,
+                'items' => $refills->upcoming($user)->map(fn (RefillReminder $r) => $refills->toClient($r))->values(),
+            ],
+            'twoFactor' => TwoFactorController::props($request, $twoFactor),
+            'tab' => $request->session()->get('tab'),
         ]);
     }
 }

@@ -164,7 +164,7 @@
           "summary": "The rider calls ahead; you check the parcel and pay cash. Missed deliveries are re-attempted.",
           "blocks": [
             {
-              "p": "All orders are cash on delivery. Please keep the exact amount ready where you can. You are welcome to check that the parcel is sealed and that the number of items matches your invoice before paying."
+              "p": "You can pay by debit or credit card on our payment provider’s secure page, or cash on delivery. For cash, please keep the exact amount ready where you can; you are welcome to check that the parcel is sealed and that the number of items matches your invoice before paying. Card orders are reserved for 30 minutes while you pay and are cancelled automatically, with nothing charged, if the payment does not complete."
             },
             {
               "list": [
@@ -384,7 +384,7 @@
           "summary": "Paid back to your bank account or mobile wallet within 5–7 business days of approval.",
           "blocks": [
             {
-              "p": "Because orders are paid in cash on delivery, refunds are sent by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) in the name you give us."
+              "p": "Card payments are refunded to the same card. Cash-on-delivery orders are refunded by bank transfer or to a mobile wallet (such as JazzCash or Easypaisa) in the name you give us."
             },
             {
               "table": {
@@ -510,7 +510,7 @@
               }
             },
             {
-              "p": "We do not ask for or store card details — orders are paid in cash on delivery."
+              "p": "Card payments are handled on our payment provider’s secure page: your card number never reaches or is stored on our servers. We keep only the payment status, amount and the provider’s reference."
             }
           ]
         },
@@ -783,7 +783,7 @@
         },
         {
           "icon": "package",
-          "value": "Cash on delivery",
+          "value": "Card or cash",
           "label": "How you pay"
         },
         {
@@ -871,14 +871,14 @@
         {
           "id": "pricing",
           "heading": "Prices, quantities & payment",
-          "summary": "Prices are in PKR including applicable taxes. Payment is cash on delivery.",
+          "summary": "Prices are in PKR including applicable taxes. Pay by card at checkout or cash on delivery.",
           "blocks": [
             {
               "list": [
                 "All prices are in rupees (PKR) and include applicable taxes.",
                 "Delivery fees are shown before you place the order ({fee}, free over {free}).",
                 "Per-order quantity limits apply to some products for safety and fair availability.",
-                "Payment is cash on delivery. Please pay the rider only the amount on your invoice."
+                "Payment is by card at checkout or cash on delivery. If you pay cash, please pay the rider only the amount on your invoice."
               ]
             }
           ]

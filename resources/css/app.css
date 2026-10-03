@@ -708,6 +708,15 @@ html.has-cursor select {
 
 /* Nastaliq is a tall, joined script: give it room, and never letter-space it (spacing breaks
    the joins). Latin words inside Urdu text keep the Latin faces via the font stack order. */
+html[lang='ur'] {
+    /* Every face falls back to Nastaliq for Urdu text. Without this, italic (serif) and mono
+       (eyebrow) text dropped to whatever system font has Arabic glyphs: mismatched styles, and
+       monospace fallbacks that draw the letters unjoined. */
+    --font-sans: 'Geist Variable', 'Noto Nastaliq Urdu', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque Variable', 'Noto Nastaliq Urdu', 'Geist Variable', sans-serif;
+    --font-serif: 'Instrument Serif', 'Noto Nastaliq Urdu', ui-serif, Georgia, serif;
+    --font-mono: 'Geist Mono Variable', 'Noto Nastaliq Urdu', ui-monospace, monospace;
+}
 html[lang='ur'] body {
     font-family: 'Geist Variable', 'Noto Nastaliq Urdu', ui-sans-serif, system-ui, sans-serif;
     line-height: 2.05;
@@ -716,12 +725,18 @@ html[lang='ur'] :is(.font-display, .eyebrow, .font-mono, h1, h2, h3, h4, p, span
     letter-spacing: 0 !important;
 }
 html[lang='ur'] .font-display {
-    font-family: 'Bricolage Grotesque Variable', 'Noto Nastaliq Urdu', sans-serif;
-    line-height: 1.55;
+    font-family: var(--font-display);
+    /* Nastaliq lines slope and stack dots well above and below the baseline: with Latin display
+       leading, wrapped headings overlapped each other. */
+    line-height: 1.9;
+}
+html[lang='ur'] .font-display :is(em, .italic),
+html[lang='ur'] .font-display.italic {
+    font-family: var(--font-serif);
 }
 html[lang='ur'] .text-display,
 html[lang='ur'] .text-title {
-    line-height: 1.35;
+    line-height: 1.75;
 }
 html[lang='ur'] .eyebrow {
     text-transform: none;
@@ -730,7 +745,7 @@ html[lang='ur'] .eyebrow {
 html[lang='ur'] .line-mask {
     /* Nastaliq kaf/gaf strokes rise well above the line box; leave room so the mask doesn't cut them. */
     padding-block: 0.5em 0.25em;
-    margin-block: -0.5em -0.25em;
+    margin-block: -0.35em 0;
 }
 
 /* Map picker pin (MapPicker.jsx) */

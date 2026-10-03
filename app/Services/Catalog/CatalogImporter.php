@@ -71,7 +71,7 @@ class CatalogImporter
                     'max_per_order' => $item['max_per_order'],
                     'requires_prescription' => $item['requires_prescription'],
                     'is_featured' => in_array($item['slug'], $featuredSlugs, true),
-                    'generics' => $this->clip($item['generics'] ?? null, 255),
+                    'generics' => $this->clip(self::generics($item['generics'] ?? null), 255),
                     'summary' => self::neutralCopy($this->cleanSummary($item['summary'] ?? '', $item['brand'])),
                     'description' => self::neutralCopy($item['description'] ?? null),
                     'indication' => self::neutralCopy($item['indication'] ?? null),
@@ -140,6 +140,16 @@ class CatalogImporter
     private function isPlaceholder(?string $url): bool
     {
         return ! $url || str_ends_with(strtolower(strtok($url, '?')), '.svg') || str_contains($url, 'dvago-logo');
+    }
+
+    /** Placeholders like "None" or "N/A" mean "no listed ingredient", not an ingredient called None. */
+    public const NO_GENERICS = ['none', 'n/a', 'na', 'nil', '-', 'not available'];
+
+    public static function generics(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' || in_array(Str::lower($value), self::NO_GENERICS, true) ? null : $value;
     }
 
     private function clip(?string $value, int $length): ?string

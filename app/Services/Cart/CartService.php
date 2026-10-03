@@ -3,6 +3,7 @@
 namespace App\Services\Cart;
 
 use App\Models\Product;
+use App\Services\Catalog\InteractionChecker;
 use App\Services\Personalization\OfferEngine;
 use App\Services\Personalization\Pricing;
 use Illuminate\Contracts\Session\Session;
@@ -114,6 +115,8 @@ class CartService
             'free_delivery_over' => $freeOver,
             'total' => round($payable - $personal['discount'] + $delivery, 2),
             'requires_prescription' => $lines->contains(fn ($l) => $l['product']->requires_prescription),
+            // Medicines that shouldn't normally be taken together (see InteractionChecker).
+            'warnings' => $lines->count() > 1 ? app(InteractionChecker::class)->forLines($lines) : [],
         ];
     }
 }

@@ -1,9 +1,9 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { lazy, Suspense, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Badge from '@/Components/ui/Badge';
 import Button from '@/Components/ui/Button';
 import EmptyState from '@/Components/ui/EmptyState';
-import Field from '@/Components/ui/Field';
+import Field, { Checkbox } from '@/Components/ui/Field';
 import Icon from '@/Components/ui/Icon';
 import { cn } from '@/lib/cn';
 import { date, money } from '@/lib/format';
@@ -18,8 +18,12 @@ const tabs = [
     ['security', 'Security'],
 ];
 
-export default function Dashboard({ profile, cities, orders, prescriptions, stats, signins = [], store }) {
-    const [tab, setTab] = useState('orders');
+export default function Dashboard({ profile, cities, orders, prescriptions, stats, signins = [], store, refills, twoFactor, tab: flashedTab }) {
+    const [tab, setTab] = useState(flashedTab ?? 'orders');
+    // Two-step sign-in forms flash the tab they belong to, so the page stays on Security.
+    useEffect(() => {
+        if (flashedTab) setTab(flashedTab);
+    }, [flashedTab]);
 
     return (
         <section className="container-x pb-10 pt-10 md:pt-16">
@@ -56,6 +60,15 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
                 ))}
             </div>
 
+            {!profile.email_verified && (
+                <div className="mt-10 flex flex-wrap items-center gap-4 rounded-3xl border border-[#e8c66d]/60 bg-[#fdf6e4] p-5 text-sm dark:bg-[#2c2410]" data-testid="verify-email">
+                    <Icon name="mail" size={20} className="shrink-0" />
+                    <p className="min-w-0 flex-1">Please confirm {profile.email} so order updates and sign-in codes reach you. The link we sent expires after 10 minutes.</p>
+                    <Button size="sm" variant="ghost" onClick={() => router.post(route('verification.send'), {}, { preserveScroll: true })}>
+                        Send a new link
+                    </Button>
+                </div>
+            )}
             <div className="scrollbar-none mt-12 flex gap-2 overflow-x-auto border-b border-line" role="tablist">
                 {tabs.map(([key, label]) => (
                     <button
@@ -73,10 +86,20 @@ export default function Dashboard({ profile, cities, orders, prescriptions, stat
             </div>
 
             <div className="mt-10" role="tabpanel">
-                {tab === 'orders' && <Orders orders={orders} />}
+                {tab === 'orders' && (
+                    <div className="space-y-12">
+                        <Refills refills={refills} />
+                        <Orders orders={orders} />
+                    </div>
+                )}
                 {tab === 'prescriptions' && <Prescriptions prescriptions={prescriptions} />}
                 {tab === 'profile' && <Profile profile={profile} cities={cities} store={store} />}
-                {tab === 'security' && <Security signins={signins} />}
+                {tab === 'security' && (
+                    <div className="space-y-16">
+                        <TwoFactor twoFactor={twoFactor} />
+                        <Security signins={signins} />
+                    </div>
+                )}
             </div>
         </section>
     );
@@ -281,7 +304,7 @@ function Security({ signins }) {
     const { data, setData, errors, processing } = form;
 
     return (
-        <div className="grid gap-12 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -322,5 +345,163 @@ function Security({ signins }) {
                 </ul>
             </div>
         </div>
+    );
+}
+
+/** Medicines bought regularly that are due again soon, with one-tap reorder and an off switch. */
+function Refills({ refills }) {
+    if (!refills) return null;
+    const toggle = (enabled) => router.put(route('account.preferences.update'), { refill_reminders: enabled }, { preserveScroll: true });
+
+    return (
+        <section id="refills" aria-labelledby="refills-title" data-testid="refills">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <h2 id="refills-title" className="font-display text-3xl">Refills due</h2>
+                    <p className="mt-1 text-sm text-ink-mute">Worked out from how often you order the same medicine. We e-mail you a few days before you run out.</p>
+                </div>
+                <Checkbox label="E-mail me refill reminders" checked={refills.enabled} onChange={(e) => toggle(e.target.checked)} />
+            </div>
+            {refills.items.length === 0 ? (
+                <p className="mt-6 rounded-3xl border border-dashed border-line-strong p-5 text-sm text-ink-mute">Nothing due right now. Once you've bought the same medicine twice, it shows up here when it's time to reorder.</p>
+            ) : (
+                <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {refills.items.map((r) => (
+                        <li key={r.id} className="flex items-center gap-4 rounded-3xl border border-line bg-card p-4">
+                            <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-plate">
+                                {r.product?.image && <img src={r.product.image} alt="" className="size-12 object-contain mix-blend-multiply" loading="lazy" />}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="line-clamp-2 text-sm font-medium">{r.product?.name}</span>
+                                <span className={cn('mt-1 block text-xs', r.overdue ? 'text-coral' : 'text-ink-mute')}>
+                                    {r.overdue ? 'Was due' : 'Due'} {date(r.due_at)} · about every {r.interval_days} days
+                                </span>
+                                <span className="mt-2 flex flex-wrap gap-3 text-sm">
+                                    <button type="button" onClick={() => router.post(route('account.refills.add', r.id))} className="font-medium text-teal underline-offset-4 hover:underline">
+                                        Add to bag
+                                    </button>
+                                    <button type="button" onClick={() => router.delete(route('account.refills.dismiss', r.id), { preserveScroll: true })} className="text-ink-mute hover:text-ink">
+                                        Not now
+                                    </button>
+                                </span>
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
+/** Optional two-step sign-in for customers: QR set-up, recovery codes, turn off with password. */
+function TwoFactor({ twoFactor }) {
+    const confirm = useForm({ code: '' });
+    const off = useForm({ password: '' });
+    const codes = useForm({ password: '' });
+    if (!twoFactor) return null;
+
+    return (
+        <section aria-labelledby="two-factor-title" className="grid grid-cols-1 gap-10 lg:grid-cols-2" data-testid="two-factor">
+            <div>
+                <h2 id="two-factor-title" className="font-display text-3xl">Two-step sign-in</h2>
+                <p className="mt-2 max-w-xl text-sm text-ink-mute">
+                    Sign in with your password and a 6-digit code from an authenticator app on your phone, so a leaked password alone can't open your account, orders or prescriptions.
+                </p>
+                <p className="mt-4">
+                    <Badge tone={twoFactor.enabled ? 'mint' : 'soft'}>{twoFactor.enabled ? 'On' : 'Off'}</Badge>
+                </p>
+                {!twoFactor.enabled && !twoFactor.setup && (
+                    <Button className="mt-6" onClick={() => router.post(route('account.two-factor.start'), {}, { preserveScroll: true })} icon={<Icon name="shield" size={16} />}>
+                        Turn on two-step sign-in
+                    </Button>
+                )}
+                {twoFactor.enabled && (
+                    <p className="mt-4 text-sm">
+                        {twoFactor.recovery_left} recovery {twoFactor.recovery_left === 1 ? 'code' : 'codes'} left.
+                    </p>
+                )}
+            </div>
+
+            <div>
+                {twoFactor.recovery_codes?.length > 0 && (
+                    <div className="mb-8 rounded-3xl border-2 border-teal bg-mint-soft p-5" data-testid="recovery-codes">
+                        <p className="font-medium">Save your recovery codes</p>
+                        <p className="mt-1 text-sm text-ink-soft">Each code signs you in once if you lose your phone. They won't be shown again.</p>
+                        <ul className="mt-4 grid grid-cols-2 gap-2 font-mono text-sm">
+                            {twoFactor.recovery_codes.map((c) => (
+                                <li key={c} className="select-all rounded-xl bg-paper px-3 py-2 text-center">
+                                    {c}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {twoFactor.setup && (
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            confirm.post(route('account.two-factor.confirm'), { preserveScroll: true, onError: () => confirm.reset('code') });
+                        }}
+                        className="grid grid-cols-1 gap-5 rounded-4xl border border-line p-6 sm:grid-cols-[auto_1fr]"
+                        noValidate
+                    >
+                        <div className="size-[180px] max-w-full rounded-2xl bg-white p-3 [&_svg]:h-full [&_svg]:w-full" role="img" aria-label="QR code for your authenticator app" dangerouslySetInnerHTML={{ __html: twoFactor.setup.qr }} />
+                        <div className="min-w-0 space-y-4 text-sm">
+                            <p>1. Scan this with Google Authenticator, Microsoft Authenticator or 1Password.</p>
+                            <p>
+                                Can't scan? Enter this key: <code className="mt-1 block select-all break-all rounded-xl bg-paper-deep px-3 py-2 font-mono" data-testid="totp-secret">{twoFactor.setup.secret}</code>
+                            </p>
+                            <Field label="2. Type the 6-digit code" inputMode="numeric" maxLength={7} autoComplete="one-time-code" value={confirm.data.code} onChange={(e) => confirm.setData('code', e.target.value)} error={confirm.errors.code} />
+                            <div className="flex flex-wrap gap-3">
+                                <Button type="submit" loading={confirm.processing}>
+                                    Confirm and turn on
+                                </Button>
+                                <Button type="button" variant="ghost" onClick={() => router.delete(route('account.two-factor.cancel'), { preserveScroll: true })}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+                )}
+
+                {twoFactor.enabled && (
+                    <div className="space-y-8">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                codes.post(route('account.two-factor.recovery'), { preserveScroll: true, onFinish: () => codes.reset() });
+                            }}
+                            className="grid max-w-md gap-3"
+                            noValidate
+                        >
+                            <p className="font-medium">New recovery codes</p>
+                            <Field label="Your password" type="password" autoComplete="current-password" value={codes.data.password} onChange={(e) => codes.setData('password', e.target.value)} error={codes.errors.password} />
+                            <div>
+                                <Button type="submit" variant="ghost" size="sm" loading={codes.processing}>
+                                    Make new codes
+                                </Button>
+                            </div>
+                        </form>
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                off.delete(route('account.two-factor.destroy'), { preserveScroll: true, onFinish: () => off.reset() });
+                            }}
+                            className="grid max-w-md gap-3"
+                            noValidate
+                        >
+                            <p className="font-medium">Turn off two-step sign-in</p>
+                            <Field label="Your password" type="password" autoComplete="current-password" value={off.data.password} onChange={(e) => off.setData('password', e.target.value)} error={off.errors.password} />
+                            <div>
+                                <Button type="submit" variant="danger" size="sm" loading={off.processing}>
+                                    Turn off
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+            </div>
+        </section>
     );
 }

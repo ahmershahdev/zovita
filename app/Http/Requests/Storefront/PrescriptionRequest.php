@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Storefront;
 
 use App\Http\Requests\Checkout\PlaceOrderRequest;
+use App\Rules\CleanFile;
 use App\Rules\Recaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -27,7 +28,7 @@ class PrescriptionRequest extends FormRequest
             'email' => ['required', 'email:rfc', 'max:120'],
             'phone' => ['required', 'regex:'.PlaceOrderRequest::PHONE_REGEX],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'file' => ['required', 'file', 'max:'.$rx['max_kb'], 'mimes:'.implode(',', $rx['mimes'])],
+            'file' => ['required', 'file', 'max:'.$rx['max_kb'], 'mimes:'.implode(',', $rx['mimes']), new CleanFile],
             'consent' => ['accepted'],
             'recaptcha_token' => [Recaptcha::v2()],
         ];

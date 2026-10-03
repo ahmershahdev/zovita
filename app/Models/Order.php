@@ -13,6 +13,7 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'prescription_id', 'number', 'checkout_token', 'status', 'customer_name', 'email', 'phone', 'address', 'city',
         'postal_code', 'notes', 'payment_method', 'subtotal', 'savings', 'offer_discount', 'delivery_fee', 'total',
+        'visitor', 'payment_status', 'paid_at', 'payment_expires_at', 'refunded_amount', 'interaction_warnings',
     ];
 
     protected function casts(): array
@@ -24,6 +25,10 @@ class Order extends Model
             'offer_discount' => 'float',
             'delivery_fee' => 'float',
             'total' => 'float',
+            'refunded_amount' => 'float',
+            'paid_at' => 'datetime',
+            'payment_expires_at' => 'datetime',
+            'interaction_warnings' => 'array',
         ];
     }
 
@@ -56,6 +61,28 @@ class Order extends Model
         return $this->belongsTo(Prescription::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public static function paymentLabel(?string $method, ?string $status): string
+    {
+        if ($method !== 'card') {
+            return 'Cash on delivery';
+        }
+
+        return match ($status) {
+            'paid' => 'Paid by card',
+            'pending' => 'Waiting for card payment',
+            'refunded' => 'Refunded',
+            'partially_refunded' => 'Partly refunded',
+            'expired' => 'Payment not completed',
+            'failed' => 'Payment failed',
+            default => 'Card',
+        };
+    }
+
     public function toSummary(): array
     {
         return [
@@ -82,6 +109,11 @@ class Order extends Model
             'city' => $this->city,
             'notes' => $this->notes,
             'payment_method' => $this->payment_method,
+            'payment_status' => $this->payment_status,
+            'payment_status_label' => self::paymentLabel($this->payment_method, $this->payment_status),
+            'payment_expires_at' => $this->payment_expires_at?->toIso8601String(),
+            'refunded_amount' => $this->refunded_amount,
+            'interaction_warnings' => $this->interaction_warnings ?? [],
             'subtotal' => $this->subtotal,
             'savings' => $this->savings,
             'offer_discount' => $this->offer_discount,

@@ -111,7 +111,7 @@ export default function UserPage({ customer, stats, activity, connections, order
                 </div>
             )}
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <Panel className="lg:col-span-1" title="Profile" help="Contact details the customer gave us. The username is assigned by Zovita; only staff can change it.">
                     <div className="flex items-center gap-4">
                         {customer.avatar ? (
@@ -252,7 +252,7 @@ export default function UserPage({ customer, stats, activity, connections, order
                 )}
 
                 {tab === 'orders' && (
-                    <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                         <Panel title="Recent orders" help="Their latest orders. Open one to change its status.">
                             <ul className="divide-y divide-line">
                                 {orders.map((o) => (

@@ -4,12 +4,14 @@ import Icon from '@/Components/ui/Icon';
 import { cn } from '@/lib/cn';
 import { fly } from '@/lib/fly';
 import { track } from '@/lib/signals';
+import useT from '@/hooks/useT';
 
 /**
  * Compact circular add button used on product cards. The product photo flies into the header bag
  * the moment it is pressed, and the button confirms with a check once the server agrees.
  */
 export default function AddToCartButton({ product, quantity = 1, className }) {
+    const t = useT();
     const [state, setState] = useState('idle'); // idle | busy | done
 
     useEffect(() => {
@@ -47,7 +49,7 @@ export default function AddToCartButton({ product, quantity = 1, className }) {
             type="button"
             onClick={add}
             disabled={state === 'busy'}
-            aria-label={`Add ${product.name} to bag`}
+            aria-label={t('Add :name to bag', { name: product.name })}
             className={cn(
                 'group/add relative grid size-11 place-items-center overflow-hidden rounded-full transition duration-300 disabled:opacity-60',
                 state === 'done' ? 'bg-mint text-night' : 'bg-ink text-paper hover:bg-mint hover:text-night',

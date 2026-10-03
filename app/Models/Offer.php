@@ -48,9 +48,10 @@ class Offer extends Model
         return [
             'id' => $this->id,
             'kind' => $this->kind,
-            'label' => self::KINDS[$this->kind] ?? 'Personal offer',
+            'label' => __(self::KINDS[$this->kind] ?? 'Personal offer'),
             'percent' => $this->percent,
-            'reason' => $this->reason,
+            // Fixed reasons (welcome, come-back) are in lang/*.json; ones naming a product stay as written.
+            'reason' => __($this->reason),
             'product_id' => $this->product_id,
             'product' => $this->relationLoaded('product') ? $this->product?->only('name', 'slug') : null,
             'expires_at' => $this->expires_at->toIso8601String(),

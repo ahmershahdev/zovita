@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use App\Rules\Recaptcha;
 use App\Services\Security\BanGuard;
 use Illuminate\Auth\Events\Failed;
@@ -37,9 +38,11 @@ class LoginRequest extends FormRequest
      *  - banned accounts are refused with the date their ban ends (if it ends)
      *  - devices/networks under a ban can't sign in to any account
      *
+     * Returns the account without starting a session, so a second step (two-factor) can follow.
+     *
      * @throws ValidationException
      */
-    public function authenticate(bool $staff = false): void
+    public function validateUser(bool $staff = false): User
     {
         $this->ensureIsNotRateLimited();
         $credentials = $this->only('email', 'password');
@@ -68,8 +71,9 @@ class LoginRequest extends FormRequest
             throw ValidationException::withMessages(['email' => __('Sign-in is not available from this device.')]);
         }
 
-        Auth::guard('web')->login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
+
+        return $user;
     }
 
     private function ensureIsNotRateLimited(): void

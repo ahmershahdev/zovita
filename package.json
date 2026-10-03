@@ -16,7 +16,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=1200"
+        "catalog:scrape": "node tools/catalog/scrape-dvago.mjs --limit=1200",
+        "build:ssr": "php artisan ziggy:generate resources/js/ziggy.js && vite build && vite build --ssr"
     },
     "devDependencies": {
         "@playwright/test": "^1.63.0",
@@ -44,5 +45,8 @@
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "three": "^0.186.1"
+    },
+    "overrides": {
+        "uuid": "^11.1.1"
     }
 }

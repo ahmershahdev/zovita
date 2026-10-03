@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Foundation\Http\Kernel;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,6 +22,8 @@ class SecurityTest extends TestCase
         $this->assertStringNotContainsString("'unsafe-eval'", $csp);
         $this->assertStringContainsString("object-src 'none'", $csp);
         $this->assertStringContainsString("frame-ancestors 'self'", $csp);
+        // The reCAPTCHA widget fetches from google.com; without it the checkbox never appears.
+        $this->assertMatchesRegularExpression('#connect-src [^;]*https://www\.google\.com/recaptcha/#', $csp);
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('Cross-Origin-Opener-Policy', 'same-origin');
     }
@@ -37,10 +38,9 @@ class SecurityTest extends TestCase
             $this->followingRedirects()->get(route('shop.index', ['q' => $payload, 'brand' => $payload, 'sort' => $payload, 'min' => $payload]))->assertSuccessful();
         }
 
-        $admin = User::factory()->create();
-        $admin->forceFill(['is_admin' => true])->save();
+        $admin = $this->makeStaff();
         foreach ($payloads as $payload) {
-            $this->actingAs($admin->fresh())->get(route('admin.orders.index', ['q' => $payload, 'status' => $payload]))->assertOk();
+            $this->actingAsStaff($admin)->get(route('admin.orders.index', ['q' => $payload, 'status' => $payload]))->assertOk();
             $this->get(route('admin.users.index', ['q' => $payload]))->assertOk();
         }
 

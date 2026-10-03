@@ -69,7 +69,7 @@ export default function PrescriptionCreate({ limits }) {
 
                 <form onSubmit={submit} className="space-y-6 rounded-5xl bg-card p-6 md:p-10 lg:col-span-7" noValidate>
                     <FileDrop file={data.file} onChange={(f) => setData('file', f)} accept={limits.types} maxMb={limits.max_mb} error={errors.file} />
-                    <div className="grid gap-5 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                         <Field label="Patient / your name" placeholder="Name on the prescription" value={data.name} onChange={(e) => setData('name', e.target.value)} error={errors.name} autoComplete="name" required />
                         <Field label="Mobile number" type="tel" placeholder="0300 1234567" value={data.phone} onChange={(e) => setData('phone', e.target.value)} error={errors.phone} autoComplete="tel" required />
                         <Field label="Email" placeholder="you@example.com" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} error={errors.email} autoComplete="email" className="md:col-span-2" required />

@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from '@/Components/ui/Icon';
+import LanguageSwitch, { LocaleSync } from '@/Components/ui/LanguageSwitch';
 import ThemeToggle from '@/Components/ui/ThemeToggle';
 import { cn } from '@/lib/cn';
 import { gsap, prefersReducedMotion } from '@/lib/gsap';
@@ -108,6 +109,7 @@ export default function ErrorPage({ status = 404 }) {
                     <span className="eyebrow hidden text-snow/60 sm:inline">
                         Error {code} · {label}
                     </span>
+                    <LanguageSwitch className="hover:bg-snow hover:text-night" />
                     <ThemeToggle className="border-snow/25" />
                 </div>
             </header>
@@ -215,4 +217,9 @@ export default function ErrorPage({ status = 404 }) {
 }
 
 // Standalone: no store header/footer (the page must render even if the app failed early).
-ErrorPage.layout = (page) => page;
+ErrorPage.layout = (page) => (
+    <>
+        <LocaleSync />
+        {page}
+    </>
+);

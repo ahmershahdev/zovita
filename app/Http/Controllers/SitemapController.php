@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Department;
 use App\Models\Product;
+use App\Services\Payments\PaymentService;
 use App\Support\CatalogCache;
 use App\Support\Content;
 use App\Support\Seo;
@@ -89,10 +90,15 @@ class SitemapController extends Controller
             $out = [
                 '# Zovita',
                 '',
-                "> Zovita is an online pharmacy ({$site}). It sells {$listed}+ authentic medicines, vitamins, skin and hair care, mother & baby products, personal care and health devices from {$brands} brands. Orders are pharmacist-verified, paid cash on delivery, and delivered nationwide. Prescription-only medicines require an uploaded prescription, reviewed by a pharmacist and approved automatically if undecided after 24 hours. The site is available in English and Urdu (?lang=ur).",
+                "> Zovita is an online pharmacy ({$site}). It sells {$listed}+ authentic medicines, vitamins, skin and hair care, mother & baby products, personal care and health devices from {$brands} brands. Orders are pharmacist-verified, paid by card or cash on delivery, and delivered nationwide. Prescription-only medicines require an uploaded prescription, reviewed by a pharmacist and approved automatically if undecided after 24 hours. The site is available in English and Urdu (?lang=ur).",
                 '',
                 'Key facts:',
-                '- Payment: cash on delivery only (no cards stored).',
+                app(PaymentService::class)->enabled()
+                    ? '- Payment: debit/credit card on the payment provider\'s secure page (card numbers never stored by Zovita) or cash on delivery. Card orders are held for '.(int) config('payments.expires_minutes').' minutes while paying; card refunds go back to the same card.'
+                    : '- Payment: cash on delivery (no card details asked for or stored).',
+                '- Medicine safety: the bag checks active ingredients for well-known interactions (e.g. two paracetamol products, blood thinner + NSAID, sildenafil + nitrate) and shows what to do; serious ones must be acknowledged and are shown to the pharmacist. Not medical advice.',
+                '- Refill reminders: customers who buy the same medicine regularly get an e-mail a few days before it is likely to run out, with a one-tap reorder link (can be switched off).',
+                '- Accounts: optional two-step sign-in with an authenticator app for customers; staff can turn it on from the admin panel.',
                 '- Delivery: free over PKR '.number_format((int) config('zovita.free_delivery_over')).', otherwise PKR '.number_format((int) config('zovita.delivery_fee')).'; major cities 1–3 business days, elsewhere 2–5.',
                 '- Returns: unopened, room-temperature items within 7 days; damaged/wrong items reported within 48 hours are replaced or refunded in full.',
                 '- Personal offers: automatic discounts based on browsing and purchase history, applied in the bag (no codes).',
@@ -141,6 +147,15 @@ class SitemapController extends Controller
                 }
                 $out[] = '';
             }
+
+            $out[] = '# Medicine interaction checks';
+            $out[] = '';
+            $out[] = 'The bag compares the active ingredients of the medicines in it (tablets, capsules, syrups, sachets and injections; creams, shampoos and drops are ignored) against these rules. Every warning says what to do and is shown to the pharmacist on the order. It is an automatic check, not medical advice.';
+            $out[] = '';
+            foreach (json_decode((string) file_get_contents(resource_path('content/interactions.json')), true)['rules'] as $rule) {
+                $out[] = '- '.ucfirst($rule['severity']).': '.$rule['title'].'. '.$rule['detail'].' What to do: '.$rule['advice'];
+            }
+            $out[] = '';
 
             $out[] = '# Frequently asked questions';
             $out[] = '';

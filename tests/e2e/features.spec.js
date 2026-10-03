@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { signIn, watchConsole } from './helpers';
+import { adminSignIn, signIn, watchConsole } from './helpers';
 
 test('body map: pick a region and a symptom', async ({ page }) => {
     const errors = watchConsole(page);
@@ -55,10 +55,7 @@ test('instant navigation: hovering a link prefetches the next page', async ({ pa
 test('admin: dashboard charts and prescription review', async ({ page }) => {
     // The panel is invisible until a staff member signs in on the staff form.
     expect((await page.goto('/admin')).status()).toBe(404);
-    await page.goto('/admin/login');
-    await page.getByLabel('Work email').fill('admin@zovita.com');
-    await page.getByLabel('Password', { exact: true }).fill('Admin@1234');
-    await page.getByRole('button', { name: /Sign in to the admin panel/ }).click();
+    await adminSignIn(page);
     await expect(page.getByRole('heading', { name: 'Today at Zovita' })).toBeVisible();
     await expect(page.locator('svg[role="img"] path').first()).toBeAttached();
     await page.goto('/admin/prescriptions');
@@ -66,10 +63,7 @@ test('admin: dashboard charts and prescription review', async ({ page }) => {
 });
 
 test('admin pages fit a phone without sideways scroll @mobile', async ({ page }) => {
-    await page.goto('/admin/login');
-    await page.getByLabel('Work email').fill('admin@zovita.com');
-    await page.getByLabel('Password', { exact: true }).fill('Admin@1234');
-    await page.getByRole('button', { name: /Sign in to the admin panel/ }).click();
+    await adminSignIn(page);
     await expect(page.getByRole('heading', { name: 'Today at Zovita' })).toBeVisible();
     for (const path of ['/admin', '/admin/orders', '/admin/users', '/admin/prescriptions', '/admin/products']) {
         await page.goto(path);

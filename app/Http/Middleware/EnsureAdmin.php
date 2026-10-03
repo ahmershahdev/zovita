@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Security\PendingLogin;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,17 @@ class EnsureAdmin
     {
         $user = $request->user();
         abort_unless($user?->isAdmin(), 404);
+
+        // A staff session only counts once this browser went through the staff sign-in for this
+        // account (password, plus the authenticator code if they turned one on). A customer
+        // session or a remember-me cookie is never enough.
+        if ($request->session()->get(PendingLogin::VERIFIED) !== $user->id) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('admin.login')->with('error', 'Please sign in to the admin panel again.');
+        }
 
         $last = (int) $request->session()->get('admin_last_active', 0);
         if ($last && now()->timestamp - $last > self::IDLE_MINUTES * 60) {

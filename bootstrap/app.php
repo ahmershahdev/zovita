@@ -2,7 +2,9 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureNotBanned;
+use App\Http\Middleware\EnsureStaffCan;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\KeepFlashForBackgroundRequests;
 use App\Http\Middleware\RequestGuard;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -34,9 +36,12 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             HandleInertiaRequests::class,
             SecurityHeaders::class,
+            KeepFlashForBackgroundRequests::class,
         ]);
 
-        $middleware->alias(['admin' => EnsureAdmin::class]);
+        $middleware->alias(['admin' => EnsureAdmin::class, 'staff' => EnsureStaffCan::class]);
+        // Payment gateways post webhooks without a session; they are verified by signature instead.
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
         $middleware->encryptCookies(except: [SetLocale::COOKIE]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

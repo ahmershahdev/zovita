@@ -7,8 +7,10 @@ use App\Models\BanIdentifier;
 use App\Models\User;
 use App\Models\UserActivity;
 use App\Services\Personalization\Visitor;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -100,12 +102,52 @@ class BanGuard
      * The active ban (if any) matching these signals. IP and network matches only count for deep
      * bans. With `$siteWide`, only deep bans are considered (they block the whole site).
      */
+    /**
+     * The ban (if any) these signals fall under. Runs on every request for site-wide deep bans, so
+     * answers are cached in the shared ban store (Redis in production, see config zovita.bans):
+     * every server reads the same cache, and issuing or lifting a ban bumps a version number so all
+     * of them stop trusting old answers at once. A cached hit is re-checked against the database,
+     * so a ban that expires is never enforced from stale cache.
+     */
     public function match(array $signals, bool $siteWide = false): ?Ban
     {
         if (! $signals) {
             return null;
         }
+        ksort($signals);
+        $store = self::store();
+        $key = 'bans:v'.(int) $store->get(self::VERSION_KEY, 0).':'.sha1(serialize([$signals, $siteWide]));
+        $id = (int) $store->remember($key, (int) config('zovita.bans.ttl', 300), fn () => $this->lookup($signals, $siteWide)?->id ?? 0);
+        if ($id === 0) {
+            return null;
+        }
+        $ban = Ban::active()->find($id);
+        if (! $ban) {
+            $store->forget($key);
 
+            return $this->lookup($signals, $siteWide);
+        }
+
+        return $ban;
+    }
+
+    private const VERSION_KEY = 'bans:version';
+
+    public static function store(): Repository
+    {
+        return Cache::store(config('zovita.bans.store') ?: null);
+    }
+
+    /** Every server stops using cached ban answers immediately. */
+    public static function flushCache(): void
+    {
+        $store = self::store();
+        $store->add(self::VERSION_KEY, 0);
+        $store->increment(self::VERSION_KEY);
+    }
+
+    private function lookup(array $signals, bool $siteWide): ?Ban
+    {
         $hits = BanIdentifier::with('ban')
             ->where(function ($q) use ($signals) {
                 foreach ($signals as $type => $value) {
@@ -177,6 +219,7 @@ class BanGuard
             if (config('session.driver') === 'database') {
                 DB::table(config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
             }
+            DB::afterCommit(fn () => self::flushCache());
 
             return $ban;
         });
@@ -188,6 +231,7 @@ class BanGuard
             Ban::active()->where('user_id', $user->id)->update(['lifted_at' => now(), 'lifted_by' => $by?->id]);
             $user->forceFill(['banned_at' => null, 'banned_until' => null, 'ban_reason' => null])->save();
         });
+        self::flushCache();
     }
 
     private function expiry(?string $duration): Carbon
