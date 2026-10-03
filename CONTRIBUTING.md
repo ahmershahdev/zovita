@@ -23,17 +23,16 @@ php artisan serve    # http://127.0.0.1:8000
 
 ## Branching
 
-`main` is the only long-lived branch and is protected by a ruleset. Work on a short-lived branch and open a pull request:
+The repository has a single branch, `main`. Commit and push to it directly; there are no feature branches or pull requests. Rulesets enforce this:
 
-| Prefix | Use for |
+| Ruleset | What it does |
 | --- | --- |
-| `feat/…` | new features |
-| `fix/…` | bug fixes |
-| `refactor/…` | code changes with no behaviour change |
-| `docs/…` | documentation |
-| `chore/…` | tooling, dependencies, CI |
+| `main · integrity` | `main` can't be deleted or force-pushed |
+| `main · linear history` | no merge commits on `main` (rebase instead: `git pull --rebase`) |
+| `single branch · no other branches` | no other branch can be created on GitHub |
+| `release tags` | `v*` tags can't be moved or deleted |
 
-Pull requests are **squash-merged**, and branches are deleted automatically after merge.
+CI runs on every push to `main`; if it goes red, fix it with the next commit.
 
 ## Commit messages
 
@@ -56,7 +55,7 @@ docs: explain Resend setup
 | Motion | GSAP via `@/lib/gsap`; always respect `prefersReducedMotion()` |
 | Copy | Policy and FAQ text lives in `resources/js/content/` |
 
-## Before opening a PR
+## Before pushing
 
 ```bash
 ./vendor/bin/pint --test   # formatting
@@ -64,14 +63,9 @@ php artisan test           # feature tests
 npm run build              # production build must succeed
 ```
 
-CI runs the same checks on every pull request. They must pass before merge.
+CI runs the same checks on every push to `main`.
 
-In your PR description:
-
-- explain **what** changed and **why**
-- link the issue (`Closes #12`)
-- add screenshots or a short clip for UI changes (desktop + mobile)
-- mention any new `.env` keys, migrations or commands
+In the commit message body, mention any new `.env` keys, migrations or commands.
 
 ## Adding tests
 

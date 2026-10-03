@@ -192,7 +192,7 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 | Maps | Leaflet · OpenStreetMap tiles · Nominatim geocoding |
 | Email | Resend |
 | Bot protection | Google reCAPTCHA v3 (invisible, scored) + v2 (themed checkbox) |
-| Quality | PHPUnit · Playwright · Lighthouse · autocannon · Laravel Pint · GitHub Actions · Dependabot |
+| Quality | PHPUnit · Playwright · Lighthouse · autocannon · Laravel Pint · GitHub Actions · Dependabot alerts |
 
 ## Data model
 
@@ -515,7 +515,7 @@ deploy/                  nginx, supervisor, production env template
 
 ## Contributing
 
-Pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and the PR checklist. `main` is protected: changes land through pull requests with passing CI.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions. The repository has a single protected branch, `main`: commits are pushed to it directly, and CI runs on every push.
 
 ## Author
 
