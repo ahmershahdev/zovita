@@ -49,6 +49,33 @@ class SeoTest extends TestCase
         $this->assertStringNotContainsString('Pakistan', $html);
     }
 
+    /** @dataProvider publicPages */
+    public function test_meta_title_and_description_stay_within_search_engine_limits(string $path): void
+    {
+        Product::factory()->create();
+        $html = $this->get($path)->assertOk()->getContent();
+
+        preg_match('/<title inertia>([^<]+)<\/title>/u', $html, $t);
+        preg_match('/<meta inertia="description"[^>]+content="([^"]*)"/', $html, $d);
+        $title = html_entity_decode($t[1] ?? '', ENT_QUOTES);
+        $description = html_entity_decode($d[1] ?? '', ENT_QUOTES);
+
+        $this->assertLessThan(60, mb_strlen($title), "Title over 60 chars on {$path}: {$title}");
+        $this->assertLessThan(150, mb_strlen($description), "Description over 150 chars on {$path}: {$description}");
+    }
+
+    public function test_product_meta_description_stays_within_limits(): void
+    {
+        $product = Product::factory()->create([
+            'description' => str_repeat('This is a long clinical description of the medicine and its many uses. ', 20),
+        ]);
+
+        $html = $this->get('/product/'.$product->slug)->assertOk()->getContent();
+        preg_match('/<meta inertia="description"[^>]+content="([^"]*)"/', $html, $d);
+
+        $this->assertLessThan(150, mb_strlen(html_entity_decode($d[1] ?? '', ENT_QUOTES)));
+    }
+
     public function test_brand_names_drop_the_local_subsidiary_suffix(): void
     {
         $this->assertSame('Searle', Brand::cleanName('Searle Pakistan (Pvt) Ltd.'));

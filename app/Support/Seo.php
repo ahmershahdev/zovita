@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 /**
@@ -22,12 +21,12 @@ final class Seo
 
     /** route name => [title, description] */
     private const PAGES = [
-        'home' => [null, 'Authentic medicines, vitamins, skin care and health devices from 200+ trusted brands — pharmacist-verified orders, personal offers and cash on delivery.'],
+        'home' => [null, 'Authentic medicines, vitamins, skin care and health devices from 200+ trusted brands — pharmacist-verified orders and cash on delivery.'],
         'body-map' => ['Body map — find relief by symptom', 'Tap where it hurts on an interactive 3D body map to see self-care tips, warning signs and pharmacist-picked products for your symptom.'],
         'about' => ['About Zovita', 'Why Zovita exists: a calm, honest online pharmacy with authentic stock, pharmacist review and delivery you can rely on.'],
         'faq' => ['FAQ — help centre', 'Answers about ordering, delivery, payment, prescriptions, returns, your account and privacy at Zovita.'],
         'contact' => ['Contact us', 'Reach Zovita’s care team and pharmacists for order updates, prescription help and product questions — by phone, email or message.'],
-        'prescriptions.create' => ['Upload a prescription', 'Upload a photo or PDF of your prescription. A licensed pharmacist reviews it — and if no decision is made within 24 hours it is approved automatically.'],
+        'prescriptions.create' => ['Upload a prescription', 'Upload a photo or PDF of your prescription. A licensed pharmacist reviews it — approved automatically if undecided within 24 hours.'],
         'orders.track' => ['Track your order', 'Track your Zovita order with its order number and email, from pharmacist review to delivery.'],
         'cart.index' => ['Your bag', 'Review the items in your bag, personal offers and delivery before checkout.'],
         'wishlist.index' => ['Wishlist', 'Products you saved for later.'],
@@ -48,6 +47,28 @@ final class Seo
     public static function siteUrl(): string
     {
         return rtrim((string) (config('zovita.site_url') ?: url('/')), '/');
+    }
+
+    /**
+     * Normalise a meta description and keep it comfortably under 150 characters (search engines
+     * truncate longer ones). Whitespace is collapsed and tags stripped; if it is too long it is cut
+     * on a word boundary with an ellipsis so it never ends mid-word.
+     */
+    public static function clamp(?string $text, int $max = 149): ?string
+    {
+        if ($text === null) {
+            return null;
+        }
+        $text = trim((string) preg_replace('/\s+/', ' ', strip_tags($text)));
+        if (mb_strlen($text) <= $max) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, $max - 1);
+        if (($space = mb_strrpos($cut, ' ')) !== false && $space > $max - 30) {
+            $cut = mb_substr($cut, 0, $space);
+        }
+
+        return rtrim($cut, ' ,.;:—-').'…';
     }
 
     /** Re-base an app URL (route(), url()) onto the public site URL. */
@@ -73,7 +94,7 @@ final class Seo
 
         return [
             'title' => $title,
-            'description' => $description ?? self::PAGES['home'][1],
+            'description' => self::clamp($description ?? self::PAGES['home'][1]),
             'canonical' => self::absolute(url()->current()),
             'image' => self::absolute(asset('images/hero/hero.png')),
             'type' => 'website',
@@ -95,7 +116,7 @@ final class Seo
     ): void {
         Inertia::share('seo', array_filter([
             'title' => $title,
-            'description' => $description ? Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags($description))), 158, '…') : null,
+            'description' => $description ? self::clamp($description) : null,
             'canonical' => $canonical ? self::absolute($canonical) : null,
             'image' => $image ? self::absolute($image) : null,
             'type' => $type,

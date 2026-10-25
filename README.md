@@ -21,6 +21,12 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 **Run it locally in about five minutes:** [Getting started](#getting-started) · no API keys needed
 
+**Live project page & write-ups:**
+[Project overview](https://ahmershah.dev/projects/zovita) ·
+[Case study](https://ahmershah.dev/blogs/zovita-case-study-online-pharmacy-platform) ·
+[How the personalisation works](https://ahmershah.dev/blogs/the-discount-that-knew-you-were-hesitating-rule-based-personalisation-in-zovita) ·
+[Wiki](https://github.com/ahmershahdev/zovita/wiki)
+
 </div>
 
 > **Status: complete and archived.** Zovita+ is a finished portfolio project, kept read-only. Final version: [v1.0.0](../../releases/tag/v1.0.0). Run it locally: [Getting started](#getting-started).
@@ -368,7 +374,7 @@ Report vulnerabilities privately: see [SECURITY.md](SECURITY.md).
 
 | Suite | What it covers | Result |
 |---|---|---|
-| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol | **145 passed** (973 assertions) |
+| **PHPUnit** (`php artisan test`) | Cart and checkout (stock locking, idempotency, throttle isolation), auth, bans and evasion, personalisation and offers, assistant, A/B (incl. sticky variants), admin gating, prescriptions and the 24 h auto-accept, security (SQLi, XSS, CSP, CSRF, rate limits), SEO outputs; **TOTP against the RFC 6238 test vectors**, staff set-up, replay and lock-out, recovery codes, every role's permissions, last-owner protection; **e-mailed codes** (hashed, 10-minute expiry, single use, resend), passwordless sign-in without enumeration, 10-minute confirmation and reset links, sign-in alerts, order e-mails; **payments** (signed/forged/stale/duplicate/wrong-amount webhooks, expiry and restock, late-payment refund, partial and full refunds, Stripe request shape); drug interactions; refill rhythm and once-per-cycle e-mails; ban cache invalidation; ClamAV against a real socket speaking the INSTREAM protocol; meta title/description length limits | **155 passed** (1,003 assertions) |
 | **Playwright** (`npx playwright test`) | Smoke test of every page on desktop and mobile (no console errors, one `h1`, no horizontal scroll), fly-to-bag, wishlist ↔ bag moves, guest checkout, themed dropdown keyboard use, body map, assistant, Urdu RTL round-trip, A/B exposure, hover prefetch, admin review with two-step sign-in, admin pages on a phone, interaction warning + acknowledgement, card payment through the sandbox gateway, retrying a cancelled payment, staff pages | **56 passed** |
 | **Lighthouse 13** | Home, shop, product, body map, FAQ, contact, policies, login, register, prescription, about | **Accessibility 100 · Best Practices 100 · SEO 100** (bag/checkout are `noindex` by design) |
 | **Load** (`node tests/load/run.mjs capacity`) | On a single XAMPP dev box (database sessions): shop and product pages about 32 req/s at p50 about 700 ms; FAQ about 55 req/s; static images about 830 req/s at 11 ms | No errors |
@@ -574,14 +580,21 @@ deploy/                  nginx, supervisor, production env template
 - CSP reporting endpoint and Subresource Integrity on third-party scripts; `composer audit`, `npm audit` and gitleaks gates in CI.
 - Programmatic pages for active ingredients ("Paracetamol: all brands and prices"), `Drug` schema with review dates, image sitemap, `/ur/...` URLs, RUM Core Web Vitals and a Lighthouse CI budget.
 
+## Read more
+
+- **[Project overview](https://ahmershah.dev/projects/zovita)** — what Zovita+ is, at a glance.
+- **[Case study: building an online pharmacy platform](https://ahmershah.dev/blogs/zovita-case-study-online-pharmacy-platform)** — the full story: the goals, the hard parts (concurrency, payments, two-step sign-in) and how they were solved.
+- **[The discount that knew you were hesitating](https://ahmershah.dev/blogs/the-discount-that-knew-you-were-hesitating-rule-based-personalisation-in-zovita)** — how the rule-based personalisation and offer engine turn quiet browsing signals into fair, time-limited discounts.
+- **[Wiki](https://github.com/ahmershahdev/zovita/wiki)** — setup, configuration, architecture, data model, security and deployment, page by page.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions. The repository has a single protected branch, `main`: commits are pushed to it directly, and CI runs on every push.
 
 ## Author
 
-**Syed Ahmer Shah**
-[ahmershah.dev](https://ahmershah.dev) · [LinkedIn](https://linkedin.com/in/syedahmershah) · [GitHub](https://github.com/ahmershahdev) · +92 370 4831994
+**Syed Ahmer Shah** — full-stack engineer.
+[ahmershah.dev](https://ahmershah.dev) · [Case study](https://ahmershah.dev/blogs/zovita-case-study-online-pharmacy-platform) · [LinkedIn](https://linkedin.com/in/syedahmershah) · [GitHub](https://github.com/ahmershahdev) · +92 370 4831994
 
 ## License
 
