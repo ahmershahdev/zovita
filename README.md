@@ -23,6 +23,8 @@ An online pharmacy with 1,000+ real medicines, syrups and supplements, a 3D symp
 
 </div>
 
+> **Status: complete and archived.** Zovita+ is a finished portfolio project, kept read-only. Final version: [v1.0.0](../../releases/tag/v1.0.0). Run it locally: [Getting started](#getting-started).
+
 ---
 
 ## Features
